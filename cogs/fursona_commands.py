@@ -178,3 +178,71 @@ class FursonaComamnds(utils.Cog):
         if modmail_channel_id:
             return await user.send("Your fursona has been sent to the moderators for approval! Please be patient as they review.")
         return await user.send("Your fursona has been saved!")
+
+    @utils.Cog.listener("on_raw_reaction_add")
+    async def fursona_verification_reaction_handler(self, payload:discord.RawReactionActionEvent):
+        """Listens for reactions being added to fursona approval messages"""
+
+        # Check not a bot
+        if self.bot.get_user(payload.user_id).bot:
+            return
+
+        # Check if we're in a modmail channel
+        guild_settings = self.bot.guild_settings.get(payload.guild_id)
+        modmail_channel_id = guild_settings.get("fursona_modmail_channel_id")
+        if payload.channel_id != modmail_channel_id:
+            return
+
+        # Get the message
+        message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        fursona_embed = message.embeds[0]
+        fursona_user_id = int(fursona_embed.footer.text.split(' ')[2])
+        fursona_index = int(fursona_embed.footer.text.split(' ')[7])
+        fursona_member = self.bot.get_guild(payload.guild_id).get_member(fursona_user_id)
+        if fursona_member is None:
+            return
+
+        # See the mod's reaction
+        emoji = str(payload.emoji)
+        verified = False
+        nsfw = False
+        if emoji == "\N{HEAVY MULTIPLICATION X}":
+            pass
+        elif emoji == "\N{HEAVY CHECK MARK}":
+            archive_channel_id = guild_settings.get("fursona_accept_archive_channel_id")
+            verified = True
+            nsfw = fursona_embed.footer.text.split(' ')[4] == 'NSFW'
+        elif emoji == "\N{SMILING FACE WITH HORNS}":
+            archive_channel_id = guild_settings.get("fursona_accept_nsfw_archive_channel_id")
+            verified = True
+            nsfw = True
+        else:
+            return  # Invalid reaction, just ignore
+
+        # Update the information
+        async with self.bot.database() as db:
+            if verified is False:
+                await db("DELETE FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND index=$3", payload.guild_id, fursona_member.id, fursona_index)
+            else:
+                await db("UPDATE fursonas SET verified=true, nsfw=$4 WHERE guild_id=$1 AND user_id=$2 AND index=$3", payload.guild_id, fursona_member.id, fursona_index, nsfw)
+
+        # Post it to the archive
+        try:
+            archive_channel = self.bot.get_channel(archive_channel_id)
+            await archive_channel.send(embed=fursona_embed)
+        except discord.Forbidden:
+            pass
+
+        # Tell the user about it
+        try:
+            if verified:
+                await fursona_member.send(f"Your fursona on **{fursona_member.guild.name}** has been accepted!")
+            else:
+                await fursona_member.send(f"Your fursona on **{fursona_member.guild.name}** has been declined.")
+        except discord.Forbidden:
+            pass
+
+
+def setup(bot:utils.Bot):
+    x = FursonaComamnds(bot)
+    bot.add_cog(x)

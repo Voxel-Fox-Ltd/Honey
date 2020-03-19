@@ -49,6 +49,9 @@ class CustomBot(commands.AutoShardedBot):
             'prefix': self.config['default_prefix'],
             'verified_role_id': None,
             'fursona_modmail_channel_id': None,
+            'fursona_decline_archive_channel_id': None,
+            'fursona_accept_archive_channel_id': None,
+            'fursona_accept_nsfw_archive_channel_id': None,
         }
 
         # Aiohttp session

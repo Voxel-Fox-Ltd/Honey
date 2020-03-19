@@ -37,6 +37,7 @@ class Fursona(object):
             embed.add_field("Bio", self.bio, inline=False)
             if self.image and add_image:
                 embed.set_image(url=self.image)
+            embed.set_footer(f"Fursona of {self.user_id} | {'NSFW' if self.nsfw else 'SFW'} | Index {self.index}")
         return embed
 
     async def save(self, db):
