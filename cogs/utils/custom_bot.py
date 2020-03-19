@@ -48,6 +48,7 @@ class CustomBot(commands.AutoShardedBot):
         self.DEFAULT_GUILD_SETTINGS = {
             'prefix': self.config['default_prefix'],
             'verified_role_id': None,
+            'fursona_modmail_channel_id': None,
         }
 
         # Aiohttp session
