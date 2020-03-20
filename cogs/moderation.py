@@ -9,10 +9,7 @@ from cogs import utils
 
 class Moderation(utils.Cog):
 
-    def __init__(self, bot:utils.Bot):
-        super().__init__(bot)
-
-    async def get_code(self, n:int=5) -> str:
+    async def get_code(self, db, n:int=5) -> str:
         """This method creates a randomisied string to use as the infraction identifier.
 
         Input Argument: n - Must be int
@@ -22,54 +19,79 @@ class Moderation(utils.Cog):
         def gen_code(n):
             return ''.join(random.choices(string.ascii_lowercase + string.digits, k=n))
 
-        async with self.bot.database() as db:
-            while True:
-                code = gen_code(n)
-                is_valid = await db("SELECT infraction_id FROM infractions WHERE infraction_id = $1", code)
-                if len(is_valid) == 0:
-                    return code
-    
+        while True:
+            code = gen_code(n)
+            is_valid = await db("SELECT infraction_id FROM infractions WHERE infraction_id = $1", code)
+            if len(is_valid) == 0:
+                return code
+
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
     async def mute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Mutes a user from the server"""
 
-        # Checking if role exists
-        if self.bot.guild_settings[ctx.guild_id]["muted_role_id"] == None:
-            return await ctx.send("No mute role set!")
+        # Check if role exists
+        muted_role_id = self.bot.guild_settings[ctx.guild_id].get("muted_role_id")
+        if muted_role_id is None:
+            return await ctx.send("You have no mute role set.")
 
-        # Chuck this bad boy in INFRACTIONS
+        # Grab the mute role
+        mute_role = ctx.guild.get_role(muted_role_id)
+        if mute_role is None:
+            return await ctx.send("You have no mute role set.")
+        if mute_role in user.roles:
+            return await ctx.send(f"{user.mention} is already muted.")
+
+        # Throw the reason into the database
         async with self.bot.database() as db:
-            code = await self.get_code()
+            code = await self.get_code(db)
             await db(
                 """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
                 infraction_reason, timestamp) VALUES ($1, $2, 'mute', $3, $4)""",
                 code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
             )
 
-        # Mutes the user
-        await ctx.send(embed=discord.Embed(title="Muted indefinitely!", description=f"{user.mention} has been muted by {ctx.author.mention} for {reason}"))
-        await user.add_roles(ctx.guild.get_role(self.bot.guild_settings[ctx.guild_id]["muted_role_id"]), reason=reason)
-    
+        # Mute the user
+        await user.add_roles(mute_role, reason=reason)
+        with utils.Embed() as embed:
+            embed.title = "Muted indefinitely!"
+            embed.description = f"{user.mention} has been muted by {ctx.author.mention} for {reason}."
+        return await ctx.send(embed=embed)
+
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
-    async def unmute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
-        """Unmutes a user from the server"""
+    async def unmute(self, ctx:utils.Context, user:discord.Member):
+        """Unmutes a user"""
 
-        # Unmutes the user
-        await ctx.send(embed=discord.Embed(title="Unmuted!", description=f"{user.mention} has been unmuted by {ctx.author.mention} for {reason}"))
-        await user.remove_roles(ctx.guild.get_role(self.bot.guild_settings[ctx.guild_id]["muted_role_id"]), reason=reason)
+        # Check if role exists
+        muted_role_id = self.bot.guild_settings[ctx.guild_id].get("muted_role_id")
+        if muted_role_id is None:
+            return await ctx.send("You have no mute role set.")
+
+        # Grab the mute role
+        mute_role = ctx.guild.get_role(muted_role_id)
+        if mute_role is None:
+            return await ctx.send("You have no mute role set.")
+        if mute_role not in user.roles:
+            return await ctx.send(f"{user.mention} is not muted.")
+
+        # Unmute the user
+        await user.remove_roles(mute_role)
+        with utils.Embed() as embed:
+            embed.title = "Unmuted!"
+            embed.description = f"{user.mention} has been unmuted by {ctx.author.mention}."
+        return await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)
     async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Adds a warning to a user"""
 
-        # Chuck this bad boy in INFRACTIONS
+        # Throw the reason into the database
         async with self.bot.database() as db:
-            code = await self.get_code()
+            code = await self.get_code(db)
             await db(
                 """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
                 infraction_reason, timestamp) VALUES ($1, $2, 'warn', $3, $4)""",
@@ -77,7 +99,10 @@ class Moderation(utils.Cog):
             )
 
         # Warn the user
-        await ctx.send(embed=discord.Embed(title="Warning Given", description=f"{user.mention} has been warned by {ctx.author.mention} for {reason}"))
+        with utils.Embed() as embed:
+            embed.title = "Warning Given",
+            embed.description = f"{user.mention} has been warned by {ctx.author.mention} for {reason}."
+        await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)
@@ -85,9 +110,9 @@ class Moderation(utils.Cog):
     async def kick(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Kicks a user from the server"""
 
-        # Chuck this bad boy in INFRACTIONS
+        # Throw the reason into the database
         async with self.bot.database() as db:
-            code = await self.get_code()
+            code = await self.get_code(db)
             await db(
                 """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
                 infraction_reason, timestamp) VALUES ($1, $2, 'kick', $3, $4)""",
@@ -95,8 +120,11 @@ class Moderation(utils.Cog):
             )
 
         # Kick the user
-        await ctx.send(embed=discord.Embed(title="Kicked!", description=f"{user.mention} has been kicked by {ctx.author.mention} for {reason}"))
-        await ctx.guild.kick(user, reason)
+        await ctx.guild.kick(user, reason=reason)
+        with utils.Embed() as embed:
+            embed.title = "Kicked!"
+            embed.description = f"{user.mention} has been kicked by {ctx.author.mention} for {reason}."
+        await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(ban_members=True)
@@ -104,9 +132,9 @@ class Moderation(utils.Cog):
     async def ban(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Bans a user from the server"""
 
-        # Chuck this bad boy in INFRACTIONS
+        # Throw the reason into the database
         async with self.bot.database() as db:
-            code = await self.get_code()
+            code = await self.get_code(db)
             await db(
                 """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
                 infraction_reason, timestamp) VALUES ($1, $2, 'ban', $3, $4)""",
@@ -114,8 +142,11 @@ class Moderation(utils.Cog):
             )
 
         # Ban the user
-        await ctx.send(embed=discord.Embed(title="Banned!", description=f"{user.mention} has been banned by {ctx.author.mention} for {reason}"))
         await ctx.guild.ban(user, reason, delete_message_days=7)
+        with utils.Embed() as embed:
+            embed.title = "Banned!"
+            embed.description = f"{user.mention} has been banned by {ctx.author.mention} for {reason}."
+        await ctx.send(embed=embed)
 
 
 def setup(bot:utils.Bot):
