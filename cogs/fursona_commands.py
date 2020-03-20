@@ -65,7 +65,7 @@ class FursonaComamnds(utils.Cog):
         """Stores your fursona information in the bot"""
 
         # See if the user already has a fursona stored
-        async with self.bot.databse() as db:
+        async with self.bot.database() as db:
             rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
         if rows:
             return await ctx.send("You already have a fursona set!")
@@ -86,28 +86,28 @@ class FursonaComamnds(utils.Cog):
         # Now we wanna ask them each thing wow so fun
         name_message = await self.send_verification_message(user, "What is the name of your sona?")
         if name_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
         gender_message = await self.send_verification_message(user, "What's your sona's gender?")
         if gender_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
         age_message = await self.send_verification_message(user, "How old is your sona?")
         if age_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
         species_message = await self.send_verification_message(user, "What species is your sona?")
         if species_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
         orientation_message = await self.send_verification_message(user, "What's your sona's orientation?")
         if orientation_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
         height_message = await self.send_verification_message(user, "How tall is your sona?")
         if height_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
         weight_message = await self.send_verification_message(user, "What's the weight of your sona?")
         if weight_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
         bio_message = await self.send_verification_message(user, "What's the bio of your sona?")
         if bio_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
 
         def check(m) -> bool:
             return all([
@@ -120,11 +120,11 @@ class FursonaComamnds(utils.Cog):
             ])
         image_message = await self.send_verification_message(user, "Do you have an image for your sona? Please post it if you have one (as a link or an attachment), or say `no` to continue without.", check=check)
         if image_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
         check = lambda m: isinstance(m.channel, discord.DMChannel) and m.author.id == user.id and m.content.lower() in ["yes", "no"]
         nsfw_message = await self.send_verification_message(user, "Is your sona NSFW? Please either say `yes` or `no`.", check=check)
         if nsfw_message is None:
-            return
+            return self.currently_setting_sonas.remove(user.id)
 
         # Format that into data
         image_content = None if image_message.content.lower() == "no" else self.get_image_from_message(image_message)
@@ -149,25 +149,29 @@ class FursonaComamnds(utils.Cog):
         try:
             await user.send(embed=sona_object.get_embed())
         except discord.HTTPException as e:
+            self.currently_setting_sonas.remove(user.id)
             return await user.send(f"I couldn't send that embed to you - `{e}`. Please try again later.")
 
         # Send it to the verification channel
-        guild_settings = self.bot.guild_settings.get(ctx.guild.id)
+        guild_settings = self.bot.guild_settings[ctx.guild.id]
         modmail_channel_id = guild_settings.get("fursona_modmail_channel_id")
         if modmail_channel_id:
             modmail_channel = self.bot.get_channel(modmail_channel_id)
             if modmail_channel is None:
+                self.currently_setting_sonas.remove(user.id)
                 return await user.send(f"The moderators for the server **{ctx.guild.name}** have set their fursona modmail channel to an invalid ID - please inform them of such and try again later.")
             try:
                 modmail_message = await modmail_channel.send(f"New sona submission from {user.mention}", embed=sona_object.get_embed())
             except discord.Forbidden:
+                self.currently_setting_sonas.remove(user.id)
                 return await user.send(f"The moderators for the server **{ctx.guild.name}** have disallowed me from sending messages to their fursona modmail channel - please inform them of such and try again later.")
             try:
-                modmail_message.add_reaction("\N{HEAVY CHECK MARK}")
-                modmail_message.add_reaction("\N{HEAVY MULTIPLICATION X}")
-                modmail_message.add_reaction("\N{SMILING FACE WITH HORNS}")
+                await modmail_message.add_reaction("\N{HEAVY CHECK MARK}")
+                await modmail_message.add_reaction("\N{HEAVY MULTIPLICATION X}")
+                await modmail_message.add_reaction("\N{SMILING FACE WITH HORNS}")
             except discord.Forbidden:
                 await modmail_message.delete()
+                self.currently_setting_sonas.remove(user.id)
                 return await user.send(f"The moderators for the server **{ctx.guild.name}** have disallowed me from adding reactions in their fursona modmail channel - please inform them of such and try again later.")
 
         # Save sona to database now it's sent properly
@@ -175,6 +179,7 @@ class FursonaComamnds(utils.Cog):
             await sona_object.save(db)
 
         # Tell them everything was done properly
+        self.currently_setting_sonas.remove(user.id)
         if modmail_channel_id:
             return await user.send("Your fursona has been sent to the moderators for approval! Please be patient as they review.")
         return await user.send("Your fursona has been saved!")
@@ -188,24 +193,27 @@ class FursonaComamnds(utils.Cog):
             return
 
         # Check if we're in a modmail channel
-        guild_settings = self.bot.guild_settings.get(payload.guild_id)
+        guild_settings = self.bot.guild_settings[payload.guild_id]
         modmail_channel_id = guild_settings.get("fursona_modmail_channel_id")
         if payload.channel_id != modmail_channel_id:
             return
 
         # Get the message
+        self.logger.info(f"Dealing with sona modmail on guild {payload.guild_id} with message {payload.message_id}")
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
         fursona_embed = message.embeds[0]
         fursona_user_id = int(fursona_embed.footer.text.split(' ')[2])
         fursona_index = int(fursona_embed.footer.text.split(' ')[7])
         fursona_member = self.bot.get_guild(payload.guild_id).get_member(fursona_user_id)
         if fursona_member is None:
+            self.logger.info(f"No member could be found - message {payload.message_id}")
             return
 
         # See the mod's reaction
         emoji = str(payload.emoji)
         verified = False
         nsfw = False
+        archive_channel_id = None
         if emoji == "\N{HEAVY MULTIPLICATION X}":
             pass
         elif emoji == "\N{HEAVY CHECK MARK}":
@@ -217,6 +225,7 @@ class FursonaComamnds(utils.Cog):
             verified = True
             nsfw = True
         else:
+            self.logger.info(f"Invalid reaction in sona modmail on guild {payload.guild_id} with message {payload.message_id}")
             return  # Invalid reaction, just ignore
 
         # Update the information
@@ -227,10 +236,17 @@ class FursonaComamnds(utils.Cog):
                 await db("UPDATE fursonas SET verified=true, nsfw=$4 WHERE guild_id=$1 AND user_id=$2 AND index=$3", payload.guild_id, fursona_member.id, fursona_index, nsfw)
 
         # Post it to the archive
+        if archive_channel_id:
+            try:
+                archive_channel = self.bot.get_channel(archive_channel_id)
+                await archive_channel.send(embed=fursona_embed)
+            except discord.Forbidden:
+                pass
+
+        # Delete from modmail
         try:
-            archive_channel = self.bot.get_channel(archive_channel_id)
-            await archive_channel.send(embed=fursona_embed)
-        except discord.Forbidden:
+            await message.delete()
+        except discord.NotFound:
             pass
 
         # Tell the user about it

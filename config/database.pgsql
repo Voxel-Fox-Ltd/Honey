@@ -1,7 +1,6 @@
 CREATE TABLE guild_settings(
     guild_id BIGINT PRIMARY KEY,
     prefix VARCHAR(30),
-
     verified_role_id BIGINT,  -- The role verified members get
     fursona_modmail_channel_id BIGINT,  -- The ID of the channel sonas are sent to be approved
     fursona_decline_archive_channel_id BIGINT,  -- The archive for declined sonas
