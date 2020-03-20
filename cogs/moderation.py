@@ -46,7 +46,7 @@ class Moderation(utils.Cog):
 
         # Mutes the user
         await ctx.send(embed=discord.Embed(title="Muted indefinitely!", description=f"{user.mention} has been muted by {ctx.author.mention} for {reason}"))
-        await user.add_roles(get_role(self.bot.guild_settings[ctx.guild_id]["muted_role_id"]), reason=reason)
+        await user.add_roles(self.bot.get_role(self.bot.guild_settings[ctx.guild_id]["muted_role_id"]), reason=reason)
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)
