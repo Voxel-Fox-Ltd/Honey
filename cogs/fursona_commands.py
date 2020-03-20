@@ -265,13 +265,47 @@ class FursonaComamnds(utils.Cog):
 
         user = user or ctx.author
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, user.id)
+            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND index=$3", ctx.guild.id, user.id, 0)
         if not rows:
             return await ctx.send(f"{user.mention} has no sona set up on this server.")
         if rows[0]['verified'] is False:
             return await ctx.send(f"{user.mention}'s sona has not yet been verified.")
         sona = utils.Fursona(**rows[0])
         return await ctx.send(embed=sona.get_embed(mention_user=True))
+
+    @commands.command(cls=utils.Command, ignore_extra=False)
+    @commands.guild_only()
+    async def deletesona(self, ctx:utils.Context):
+        """Deletes your sona"""
+
+        db = await self.bot.database.get_connection()
+
+        # See if they have a sona already
+        rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND index=$3", ctx.guild.id, ctx.author.id, 0)
+        if not rows:
+            await db.disconnect()
+            return await ctx.send("You have no sona set for you to delete.")
+
+        # Delete it from pending
+        if rows[0]['verified'] is False:
+            modmail_channel_id = self.bot.guild_settings[ctx.guild.id].get('fursona_modmail_channel_id')
+            if modmail_channel_id is not None:
+                modmail_channel = self.bot.get_channel(modmail_channel_id)
+                if modmail_channel is not None:
+                    found_message = None
+                    async for message in modmail_channel.history():
+                        if message.author.id == self.bot.user.id and message.embeds and message.embeds[0].footer.text.split(' ') == str(ctx.author.id):
+                            found_message = message
+                            break
+                    try:
+                        await found_message.delete()
+                    except (discord.Forbidden, AttributeError):
+                        pass
+
+        # Delete it from db
+        await db("DELETE FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND index=$3", ctx.guild.id, ctx.author.id, 0)
+        await db.disconnect()
+        return await ctx.send("Deleted your sona.")
 
 
 def setup(bot:utils.Bot):
