@@ -1,9 +1,10 @@
 CREATE TABLE guild_settings(
     guild_id BIGINT PRIMARY KEY,
     prefix VARCHAR(30)
+    muted_role_id BIGINT -- The role muted members get
 );
 
-CREATE TYPE type AS ENUM ('warn', 'kick', 'ban')
+CREATE TYPE type AS ENUM ('mute', 'warn', 'kick', 'ban')
 
 CREATE TABLE infractions(
     guild_id BIGINT

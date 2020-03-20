@@ -28,6 +28,25 @@ class Moderation(utils.Cog):
                 is_valid = await db("SELECT infraction_id FROM infractions WHERE infraction_id = $1", code)
                 if len(is_valid) == 0:
                     return code
+    
+    @commands.command(cls=utils.Command)
+    @commands.has_permissions(manage_messages=True)
+    @commands.bot_has_permissions(manage_messages=True)
+    async def mute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
+        """Mutes a user from the server"""
+
+        # Chuck this bad boy in INFRACTIONS
+        async with self.bot.database() as db:
+            code = await self.get_code()
+            await db(
+                """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
+                infraction_reason, timestamp) VALUES ($1, $2, 'mute', $3, $4)""",
+                code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
+            )
+
+        # Mutes the user
+        await ctx.send(embed=discord.Embed(title="Muted indefinitely!", description=f"{user.mention} has been muted by {ctx.author.mention} for {reason}"))
+        await user.add_roles(get_role(self.bot.guild_settings[ctx.guild_id]["muted_role_id"]), reason=reason)
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)

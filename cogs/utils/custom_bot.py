@@ -47,6 +47,7 @@ class CustomBot(commands.AutoShardedBot):
         # Set up our default guild settings
         self.DEFAULT_GUILD_SETTINGS = {
             'prefix': self.config['default_prefix'],
+            'muted_role_id': None
         }
 
         # Aiohttp session
