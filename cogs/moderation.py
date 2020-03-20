@@ -1,6 +1,6 @@
 import string
 import random
-import datetime
+from datetime import datetime as dt
 
 import discord
 from discord.ext import commands
@@ -8,7 +8,7 @@ from cogs import utils
 
 
 class Moderation(utils.Cog):
-    
+
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
 
@@ -32,16 +32,17 @@ class Moderation(utils.Cog):
     async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Adds a warning to a user"""
 
-        #Chuck this bad boy in INFRACTIONS
+        # Chuck this bad boy in INFRACTIONS
         async with self.bot.database() as db:
+            code = await self.get_code()
             await db(
-                f"""INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type, infraction_reason, timestamp)
-                VALUES ($1, $2, 'warn', $3, $4)""",
-                get_code(), ctx.guild.id, user.id, ctx.author.id, reason, datetime.datetime().now
+                """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
+                infraction_reason, timestamp) VALUES ($1, $2, 'warn', $3, $4)""",
+                code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
             )
-        #Do things
+
+        # Warn the user
         await ctx.send(embed=discord.Embed(title="Warning Given", description=f"{user.mention} has been warned by {ctx.author.mention} for {reason}"))
-        
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)
@@ -49,14 +50,16 @@ class Moderation(utils.Cog):
     async def kick(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Kicks a user from the server"""
 
-        #Chuck this bad boy in INFRACTIONS
+        # Chuck this bad boy in INFRACTIONS
         async with self.bot.database() as db:
+            code = await self.get_code()
             await db(
-                f"""INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type, infraction_reason, timestamp)
-                VALUES ($1, $2, 'kick', $3, $4)""",
-                get_code(), ctx.guild.id, user.id, ctx.author.id, reason, datetime.datetime().now
+                """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
+                infraction_reason, timestamp) VALUES ($1, $2, 'kick', $3, $4)""",
+                code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
             )
-        #Kick the user
+
+        # Kick the user
         await ctx.send(embed=discord.Embed(title="Kicked!", description=f"{user.mention} has been kicked by {ctx.author.mention} for {reason}"))
         await ctx.guild.kick(user, reason)
 
@@ -66,16 +69,19 @@ class Moderation(utils.Cog):
     async def ban(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Bans a user from the server"""
 
-        #Chuck this bad boy in INFRACTIONS
+        # Chuck this bad boy in INFRACTIONS
         async with self.bot.database() as db:
+            code = await self.get_code()
             await db(
-                f"""INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type, infraction_reason, timestamp)
-                VALUES ($1, $2, 'ban', $3, $4)""",
-                get_code(), ctx.guild.id, user.id, ctx.author.id, reason, datetime.datetime().now
+                """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
+                infraction_reason, timestamp) VALUES ($1, $2, 'ban', $3, $4)""",
+                code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
             )
-        #Kick the user
+
+        # Ban the user
         await ctx.send(embed=discord.Embed(title="Banned!", description=f"{user.mention} has been banned by {ctx.author.mention} for {reason}"))
         await ctx.guild.ban(user, reason, delete_message_days=7)
+
 
 def setup(bot:utils.Bot):
     x = Moderation(bot)
