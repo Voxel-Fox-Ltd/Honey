@@ -52,6 +52,7 @@ class CustomBot(commands.AutoShardedBot):
             'fursona_decline_archive_channel_id': None,
             'fursona_accept_archive_channel_id': None,
             'fursona_accept_nsfw_archive_channel_id': None,
+            'muted_role_id': None,
         }
 
         # Aiohttp session
