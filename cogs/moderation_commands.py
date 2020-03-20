@@ -7,7 +7,7 @@ from discord.ext import commands
 from cogs import utils
 
 
-class Moderation(utils.Cog):
+class ModerationCommands(utils.Cog):
 
     async def get_code(self, db, n:int=5) -> str:
         """This method creates a randomisied string to use as the infraction identifier.
@@ -150,5 +150,5 @@ class Moderation(utils.Cog):
 
 
 def setup(bot:utils.Bot):
-    x = Moderation(bot)
+    x = ModerationCommands(bot)
     bot.add_cog(x)
