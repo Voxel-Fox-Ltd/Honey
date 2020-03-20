@@ -30,10 +30,14 @@ class Moderation(utils.Cog):
                     return code
     
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(manage_messages=True)
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
     async def mute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Mutes a user from the server"""
+
+        # Checking if role exists
+        if self.bot.guild_settings[ctx.guild_id]["muted_role_id"] == None:
+            return await ctx.send("No mute role set!")
 
         # Chuck this bad boy in INFRACTIONS
         async with self.bot.database() as db:
@@ -46,7 +50,17 @@ class Moderation(utils.Cog):
 
         # Mutes the user
         await ctx.send(embed=discord.Embed(title="Muted indefinitely!", description=f"{user.mention} has been muted by {ctx.author.mention} for {reason}"))
-        await user.add_roles(self.bot.get_role(self.bot.guild_settings[ctx.guild_id]["muted_role_id"]), reason=reason)
+        await user.add_roles(ctx.guild.get_role(self.bot.guild_settings[ctx.guild_id]["muted_role_id"]), reason=reason)
+    
+    @commands.command(cls=utils.Command)
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def unmute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
+        """Unmutes a user from the server"""
+
+        # Unmutes the user
+        await ctx.send(embed=discord.Embed(title="Unmuted!", description=f"{user.mention} has been unmuted by {ctx.author.mention} for {reason}"))
+        await user.remove_roles(ctx.guild.get_role(self.bot.guild_settings[ctx.guild_id]["muted_role_id"]), reason=reason)
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)
