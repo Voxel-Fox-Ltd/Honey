@@ -258,6 +258,21 @@ class FursonaComamnds(utils.Cog):
         except discord.Forbidden:
             pass
 
+    @commands.command(cls=utils.Command, aliases=['getsona'])
+    @commands.guild_only()
+    async def sona(self, ctx:utils.Context, user:discord.Member=None):
+        """Gets your sona"""
+
+        user = user or ctx.author
+        async with self.bot.database() as db:
+            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, user.id)
+        if not rows:
+            return await ctx.send(f"{user.mention} has no sona set up on this server.")
+        if rows[0]['verified'] is False:
+            return await ctx.send(f"{user.mention}'s sona has not yet been verified.")
+        sona = utils.Fursona(**rows[0])
+        return await ctx.send(embed=sona.get_embed(mention_user=True))
+
 
 def setup(bot:utils.Bot):
     x = FursonaComamnds(bot)
