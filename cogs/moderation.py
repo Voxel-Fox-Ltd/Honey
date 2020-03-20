@@ -24,8 +24,9 @@ class Moderation(utils.Cog):
         code = gen_code(n)
         async with self.bot.database() as db:
             is_valid = await db("SELECT infraction_id FROM infractions WHERE infraction_id = $1", code)
-        if len(is_valid) == 0:
-            return code
+        while True:
+            if len(is_valid) == 0:
+                return code
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)
