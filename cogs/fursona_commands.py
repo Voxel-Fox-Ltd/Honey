@@ -67,8 +67,7 @@ class FursonaComamnds(utils.Cog):
         # See if the user already has a fursona stored
         async with self.bot.database() as db:
             rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
-        if rows:
-            return await ctx.send("You already have a fursona set!")
+        current_sona_names = [row['name'].lower() for row in rows]
 
         # See if they're setting one up already
         if ctx.author.id in self.currently_setting_sonas:
@@ -83,32 +82,49 @@ class FursonaComamnds(utils.Cog):
         self.currently_setting_sonas.add(user.id)
         await ctx.send("Sent you a DM!")
 
-        # Now we wanna ask them each thing wow so fun
+        # Ask about name
         name_message = await self.send_verification_message(user, "What is the name of your sona?")
         if name_message is None:
             return self.currently_setting_sonas.remove(user.id)
+        if name_message.content.lower() in current_sona_names:
+            return user.send(f"You already have a sona with the name `{name_message.content}`. Please start your setup again and provide a different name.")
+
+        # Ask about gender
         gender_message = await self.send_verification_message(user, "What's your sona's gender?")
         if gender_message is None:
             return self.currently_setting_sonas.remove(user.id)
+
+        # Ask about age
         age_message = await self.send_verification_message(user, "How old is your sona?")
         if age_message is None:
             return self.currently_setting_sonas.remove(user.id)
+
+        # Ask about species
         species_message = await self.send_verification_message(user, "What species is your sona?")
         if species_message is None:
             return self.currently_setting_sonas.remove(user.id)
+
+        # Ask about orientation
         orientation_message = await self.send_verification_message(user, "What's your sona's orientation?")
         if orientation_message is None:
             return self.currently_setting_sonas.remove(user.id)
+
+        # Ask about height
         height_message = await self.send_verification_message(user, "How tall is your sona?")
         if height_message is None:
             return self.currently_setting_sonas.remove(user.id)
+
+        # Ask about weight
         weight_message = await self.send_verification_message(user, "What's the weight of your sona?")
         if weight_message is None:
             return self.currently_setting_sonas.remove(user.id)
+
+        # Ask about bio
         bio_message = await self.send_verification_message(user, "What's the bio of your sona?")
         if bio_message is None:
             return self.currently_setting_sonas.remove(user.id)
 
+        # Ask about image
         def check(m) -> bool:
             return all([
                 isinstance(m.channel, discord.DMChannel),
@@ -121,6 +137,8 @@ class FursonaComamnds(utils.Cog):
         image_message = await self.send_verification_message(user, "Do you have an image for your sona? Please post it if you have one (as a link or an attachment), or say `no` to continue without.", check=check)
         if image_message is None:
             return self.currently_setting_sonas.remove(user.id)
+
+        # Ask about NSFW
         check = lambda m: isinstance(m.channel, discord.DMChannel) and m.author.id == user.id and m.content.lower() in ["yes", "no"]
         nsfw_message = await self.send_verification_message(user, "Is your sona NSFW? Please either say `yes` or `no`.", check=check)
         if nsfw_message is None:
@@ -140,7 +158,7 @@ class FursonaComamnds(utils.Cog):
             'weight': weight_message.content,
             'bio': bio_message.content,
             'image': image_content,
-            'nsfw': nsfw_message.content == "yes",
+            'nsfw': nsfw_message.content.lower() == "yes",
         }
         sona_object = utils.Fursona(**information)
 
