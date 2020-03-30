@@ -21,7 +21,7 @@ class ModerationCommands(utils.Cog):
 
         while True:
             code = gen_code(n)
-            is_valid = await db("SELECT infraction_id FROM infractions WHERE infraction_id = $1", code)
+            is_valid = await db("SELECT infraction_id FROM infractions WHERE infraction_id=$1", code)
             if len(is_valid) == 0:
                 return code
 
@@ -48,7 +48,7 @@ class ModerationCommands(utils.Cog):
             code = await self.get_code(db)
             await db(
                 """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
-                infraction_reason, timestamp) VALUES ($1, $2, 'mute', $3, $4)""",
+                infraction_reason, timestamp) VALUES ($1, $2, 'Mute', $3, $4)""",
                 code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
             )
 
@@ -56,7 +56,7 @@ class ModerationCommands(utils.Cog):
         await user.add_roles(mute_role, reason=reason)
         with utils.Embed() as embed:
             embed.title = "Muted indefinitely!"
-            embed.description = f"{user.mention} has been muted by {ctx.author.mention} for {reason}."
+            embed.description = f"{user.mention} has been muted by {ctx.author.mention} with reason `{reason}`."
         return await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command)
@@ -94,14 +94,14 @@ class ModerationCommands(utils.Cog):
             code = await self.get_code(db)
             await db(
                 """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
-                infraction_reason, timestamp) VALUES ($1, $2, 'warn', $3, $4)""",
+                infraction_reason, timestamp) VALUES ($1, $2, 'Warn', $3, $4)""",
                 code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
             )
 
         # Warn the user
         with utils.Embed() as embed:
             embed.title = "Warning Given",
-            embed.description = f"{user.mention} has been warned by {ctx.author.mention} for {reason}."
+            embed.description = f"{user.mention} has been warned by {ctx.author.mention} with reason `{reason}`."
         await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command)
@@ -115,7 +115,7 @@ class ModerationCommands(utils.Cog):
             code = await self.get_code(db)
             await db(
                 """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
-                infraction_reason, timestamp) VALUES ($1, $2, 'kick', $3, $4)""",
+                infraction_reason, timestamp) VALUES ($1, $2, 'Kick', $3, $4)""",
                 code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
             )
 
@@ -123,7 +123,7 @@ class ModerationCommands(utils.Cog):
         await ctx.guild.kick(user, reason=reason)
         with utils.Embed() as embed:
             embed.title = "Kicked!"
-            embed.description = f"{user.mention} has been kicked by {ctx.author.mention} for {reason}."
+            embed.description = f"{user.mention} has been kicked by {ctx.author.mention} with reason `{reason}`."
         await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command)
@@ -137,7 +137,7 @@ class ModerationCommands(utils.Cog):
             code = await self.get_code(db)
             await db(
                 """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
-                infraction_reason, timestamp) VALUES ($1, $2, 'ban', $3, $4)""",
+                infraction_reason, timestamp) VALUES ($1, $2, 'Ban', $3, $4)""",
                 code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
             )
 
@@ -145,7 +145,7 @@ class ModerationCommands(utils.Cog):
         await ctx.guild.ban(user, reason, delete_message_days=7)
         with utils.Embed() as embed:
             embed.title = "Banned!"
-            embed.description = f"{user.mention} has been banned by {ctx.author.mention} for {reason}."
+            embed.description = f"{user.mention} has been banned by {ctx.author.mention} with reason `{reason}`."
         await ctx.send(embed=embed)
 
 
