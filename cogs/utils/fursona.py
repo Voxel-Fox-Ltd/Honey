@@ -6,11 +6,10 @@ class Fursona(object):
 
     def __init__(self, guild_id:int, user_id:int, name:str, gender:str, age:str, species:str,
                  orientation:str, height:str, weight:str, bio:str, image:str, nsfw:bool=False,
-                 verified:bool=False, index:int=0
+                 verified:bool=False,
                  ):
         self.guild_id = guild_id
         self.user_id = user_id
-        self.index = index
         self.name = name
         self.gender = gender
         self.age = age
@@ -29,7 +28,8 @@ class Fursona(object):
         with Embed() as embed:
             if mention_user:
                 embed.add_field("Discord", f"<@{self.user_id}>")
-            embed.add_field("Name", self.name)
+            # embed.add_field("Name", self.name)
+            embed.title = self.name
             embed.add_field("Gender", self.gender)
             embed.add_field("Age", self.age)
             embed.add_field("Species", self.species)
@@ -39,19 +39,19 @@ class Fursona(object):
             embed.add_field("Bio", self.bio, inline=False)
             if self.image and add_image:
                 embed.set_image(url=self.image)
-            embed.set_footer(f"Fursona of {self.user_id} | {'NSFW' if self.nsfw else 'SFW'} | Index {self.index}")
+            embed.set_footer(f"Fursona of {self.user_id} | {'NSFW' if self.nsfw else 'SFW'}")
         return embed
 
     async def save(self, db):
         """Saves the local fursona object into the database"""
 
         await db(
-            """INSERT INTO fursonas (guild_id, user_id, index, name, gender, age,
+            """INSERT INTO fursonas (guild_id, user_id, name, gender, age,
             species, orientation, height, weight, bio, image, nsfw, verified)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) ON CONFLICT
-            (guild_id, user_id, index) DO UPDATE set name=excluded.name, gender=excluded.gender, age=excluded.age,
+            (guild_id, user_id, name) DO UPDATE SET gender=excluded.gender, age=excluded.age,
             species=excluded.age, orientation=excluded.orientation, height=excluded.height, weight=excluded.weight,
             bio=excluded.bio, image=excluded.image, nsfw=excluded.nsfw, verified=excluded.verified""",
-            self.guild_id, self.user_id, self.index, self.name, self.gender, self.age, self.species,
+            self.guild_id, self.user_id, self.name, self.gender, self.age, self.species,
             self.orientation, self.height, self.weight, self.bio, self.image, self.nsfw, self.verified,
         )

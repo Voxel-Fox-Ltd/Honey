@@ -13,7 +13,6 @@ CREATE TABLE guild_settings(
 CREATE TABLE fursonas(
     guild_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    index BIGINT NOT NULL DEFAULT 0,
     name VARCHAR(200) NOT NULL,
     gender VARCHAR(200) NOT NULL,
     age VARCHAR(200) NOT NULL,
@@ -25,7 +24,7 @@ CREATE TABLE fursonas(
     image VARCHAR(200),
     nsfw BOOLEAN DEFAULT FALSE,
     verified BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (guild_id, user_id, index)
+    PRIMARY KEY (guild_id, user_id, name)
 );
 
 

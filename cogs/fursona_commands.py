@@ -131,7 +131,6 @@ class FursonaComamnds(utils.Cog):
         information = {
             'guild_id': ctx.guild.id,
             'user_id': user.id,
-            'index': 0,
             'name': name_message.content,
             'gender': gender_message.content,
             'age': age_message.content,
@@ -203,7 +202,7 @@ class FursonaComamnds(utils.Cog):
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
         fursona_embed = message.embeds[0]
         fursona_user_id = int(fursona_embed.footer.text.split(' ')[2])
-        fursona_index = int(fursona_embed.footer.text.split(' ')[7])
+        fursona_name = fursona_embed.title
         fursona_member = self.bot.get_guild(payload.guild_id).get_member(fursona_user_id)
         if fursona_member is None:
             self.logger.info(f"No member could be found - message {payload.message_id}")
@@ -231,9 +230,9 @@ class FursonaComamnds(utils.Cog):
         # Update the information
         async with self.bot.database() as db:
             if verified is False:
-                await db("DELETE FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND index=$3", payload.guild_id, fursona_member.id, fursona_index)
+                await db("DELETE FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND name=$3", payload.guild_id, fursona_member.id, fursona_name)
             else:
-                await db("UPDATE fursonas SET verified=true, nsfw=$4 WHERE guild_id=$1 AND user_id=$2 AND index=$3", payload.guild_id, fursona_member.id, fursona_index, nsfw)
+                await db("UPDATE fursonas SET verified=true, nsfw=$4 WHERE guild_id=$1 AND user_id=$2 AND name=$3", payload.guild_id, fursona_member.id, fursona_name, nsfw)
 
         # Post it to the archive
         if archive_channel_id:
@@ -252,39 +251,59 @@ class FursonaComamnds(utils.Cog):
         # Tell the user about it
         try:
             if verified:
-                await fursona_member.send(f"Your fursona on **{fursona_member.guild.name}** has been accepted!")
+                await fursona_member.send(f"Your fursona, `{fursona_name}`, on **{fursona_member.guild.name}** has been accepted!")
             else:
-                await fursona_member.send(f"Your fursona on **{fursona_member.guild.name}** has been declined.")
+                await fursona_member.send(f"Your fursona, `{fursona_name}`, on **{fursona_member.guild.name}** has been declined.")
         except discord.Forbidden:
             pass
 
     @commands.command(cls=utils.Command, aliases=['getsona'])
     @commands.guild_only()
-    async def sona(self, ctx:utils.Context, user:discord.Member=None):
+    async def sona(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, name:str=None):
         """Gets your sona"""
 
+        # Get the sonas
         user = user or ctx.author
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND index=$3", ctx.guild.id, user.id, 0)
+            if name is None:
+                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, user.id)
+            else:
+                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", ctx.guild.id, user.id, name)
+
+        # Check if they have a valid sona
         if not rows:
             return await ctx.send(f"{user.mention} has no sona set up on this server.")
+        elif len(rows) > 1:
+            available_sonas = [i['name'] for i in rows]
+            available_string = ', '.join(f"`{name}`" for name in available_sonas)
+            return await ctx.send(f"{user.mention} has more than one sona set - please get their sona using its name. Available sonas: {available_string}")
         if rows[0]['verified'] is False:
             return await ctx.send(f"{user.mention}'s sona has not yet been verified.")
+
+        # Wew it's sona time let's go
         sona = utils.Fursona(**rows[0])
         return await ctx.send(embed=sona.get_embed(mention_user=True))
 
     @commands.command(cls=utils.Command, ignore_extra=False)
     @commands.guild_only()
-    async def deletesona(self, ctx:utils.Context):
+    async def deletesona(self, ctx:utils.Context, *, name:str=None):
         """Deletes your sona"""
 
         db = await self.bot.database.get_connection()
 
         # See if they have a sona already
-        rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND index=$3", ctx.guild.id, ctx.author.id, 0)
+        if name is None:
+            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
+        else:
+            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", ctx.guild.id, ctx.author.id, name)
         if not rows:
             await db.disconnect()
             return await ctx.send("You have no sona set for you to delete.")
+        elif len(rows) > 1:
+            await db.disconnect()
+            available_sonas = [i['name'] for i in rows]
+            available_string = ', '.join(f"`{name}`" for name in available_sonas)
+            return await ctx.send(f"You have multiple sonas - please specify which you want to delete. Available sonas: {available_string}")
 
         # Delete it from pending
         if rows[0]['verified'] is False:
@@ -303,7 +322,7 @@ class FursonaComamnds(utils.Cog):
                         pass
 
         # Delete it from db
-        await db("DELETE FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND index=$3", ctx.guild.id, ctx.author.id, 0)
+        await db("DELETE FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", ctx.guild.id, ctx.author.id, name)
         await db.disconnect()
         return await ctx.send("Deleted your sona.")
 
