@@ -48,7 +48,7 @@ class Fursona(object):
         await db(
             """INSERT INTO fursonas (guild_id, user_id, name, gender, age,
             species, orientation, height, weight, bio, image, nsfw, verified)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) ON CONFLICT
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) ON CONFLICT
             (guild_id, user_id, name) DO UPDATE SET gender=excluded.gender, age=excluded.age,
             species=excluded.age, orientation=excluded.orientation, height=excluded.height, weight=excluded.weight,
             bio=excluded.bio, image=excluded.image, nsfw=excluded.nsfw, verified=excluded.verified""",

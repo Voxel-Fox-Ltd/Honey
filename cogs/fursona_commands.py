@@ -232,7 +232,7 @@ class FursonaComamnds(utils.Cog):
         nsfw = False
         archive_channel_id = None
         if emoji == "\N{HEAVY MULTIPLICATION X}":
-            pass
+            archive_channel_id = guild_settings.get("fursona_decline_archive_channel_id")
         elif emoji == "\N{HEAVY CHECK MARK}":
             archive_channel_id = guild_settings.get("fursona_accept_archive_channel_id")
             verified = True
@@ -256,7 +256,13 @@ class FursonaComamnds(utils.Cog):
         if archive_channel_id:
             try:
                 archive_channel = self.bot.get_channel(archive_channel_id)
-                await archive_channel.send(embed=fursona_embed)
+                if verified:
+                    text = f"Sona of {fursona_member.mention} approved by <@{payload.user_id}>"
+                    archive_embed = fursona_embed
+                else:
+                    text = f"Sona of {fursona_member.mention} declined by <@{payload.user_id}>"
+                    archive_embed = None
+                await archive_channel.send(text, embed=archive_embed)
             except discord.Forbidden:
                 pass
 
@@ -297,6 +303,8 @@ class FursonaComamnds(utils.Cog):
             return await ctx.send(f"{user.mention} has more than one sona set - please get their sona using its name. Available sonas: {available_string}")
         if rows[0]['verified'] is False:
             return await ctx.send(f"{user.mention}'s sona has not yet been verified.")
+        if rows[0]['nsfw'] is True and ctx.channel.nsfw is False:
+            return await ctx.send("I can't show NSFW sonas in a SFW channel.")
 
         # Wew it's sona time let's go
         sona = utils.Fursona(**rows[0])

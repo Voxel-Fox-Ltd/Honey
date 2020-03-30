@@ -49,7 +49,7 @@ class BotSettings(utils.Cog):
         key = key.lower()
         channel = channel or ctx.channel
         async with self.bot.database() as db:
-            await db(f"INSERT INTO guild_settings (guild_id, {key}) VALUES ($1, $2)", ctx.guild.id, channel.id)
+            await db(f"INSERT INTO guild_settings (guild_id, {key}) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET {key}=excluded.{key}", ctx.guild.id, channel.id)
         self.bot.guild_settings[ctx.guild.id][key] = channel.id
         return await ctx.send("Updated guild settings.")
 

@@ -37,7 +37,7 @@ class MiscCommands(utils.Cog):
     async def invite(self, ctx:utils.Context):
         """Gives you the bot's invite link"""
 
-        await ctx.send(f"<{self.bot.get_invite_link()}>")
+        await ctx.send(f"<{self.bot.get_invite_link(embed_links=True, attach_files=True, manage_roles=True, kick_members=True, ban_members=True)}>")
 
     @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
