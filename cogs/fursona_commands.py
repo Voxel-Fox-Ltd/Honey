@@ -292,7 +292,7 @@ class FursonaComamnds(utils.Cog):
         if not rows:
             return await ctx.send(f"{user.mention} has no sona set up on this server.")
         elif len(rows) > 1:
-            available_sonas = [i['name'] for i in rows]
+            available_sonas = [i['name'].replace('`', '\\`').replace('*', '\\*').replace('_', '\\_') for i in rows]
             available_string = ', '.join(f"`{name}`" for name in available_sonas)
             return await ctx.send(f"{user.mention} has more than one sona set - please get their sona using its name. Available sonas: {available_string}")
         if rows[0]['verified'] is False:
@@ -319,7 +319,7 @@ class FursonaComamnds(utils.Cog):
             return await ctx.send("You have no sona set for you to delete.")
         elif len(rows) > 1:
             await db.disconnect()
-            available_sonas = [i['name'] for i in rows]
+            available_sonas = [i['name'].replace('`', '\\`').replace('*', '\\*').replace('_', '\\_') for i in rows]
             available_string = ', '.join(f"`{name}`" for name in available_sonas)
             return await ctx.send(f"You have multiple sonas - please specify which you want to delete. Available sonas: {available_string}")
 
