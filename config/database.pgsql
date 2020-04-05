@@ -28,15 +28,15 @@ CREATE TABLE fursonas(
 );
 
 
-CREATE TYPE type AS ENUM ('Mute', 'Warn', 'Kick', 'Ban')
+CREATE TYPE type AS ENUM ('Mute', 'Warn', 'Kick', 'Ban');
 
 
 CREATE TABLE infractions(
-    guild_id BIGINT
-    moderator_id BIGINT
-    user_id BIGINT
-    infraction_id VARCHAR(10) PRIMARY KEY
-    infraction_type type
-    infraction_reason VARCHAR(60)
+    infraction_id VARCHAR(10) PRIMARY KEY,
+    guild_id BIGINT,
+    moderator_id BIGINT,
+    user_id BIGINT,
+    infraction_type type,
+    infraction_reason VARCHAR(60),
     timestamp timestamp
-)
+);
