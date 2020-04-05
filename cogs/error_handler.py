@@ -97,6 +97,10 @@ class ErrorHandler(utils.Cog):
         elif isinstance(error, commands.NotOwner):
             return await ctx.send("You need to be registered as an owner to run this command.")
 
+        # If they're trying to run an interaction on themselves
+        elif isinstance(error, utils.errors.MemberIsAuthorError):
+            return await ctx.send("You can't run this command on yourself.")
+
         # Argument conversion error
         elif isinstance(error, commands.BadArgument):
             return await ctx.send(str(error))
