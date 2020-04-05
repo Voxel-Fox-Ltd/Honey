@@ -96,6 +96,12 @@ class BotSettings(utils.Cog):
             if key is None:
                 return await ctx.send("Alright, done setting up!")
 
+            # Try and remove their reaction
+            try:
+                await message.remove_reaction(r, ctx.author)
+            except discord.Forbidden:
+                pass
+
             # And do some settin up
             v = await self.set_data(ctx, key[0], key[1])
             if v is None:
