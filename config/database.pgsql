@@ -6,6 +6,7 @@ CREATE TABLE guild_settings(
     fursona_decline_archive_channel_id BIGINT,  -- The archive for declined sonas
     fursona_accept_archive_channel_id BIGINT,  -- The archive for accepted sfw sonas
     fursona_accept_nsfw_archive_channel_id BIGINT,  -- The archive for accepted nsfw sonas
+    modmail_channel_id BIGINT,  -- The channel ID for mod actions to be posted to
     muted_role_id BIGINT -- The role muted members get
 );
 
@@ -28,7 +29,7 @@ CREATE TABLE fursonas(
 );
 
 
-CREATE TYPE type AS ENUM ('Mute', 'Warn', 'Kick', 'Ban');
+CREATE TYPE type AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute');
 
 
 CREATE TABLE infractions(

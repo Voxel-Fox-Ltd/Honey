@@ -1,152 +1,252 @@
 import string
 import random
 from datetime import datetime as dt
+import typing
 
 import discord
 from discord.ext import commands
+
 from cogs import utils
 
 
 class ModerationCommands(utils.Cog):
 
-    async def get_code(self, db, n:int=5) -> str:
+    @staticmethod
+    async def get_unused_infraction_id(db, n:int=5) -> str:
         """This method creates a randomisied string to use as the infraction identifier.
 
         Input Argument: n - Must be int
         Returns: A string n long
         """
 
-        def gen_code(n):
+        def create_code(n):
             return ''.join(random.choices(string.ascii_lowercase + string.digits, k=n))
 
         while True:
-            code = gen_code(n)
+            code = create_code(n)
             is_valid = await db("SELECT infraction_id FROM infractions WHERE infraction_id=$1", code)
-            if len(is_valid) == 0:
+            if not is_valid:
                 return code
+
+    @utils.Cog.listener()
+    async def on_moderator_action(self, moderator:discord.Member, user:discord.User, reason:str, action:str):
+        """Looks for moderator actions being done and logs them into the relevant channel"""
+
+        # Save to database
+        async with self.bot.database() as db:
+            code = await self.get_unused_infraction_id(db)
+            await db(
+                """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
+                infraction_reason, timestamp) VALUES ($1, $2, $3, $4, $5)""",
+                code, moderator.guild.id, user.id, moderator.id, action, reason, dt.utcnow(),
+            )
+
+        # Get log channel
+        log_channel_id = self.bot.guild_settings[moderator.guild_id].get("modmail_channel_id", None)
+        log_channel = self.bot.get_channel(log_channel_id)
+        if log_channel is None:
+            return
+
+        # Make info embed
+        with utils.Embed() as embed:
+            embed.title = action
+            embed.add_field("Moderator", f"{moderator.mention} (`{moderator.id}`)")
+            embed.add_field("User", f"<@{user.id}> (`{user.id}`)")
+            embed.add_field("Reason", reason, inline=False)
+
+        # Send to channel
+        try:
+            await log_channel.send(embed=embed)
+        except discord.Forbidden:
+            pass
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
+    @commands.guild_only()
     async def mute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Mutes a user from the server"""
 
         # Check if role exists
-        muted_role_id = self.bot.guild_settings[ctx.guild_id].get("muted_role_id")
+        muted_role_id = self.bot.guild_settings[ctx.guild_id].get("muted_role_id", None)
         if muted_role_id is None:
-            return await ctx.send("You have no mute role set.")
+            return await ctx.send("There is no mute role set for this server.")
+
+        # Check the user can run the command on who they want
+        if user.top_role.position >= user.top_role.position:
+            return await ctx.send("That user is too highly ranked for you to be able to punish them.")
+        if user.top_role.position >= ctx.guild.me.top_role.position:
+            return await ctx.send("That user is too highly ranked for me to be able to punish them.")
 
         # Grab the mute role
         mute_role = ctx.guild.get_role(muted_role_id)
         if mute_role is None:
-            return await ctx.send("You have no mute role set.")
+            return await ctx.send("The mute role for this server is set to a deleted role.")
         if mute_role in user.roles:
             return await ctx.send(f"{user.mention} is already muted.")
+        if mute_role.position >= ctx.guild.me.top_role.position:
+            return await ctx.send("The mute role is too high for me to manage.")
 
-        # Throw the reason into the database
-        async with self.bot.database() as db:
-            code = await self.get_code(db)
-            await db(
-                """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
-                infraction_reason, timestamp) VALUES ($1, $2, 'Mute', $3, $4)""",
-                code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
-            )
+        # DM the user
+        dm_reason = f"You have been muted in **{ctx.guild.name}** with the reason `{reason}`."
+        try:
+            await user.send(dm_reason)
+        except discord.Forbidden:
+            pass  # Can't DM the user? Oh well
 
         # Mute the user
-        await user.add_roles(mute_role, reason=reason)
-        with utils.Embed() as embed:
-            embed.title = "Muted indefinitely!"
-            embed.description = f"{user.mention} has been muted by {ctx.author.mention} with reason `{reason}`."
-        return await ctx.send(embed=embed)
+        manage_reason = f"{ctx.author!s}: {reason}"
+        try:
+            await user.add_roles(mute_role, reason=manage_reason)
+        except discord.Forbidden:
+            return await ctx.send(f"I was unable to add the mute role to {user.mention}.")
+        except discord.NotFound:
+            return await ctx.send("To me it looks like that user doesn't exist :/")
+
+        # Throw the reason into the database
+        self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Mute")
+
+        # Output to chat
+        return await ctx.send(f"{user.mention} has been muted by {ctx.author.mention} with reason `{reason}`.")
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
-    async def unmute(self, ctx:utils.Context, user:discord.Member):
+    @commands.guild_only()
+    async def unmute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Unmutes a user"""
 
         # Check if role exists
-        muted_role_id = self.bot.guild_settings[ctx.guild_id].get("muted_role_id")
+        muted_role_id = self.bot.guild_settings[ctx.guild_id].get("muted_role_id", None)
         if muted_role_id is None:
-            return await ctx.send("You have no mute role set.")
+            return await ctx.send("There is no mute role set for this server.")
+
+        # Check the user can run the command on who they want
+        if user.top_role.position >= user.top_role.position:
+            return await ctx.send("That user is too highly ranked for you to be able to punish them.")
+        if user.top_role.position >= ctx.guild.me.top_role.position:
+            return await ctx.send("That user is too highly ranked for me to be able to punish them.")
 
         # Grab the mute role
         mute_role = ctx.guild.get_role(muted_role_id)
         if mute_role is None:
-            return await ctx.send("You have no mute role set.")
+            return await ctx.send("The mute role for this server is set to a deleted role.")
         if mute_role not in user.roles:
             return await ctx.send(f"{user.mention} is not muted.")
+        if mute_role.position >= ctx.guild.me.top_role.position:
+            return await ctx.send("The mute role is too high for me to manage.")
 
-        # Unmute the user
-        await user.remove_roles(mute_role)
-        with utils.Embed() as embed:
-            embed.title = "Unmuted!"
-            embed.description = f"{user.mention} has been unmuted by {ctx.author.mention}."
-        return await ctx.send(embed=embed)
+        # DM the user
+        dm_reason = f"You have been unmuted in **{ctx.guild.name}** with the reason `{reason}`."
+        try:
+            await user.send(dm_reason)
+        except discord.Forbidden:
+            pass  # Can't DM the user? Oh well
+
+        # Mute the user
+        manage_reason = f"{ctx.author!s}: {reason}"
+        try:
+            await user.remove_roles(mute_role, reason=manage_reason)
+        except discord.Forbidden:
+            return await ctx.send(f"I was unable to remove the mute role from {user.mention}.")
+        except discord.NotFound:
+            return await ctx.send("To me it looks like that user doesn't exist :/")
+
+        # Throw the reason into the database
+        self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Unmute")
+
+        # Output to chat
+        return await ctx.send(f"{user.mention} has been unmuted by {ctx.author.mention}.")
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)
-    async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
+    @commands.guild_only()
+    async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str):
         """Adds a warning to a user"""
 
         # Throw the reason into the database
-        async with self.bot.database() as db:
-            code = await self.get_code(db)
-            await db(
-                """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
-                infraction_reason, timestamp) VALUES ($1, $2, 'Warn', $3, $4)""",
-                code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
-            )
+        self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Warn")
 
         # Warn the user
-        with utils.Embed() as embed:
-            embed.title = "Warning Given",
-            embed.description = f"{user.mention} has been warned by {ctx.author.mention} with reason `{reason}`."
-        await ctx.send(embed=embed)
+        return await ctx.send(f"{user.mention} has been warned by {ctx.author.mention} with reason `{reason}`.")
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
+    @commands.guild_only()
     async def kick(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Kicks a user from the server"""
 
-        # Throw the reason into the database
-        async with self.bot.database() as db:
-            code = await self.get_code(db)
-            await db(
-                """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
-                infraction_reason, timestamp) VALUES ($1, $2, 'Kick', $3, $4)""",
-                code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
-            )
+        # Check the user can run the command on who they want
+        if user.top_role.position >= user.top_role.position:
+            return await ctx.send("That user is too highly ranked for you to be able to punish them.")
+        if user.top_role.position >= ctx.guild.me.top_role.position:
+            return await ctx.send("That user is too highly ranked for me to be able to punish them.")
+
+        # DM the user
+        dm_reason = f"You have been kicked from **{ctx.guild.name}** with the reason `{reason}`."
+        try:
+            await user.send(dm_reason)
+        except discord.Forbidden:
+            pass  # Can't DM the user? Oh well
 
         # Kick the user
-        await ctx.guild.kick(user, reason=reason)
-        with utils.Embed() as embed:
-            embed.title = "Kicked!"
-            embed.description = f"{user.mention} has been kicked by {ctx.author.mention} with reason `{reason}`."
-        await ctx.send(embed=embed)
+        manage_reason = f"{ctx.author!s}: {reason}"
+        try:
+            await user.kick(reason=manage_reason)
+        except discord.Forbidden:
+            return await ctx.send(f"I was unable to kick {user.mention}.")
+        except discord.NotFound:
+            return await ctx.send("To me it looks like that user doesn't exist :/")
+
+        # Throw the reason into the database
+        self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Kick")
+
+        # Output to chat
+        return await ctx.send(f"{user.mention} has been kicked by {ctx.author.mention} with reason `{reason}`.")
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
-    async def ban(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
+    @commands.guild_only()
+    async def ban(self, ctx:utils.Context, user:typing.Union[discord.Member, int], *, reason:str='<No reason provided>'):
         """Bans a user from the server"""
 
-        # Throw the reason into the database
-        async with self.bot.database() as db:
-            code = await self.get_code(db)
-            await db(
-                """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
-                infraction_reason, timestamp) VALUES ($1, $2, 'Ban', $3, $4)""",
-                code, ctx.guild.id, user.id, ctx.author.id, reason, dt.utcnow(),
-            )
+        # Do some setup here for users not in the server
+        if isinstance(user, int):
+            user_in_guild = False
+            user = discord.Object(user)
+        else:
+            user_in_guild = True
 
-        # Ban the user
-        await ctx.guild.ban(user, reason, delete_message_days=7)
-        with utils.Embed() as embed:
-            embed.title = "Banned!"
-            embed.description = f"{user.mention} has been banned by {ctx.author.mention} with reason `{reason}`."
-        await ctx.send(embed=embed)
+        # Check the user can run the command on who they want
+        if user_in_guild and user.top_role.position >= user.top_role.position:
+            return await ctx.send("That user is too highly ranked for you to be able to punish them.")
+        if user_in_guild and user.top_role.position >= ctx.guild.me.top_role.position:
+            return await ctx.send("That user is too highly ranked for me to be able to punish them.")
+
+        # DM the user
+        if user_in_guild:
+            dm_reason = f"You have been kicked from **{ctx.guild.name}** with the reason `{reason}`."
+            try:
+                await user.send(dm_reason)
+            except discord.Forbidden:
+                pass  # Can't DM the user? Oh well
+
+        # Kick the user
+        manage_reason = f"{ctx.author!s}: {reason}"
+        try:
+            await ctx.guild.ban(user, reason=manage_reason)
+        except discord.Forbidden:
+            return await ctx.send(f"I was unable to ban {user.mention}.")
+        except discord.NotFound:
+            return await ctx.send("To me it looks like that user doesn't exist :/")
+
+        # Throw the reason into the database
+        self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Ban")
+
+        # Output to chat
+        await ctx.send(f"{user.mention} has been banned by {ctx.author.mention} with reason `{reason}`.")
 
 
 def setup(bot:utils.Bot):
