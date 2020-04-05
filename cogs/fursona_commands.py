@@ -1,6 +1,7 @@
 import asyncio
 import re
 import typing
+import json
 
 import discord
 from discord.ext import commands
@@ -147,8 +148,6 @@ class FursonaComamnds(utils.Cog):
         # Format that into data
         image_content = None if image_message.content.lower() == "no" else self.get_image_from_message(image_message)
         information = {
-            'guild_id': ctx.guild.id,
-            'user_id': user.id,
             'name': name_message.content,
             'gender': gender_message.content,
             'age': age_message.content,
@@ -160,13 +159,31 @@ class FursonaComamnds(utils.Cog):
             'image': image_content,
             'nsfw': nsfw_message.content.lower() == "yes",
         }
+        self.currently_setting_sonas.remove(user.id)
+        return await self.bot.get_command("setsonabyjson").invoke(ctx, json.dumps(information))
+
+    @commands.command(cls=utils.Command, hidden=True)
+    @commands.guild_only()
+    async def setsonabyjson(self, ctx:utils.Context, *, data:str):
+        """Lets you set your sona with a JSON string
+        Valid keys are: name, gender, age, species, orientation, height, weight, bio, image, and nsfw.
+        NSFW must be a boolean. All fields must be filled (apart from image, which must be a provided key but can contain
+        a null value)
+        """
+
+        # Load up the information
+        information = json.loads(data)
+        information.update({
+            'guild_id': ctx.guild.id,
+            'user_id': ctx.author.id,
+        })
         sona_object = utils.Fursona(**information)
 
         # Send it back to the user so we can make sure it sends
+        user = ctx.author
         try:
             await user.send(embed=sona_object.get_embed())
         except discord.HTTPException as e:
-            self.currently_setting_sonas.remove(user.id)
             return await user.send(f"I couldn't send that embed to you - `{e}`. Please try again later.")
 
         # Send it to the verification channel
@@ -175,7 +192,6 @@ class FursonaComamnds(utils.Cog):
         if modmail_channel_id:
             modmail_channel = self.bot.get_channel(modmail_channel_id)
             if modmail_channel is None:
-                self.currently_setting_sonas.remove(user.id)
                 return await user.send(f"The moderators for the server **{ctx.guild.name}** have set their fursona modmail channel to an invalid ID - please inform them of such and try again later.")
             try:
                 modmail_message = await modmail_channel.send(f"New sona submission from {user.mention}", embed=sona_object.get_embed())
@@ -188,7 +204,6 @@ class FursonaComamnds(utils.Cog):
                 await modmail_message.add_reaction("\N{SMILING FACE WITH HORNS}")
             except discord.Forbidden:
                 await modmail_message.delete()
-                self.currently_setting_sonas.remove(user.id)
                 return await user.send(f"The moderators for the server **{ctx.guild.name}** have disallowed me from adding reactions in their fursona modmail channel - please inform them of such and try again later.")
 
         # Save sona to database now it's sent properly
@@ -196,7 +211,6 @@ class FursonaComamnds(utils.Cog):
             await sona_object.save(db)
 
         # Tell them everything was done properly
-        self.currently_setting_sonas.remove(user.id)
         if modmail_channel_id:
             return await user.send("Your fursona has been sent to the moderators for approval! Please be patient as they review.")
         return await user.send("Your fursona has been saved!")
