@@ -5,7 +5,7 @@ from discord.ext import commands
 from cogs import utils
 
 
-cooldown = commands.cooldown.RoleBasedGuildCooldown(key="interactions")
+cooldown = utils.cooldown.RoleBasedGuildCooldown(key="interactions")
 
 
 interaction_responses = {
@@ -29,6 +29,7 @@ class InteractionCommands(utils.Cog):
     @commands.command(cls=utils.Command, cooldown_after_parsing=True)
     @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=cooldown)
     @commands.check(command_has_responses)
+    @commands.bot_has_permissions(send_messages=True)
     async def hug(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
         """Allows you to hug a user"""
 

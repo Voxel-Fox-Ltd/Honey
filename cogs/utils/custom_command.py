@@ -55,8 +55,8 @@ class CustomCommand(commands.Command):
             bucket = self._buckets.get_bucket(ctx.message, current)
             try:
                 predicate = bucket.predicate(ctx)
-                if asyncio.iscoroutine(predicate):
-                    predicate = await predicate
+                # if asyncio.iscoroutine(predicate):
+                #     predicate = await bucket.predicate(ctx)
                 if predicate is False:
                     return
             except AttributeError:

@@ -61,6 +61,7 @@ class FursonaComamnds(utils.Cog):
 
     @commands.command(cls=utils.Command)
     @commands.check(utils.checks.is_verified)
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def setsona(self, ctx:utils.Context):
         """Stores your fursona information in the bot"""
@@ -163,6 +164,7 @@ class FursonaComamnds(utils.Cog):
         return await self.bot.get_command("setsonabyjson").invoke(ctx, json.dumps(information))
 
     @commands.command(cls=utils.Command, hidden=True)
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def setsonabyjson(self, ctx:utils.Context, *, data:str):
         """Lets you set your sona with a JSON string
@@ -296,6 +298,7 @@ class FursonaComamnds(utils.Cog):
             pass
 
     @commands.command(cls=utils.Command, aliases=['getsona'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def sona(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, name:str=None):
         """Gets your sona"""
@@ -325,6 +328,7 @@ class FursonaComamnds(utils.Cog):
         return await ctx.send(embed=sona.get_embed(mention_user=True))
 
     @commands.command(cls=utils.Command, ignore_extra=False)
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def deletesona(self, ctx:utils.Context, *, name:str=None):
         """Deletes your sona"""
