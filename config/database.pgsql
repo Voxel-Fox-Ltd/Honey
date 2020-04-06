@@ -29,7 +29,7 @@ CREATE TABLE fursonas(
 );
 
 
-CREATE TYPE type AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute', 'Verify');
+CREATE TYPE type AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute', 'Verify', 'Tempmute');
 
 
 CREATE TABLE infractions(
@@ -40,4 +40,13 @@ CREATE TABLE infractions(
     infraction_type type,
     infraction_reason VARCHAR(60),
     timestamp timestamp
+);
+
+
+CREATE TABLE temporary_roles(
+    guild_id BIGINT,
+    role_id BIGINT,
+    user_id BIGINT,
+    remove_timestamp timestamp,
+    PRIMARY KEY (guild_id, role_id, user_id)
 );
