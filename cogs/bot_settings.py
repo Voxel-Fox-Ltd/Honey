@@ -56,7 +56,8 @@ class BotSettings(utils.Cog):
             # Construct embed
             with utils.Embed() as embed:
                 embed.description = '\n'.join([
-                    "1\N{COMBINING ENCLOSING KEYCAP} Set up database",
+                    "1\N{COMBINING ENCLOSING KEYCAP} Set up channels",
+                    "2\N{COMBINING ENCLOSING KEYCAP} Set up roles",
                 ])
 
             # Send embed
@@ -70,7 +71,8 @@ class BotSettings(utils.Cog):
 
             # Wait for added reaction
             emoji_key_map = {
-                "1\N{COMBINING ENCLOSING KEYCAP}": "setup database",
+                "1\N{COMBINING ENCLOSING KEYCAP}": "setup channels",
+                "2\N{COMBINING ENCLOSING KEYCAP}": "setup roles",
                 self.TICK_EMOJI: None,
             }
             def check(r, u):
@@ -98,12 +100,81 @@ class BotSettings(utils.Cog):
 
             # And do some settin up
             command = self.bot.get_command(key)
+            ctx.invoke_meta = True
             await command.invoke(ctx)
 
     @setup.command(cls=utils.Command)
-    @commands.has_permissions(manage_guild=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True, external_emojis=True)
-    async def database(self, ctx:utils.Context):
+    @utils.checks.meta_command()
+    async def channels(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        message = None
+        while True:
+
+            # Construct embed
+            guild_settings = self.bot.guild_settings[ctx.guild.id]
+            with utils.Embed() as embed:
+                embed.description = '\n'.join([
+                    "1\N{COMBINING ENCLOSING KEYCAP} Set fursona modmail channel (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("fursona_modmail_channel_id")) or MentionableNone("none")),
+                    "2\N{COMBINING ENCLOSING KEYCAP} Set fursona decline archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("fursona_decline_archive_channel_id")) or MentionableNone("none")),
+                    "3\N{COMBINING ENCLOSING KEYCAP} Set fursona accept archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("fursona_accept_archive_channel_id")) or MentionableNone("none")),
+                    "4\N{COMBINING ENCLOSING KEYCAP} Set NSFW fursona accept archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("fursona_accept_nsfw_archive_channel_id")) or MentionableNone("none")),
+                    "5\N{COMBINING ENCLOSING KEYCAP} Set mod action archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("modmail_channel_id")) or MentionableNone("none")),
+                ])
+
+            # Send embed
+            if message is None:
+                message = await ctx.send(embed=embed)
+                for i in range(1, embed.description.count('\n') + 2):
+                    await message.add_reaction(f"{i}\N{COMBINING ENCLOSING KEYCAP}")
+                await message.add_reaction(self.TICK_EMOJI)
+            else:
+                await message.edit(embed=embed)
+
+            # Wait for added reaction
+            emoji_key_map = {
+                "1\N{COMBINING ENCLOSING KEYCAP}": ("fursona_modmail_channel_id", commands.TextChannelConverter, None),
+                "2\N{COMBINING ENCLOSING KEYCAP}": ("fursona_decline_archive_channel_id", commands.TextChannelConverter, None),
+                "3\N{COMBINING ENCLOSING KEYCAP}": ("fursona_accept_archive_channel_id", commands.TextChannelConverter, None),
+                "4\N{COMBINING ENCLOSING KEYCAP}": ("fursona_accept_nsfw_archive_channel_id", commands.TextChannelConverter, None),
+                "5\N{COMBINING ENCLOSING KEYCAP}": ("modmail_channel_id", commands.TextChannelConverter, None),
+                self.TICK_EMOJI: None,
+            }
+            def check(r, u):
+                return u.id == ctx.author.id and r.message.id == message.id and str(r.emoji) in emoji_key_map.keys()
+            try:
+                r, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
+            except asyncio.TimeoutError:
+                return await ctx.send("Timed out setting up database.")
+
+            # See what our key is
+            emoji = str(r.emoji)
+            key = emoji_key_map[emoji]
+            if key is None:
+                try:
+                    await message.delete()
+                except discord.HTTPException:
+                    pass
+                return
+
+            # Try and remove their reaction
+            try:
+                await message.remove_reaction(r, ctx.author)
+            except discord.Forbidden:
+                pass
+
+            # And do some settin up
+            v = await self.set_data(ctx, key[0], key[1], prompt=key[2])
+            if v is None:
+                try:
+                    await message.delete()
+                except discord.HTTPException:
+                    pass
+                return
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def roles(self, ctx:utils.Context):
         """Talks the bot through a setup"""
 
         message = None
@@ -114,14 +185,9 @@ class BotSettings(utils.Cog):
             with utils.Embed() as embed:
                 embed.description = '\n'.join([
                     "1\N{COMBINING ENCLOSING KEYCAP} Set verified role (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("verified_role_id")) or MentionableNone("none")),
-                    "2\N{COMBINING ENCLOSING KEYCAP} Set fursona modmail channel (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("fursona_modmail_channel_id")) or MentionableNone("none")),
-                    "3\N{COMBINING ENCLOSING KEYCAP} Set fursona decline archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("fursona_decline_archive_channel_id")) or MentionableNone("none")),
-                    "4\N{COMBINING ENCLOSING KEYCAP} Set fursona accept archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("fursona_accept_archive_channel_id")) or MentionableNone("none")),
-                    "5\N{COMBINING ENCLOSING KEYCAP} Set NSFW fursona accept archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("fursona_accept_nsfw_archive_channel_id")) or MentionableNone("none")),
-                    "6\N{COMBINING ENCLOSING KEYCAP} Set mod action archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("modmail_channel_id")) or MentionableNone("none")),
-                    "7\N{COMBINING ENCLOSING KEYCAP} Set mute role (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("muted_role_id")) or MentionableNone("none")),
-                    "8\N{COMBINING ENCLOSING KEYCAP} Set custom role master (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_id")) or MentionableNone("none")),
-                    "9\N{COMBINING ENCLOSING KEYCAP} Set custom role position (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_position_id")) or MentionableNone("none")),
+                    "2\N{COMBINING ENCLOSING KEYCAP} Set mute role (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("muted_role_id")) or MentionableNone("none")),
+                    "3\N{COMBINING ENCLOSING KEYCAP} Set custom role master (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_id")) or MentionableNone("none")),
+                    "4\N{COMBINING ENCLOSING KEYCAP} Set custom role position (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_position_id")) or MentionableNone("none")),
                 ])
 
             # Send embed
@@ -136,14 +202,9 @@ class BotSettings(utils.Cog):
             # Wait for added reaction
             emoji_key_map = {
                 "1\N{COMBINING ENCLOSING KEYCAP}": ("verified_role_id", commands.RoleConverter, None),
-                "2\N{COMBINING ENCLOSING KEYCAP}": ("fursona_modmail_channel_id", commands.TextChannelConverter, None),
-                "3\N{COMBINING ENCLOSING KEYCAP}": ("fursona_decline_archive_channel_id", commands.TextChannelConverter, None),
-                "4\N{COMBINING ENCLOSING KEYCAP}": ("fursona_accept_archive_channel_id", commands.TextChannelConverter, None),
-                "5\N{COMBINING ENCLOSING KEYCAP}": ("fursona_accept_nsfw_archive_channel_id", commands.TextChannelConverter, None),
-                "6\N{COMBINING ENCLOSING KEYCAP}": ("modmail_channel_id", commands.TextChannelConverter, None),
-                "7\N{COMBINING ENCLOSING KEYCAP}": ("muted_role_id", commands.RoleConverter, None),
-                "8\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_id", commands.RoleConverter, "+Users with this role are able to make/manage their own custom role name and colour."),
-                "9\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_position_id", commands.RoleConverter, "+Give a role that newly created custom roles will be created _under_."),
+                "2\N{COMBINING ENCLOSING KEYCAP}": ("muted_role_id", commands.RoleConverter, None),
+                "3\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_id", commands.RoleConverter, "+Users with this role are able to make/manage their own custom role name and colour."),
+                "4\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_position_id", commands.RoleConverter, "+Give a role that newly created custom roles will be created _under_."),
                 self.TICK_EMOJI: None,
             }
             def check(r, u):
