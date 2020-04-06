@@ -41,10 +41,69 @@ class BotSettings(utils.Cog):
                 await db("UPDATE guild_settings SET prefix=$2 WHERE guild_id=$1", ctx.guild.id, new_prefix)
         await ctx.send(f"My prefix has been updated to `{new_prefix}`.")
 
-    @commands.command(cls=utils.Command)
+    @commands.group(cls=utils.Group)
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True, external_emojis=True)
     async def setup(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        if ctx.invoked_subcommand is not None:
+            return
+
+        message = None
+        while True:
+
+            # Construct embed
+            with utils.Embed() as embed:
+                embed.description = '\n'.join([
+                    "1\N{COMBINING ENCLOSING KEYCAP} Set up database",
+                ])
+
+            # Send embed
+            if message is None:
+                message = await ctx.send(embed=embed)
+                for i in range(1, embed.description.count('\n') + 2):
+                    await message.add_reaction(f"{i}\N{COMBINING ENCLOSING KEYCAP}")
+                await message.add_reaction(self.TICK_EMOJI)
+            else:
+                await message.edit(embed=embed)
+
+            # Wait for added reaction
+            emoji_key_map = {
+                "1\N{COMBINING ENCLOSING KEYCAP}": "setup database",
+                self.TICK_EMOJI: None,
+            }
+            def check(r, u):
+                return u.id == ctx.author.id and r.message.id == message.id and str(r.emoji) in emoji_key_map.keys()
+            try:
+                r, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
+            except asyncio.TimeoutError:
+                return await ctx.send("Timed out setting up bot.")
+
+            # See what our key is
+            emoji = str(r.emoji)
+            key = emoji_key_map[emoji]
+            if key is None:
+                try:
+                    await message.delete()
+                except discord.HTTPException:
+                    pass
+                return await ctx.send("Alright, done setting up!")
+
+            # Try and remove their reaction
+            try:
+                await message.remove_reaction(r, ctx.author)
+            except discord.Forbidden:
+                pass
+
+            # And do some settin up
+            command = self.bot.get_command(key)
+            await command.invoke(ctx)
+
+    @setup.command(cls=utils.Command)
+    @commands.has_permissions(manage_guild=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True, external_emojis=True)
+    async def database(self, ctx:utils.Context):
         """Talks the bot through a setup"""
 
         message = None
@@ -92,17 +151,17 @@ class BotSettings(utils.Cog):
             try:
                 r, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
             except asyncio.TimeoutError:
-                return await ctx.send("Timed out setting up bot.")
+                return await ctx.send("Timed out setting up database.")
 
             # See what our key is
             emoji = str(r.emoji)
             key = emoji_key_map[emoji]
             if key is None:
                 try:
-                    await message.clear_reactions()
+                    await message.delete()
                 except discord.HTTPException:
                     pass
-                return await ctx.send("Alright, done setting up!")
+                return
 
             # Try and remove their reaction
             try:
@@ -113,6 +172,10 @@ class BotSettings(utils.Cog):
             # And do some settin up
             v = await self.set_data(ctx, key[0], key[1], prompt=key[2])
             if v is None:
+                try:
+                    await message.delete()
+                except discord.HTTPException:
+                    pass
                 return
 
     async def set_data(self, ctx:utils.Context, key:str, converter:commands.Converter, *, prompt:str=None):
