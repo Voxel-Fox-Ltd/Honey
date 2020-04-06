@@ -33,12 +33,13 @@ class ModerationCommands(utils.Cog):
         """Looks for moderator actions being done and logs them into the relevant channel"""
 
         # Save to database
+        db_reason = None if reason == '<No reason provided>' else reason
         async with self.bot.database() as db:
             code = await self.get_unused_infraction_id(db)
             await db(
                 """INSERT INTO infractions (infraction_id, guild_id, user_id, moderator_id, infraction_type,
                 infraction_reason, timestamp) VALUES ($1, $2, $3, $4, $5)""",
-                code, moderator.guild.id, user.id, moderator.id, action, reason, dt.utcnow(),
+                code, moderator.guild.id, user.id, moderator.id, action, db_reason, dt.utcnow(),
             )
 
         # Get log channel
@@ -52,7 +53,8 @@ class ModerationCommands(utils.Cog):
             embed.title = action
             embed.add_field("Moderator", f"{moderator.mention} (`{moderator.id}`)")
             embed.add_field("User", f"<@{user.id}> (`{user.id}`)")
-            embed.add_field("Reason", reason, inline=False)
+            if reason:
+                embed.add_field("Reason", reason, inline=False)
 
         # Send to channel
         try:
@@ -130,7 +132,7 @@ class ModerationCommands(utils.Cog):
         # Grab the mute role
         mute_role = ctx.guild.get_role(muted_role_id)
         if mute_role is None:
-            return await ctx.send("The mute role for this server is set to a deleted role.")
+            return await ctx.send("The mute role for this server is set to a deleted role.")~
         if mute_role not in user.roles:
             return await ctx.send(f"{user.mention} is not muted.")
         if mute_role.position >= ctx.guild.me.top_role.position:

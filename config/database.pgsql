@@ -29,7 +29,7 @@ CREATE TABLE fursonas(
 );
 
 
-CREATE TYPE type AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute');
+CREATE TYPE type AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute', 'Verify');
 
 
 CREATE TABLE infractions(
