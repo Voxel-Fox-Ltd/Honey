@@ -5,9 +5,6 @@ from discord.ext import commands
 from cogs import utils
 
 
-cooldown = utils.cooldown.RoleBasedGuildCooldown(key="interactions")
-
-
 interaction_responses = {
     "hug": [
         "*{author} snuggles up to {user}, hugging them tightly.*",
@@ -43,7 +40,7 @@ interaction_responses = {
         "*{author} runs at {user} and lightly taps them on their nose! Boop!*",
         "*{user} was pointing to their snoot and {author} decided to boop it.*",
         "*{author} was admiring the look of {user}'s snoot, so much so they decided boop it.*",
-        "*{user} felt the paw of {author} touching their nose. Embarrassed after realising they got booped.**",
+        "*{user} felt the paw of {author} touching their nose. Embarrassed after realising they got booped.*",
     ],
 }
 
@@ -57,7 +54,7 @@ def command_has_responses(ctx):
 class InteractionCommands(utils.Cog):
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=['cuddle', 'snuggle', 'snug'])
-    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=cooldown)
+    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def hug(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -68,7 +65,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=['pet'])
-    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=cooldown)
+    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def pat(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -79,7 +76,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=cooldown)
+    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def lick(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -89,8 +86,8 @@ class InteractionCommands(utils.Cog):
             interaction_responses.get(ctx.command.name)
         ).format(author=ctx.author.mention, user=user.mention))
 
-    @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=cooldown)
+    @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=['smooch'])
+    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def kiss(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -101,7 +98,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=cooldown)
+    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def bap(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -112,7 +109,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=cooldown)
+    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def boop(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
