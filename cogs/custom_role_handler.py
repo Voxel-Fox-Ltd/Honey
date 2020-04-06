@@ -33,6 +33,7 @@ class CustomRoleHandler(utils.Cog):
 
     @customrole.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
+    @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def name(self, ctx:utils.Context, *, name:commands.clean_content):
         """Change the name of your custom role"""
@@ -40,7 +41,7 @@ class CustomRoleHandler(utils.Cog):
         # Get their role
         role = await self.check_for_custom_role(ctx)
         if role is None:
-            return await ctx.send("You don't have a custom role on this server - set one with `{ctx.prefix}{ctx.command.parent.name} create`.")
+            return await ctx.send(f"You don't have a custom role on this server - set one with `{ctx.prefix}{ctx.command.parent.name} create`.")
 
         # Edit name
         try:
@@ -55,14 +56,15 @@ class CustomRoleHandler(utils.Cog):
 
     @customrole.command(cls=utils.Command, aliases=['color'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
+    @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def colour(self, ctx:utils.Context, *, colour:discord.Colour):
-        """Change the name of your custom role"""
+        """Change the colour of your custom role"""
 
         # Get their role
         role = await self.check_for_custom_role(ctx)
         if role is None:
-            return await ctx.send("You don't have a custom role on this server - set one with `{ctx.prefix}{ctx.command.parent.name} create`.")
+            return await ctx.send(f"You don't have a custom role on this server - set one with `{ctx.prefix}{ctx.command.parent.name} create`.")
 
         # Edit name
         try:
@@ -75,6 +77,7 @@ class CustomRoleHandler(utils.Cog):
 
     @customrole.command(cls=utils.Command, aliases=['make'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
+    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member)
     @commands.guild_only()
     async def create(self, ctx:utils.Context):
         """Create a custom role for the server"""
