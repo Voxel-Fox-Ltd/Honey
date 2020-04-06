@@ -9,6 +9,7 @@ from cogs import utils
 class CustomRoleHandler(utils.Cog):
 
     @commands.group(cls=utils.Group)
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def customrole(self, ctx:utils.Context):
         """The parent command to manage your custom role"""
@@ -31,7 +32,7 @@ class CustomRoleHandler(utils.Cog):
         return ctx.guild.get_role(rows[0]['role_id'])
 
     @customrole.command(cls=utils.Command)
-    @commands.bot_has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
     async def name(self, ctx:utils.Context, *, name:commands.clean_content):
         """Change the name of your custom role"""
@@ -53,7 +54,7 @@ class CustomRoleHandler(utils.Cog):
         return await ctx.send("Successfully updated your role's name.")
 
     @customrole.command(cls=utils.Command, aliases=['color'])
-    @commands.bot_has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
     async def colour(self, ctx:utils.Context, *, colour:discord.Colour):
         """Change the name of your custom role"""
@@ -73,7 +74,7 @@ class CustomRoleHandler(utils.Cog):
         return await ctx.send("Successfully updated your role's colour.")
 
     @customrole.command(cls=utils.Command, aliases=['make'])
-    @commands.bot_has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
     async def create(self, ctx:utils.Context):
         """Create a custom role for the server"""
@@ -88,9 +89,29 @@ class CustomRoleHandler(utils.Cog):
         if master_role not in ctx.author.roles:
             return await ctx.send(f"You need the `{master_role.name}` role to be able to create a custom role.")
 
+        # Lets trigger some typing babey
+        await ctx.trigger_typing()
+
+        # Check they don't already have a role
+        current_role = await self.check_for_custom_role(ctx)
+        if current_role:
+            try:
+                await current_role.delete()
+            except discord.HTTPException:
+                pass
+
+        # See if the server has a position set
+        position = 1
+        position_role_id = self.bot.guild_settings[ctx.guild.id].get('custom_role_position_id')
+        if position_role_id:
+            position_role = ctx.guild.get_role(position_role_id)
+            if position_role:
+                position = position_role.position
+
         # Create role
         try:
             new_role = await ctx.guild.create_role(name=f"Custom Role: {ctx.author.id}")
+            await new_role.edit(position=position)
         except discord.Forbidden:
             return await ctx.send("I'm unable to create new roles on this server.")
         except discord.HTTPException:
@@ -98,7 +119,12 @@ class CustomRoleHandler(utils.Cog):
 
         # Add it to the database
         async with self.bot.database() as db:
-            await db("INSERT INTO custom_roles (guild_id, role_id, user_id) VALUES ($1, $2, $3)", ctx.guild.id, new_role.id, ctx.author.id)
+            await db(
+                """INSERT INTO custom_roles (guild_id, role_id, user_id)
+                VALUES ($1, $2, $3) ON CONFLICT (guild_id, user_id)
+                DO UPDATE SET role_id=$2""",
+                ctx.guild.id, new_role.id, ctx.author.id
+            )
 
         # Add it to the user
         try:

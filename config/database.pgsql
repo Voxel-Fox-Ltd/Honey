@@ -8,7 +8,8 @@ CREATE TABLE guild_settings(
     fursona_accept_nsfw_archive_channel_id BIGINT,  -- The archive for accepted nsfw sonas
     modmail_channel_id BIGINT,  -- The channel ID for mod actions to be posted to
     muted_role_id BIGINT, -- The role muted members get
-    custom_role_id BIGINT  -- The role required for users to be able to manage their own roles
+    custom_role_id BIGINT,  -- The role required for users to be able to manage their own roles
+    custom_role_position_id BIGINT  -- The role that newly created custom roles are set below
 );
 
 
@@ -57,5 +58,5 @@ CREATE TABLE custom_roles(
     guild_id BIGINT,
     role_id BIGINT,
     user_id BIGINT,
-    PRIMARY KEY (guild_id, role_id, user_id)
+    PRIMARY KEY (guild_id, user_id)
 );

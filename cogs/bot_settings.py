@@ -62,6 +62,7 @@ class BotSettings(utils.Cog):
                     "6\N{COMBINING ENCLOSING KEYCAP} Set mod action archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("modmail_channel_id")) or MentionableNone("none")),
                     "7\N{COMBINING ENCLOSING KEYCAP} Set mute role (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("muted_role_id")) or MentionableNone("none")),
                     "8\N{COMBINING ENCLOSING KEYCAP} Set custom role master (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_id")) or MentionableNone("none")),
+                    "9\N{COMBINING ENCLOSING KEYCAP} Set custom role position (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_position_id")) or MentionableNone("none")),
                 ])
 
             # Send embed
@@ -83,6 +84,7 @@ class BotSettings(utils.Cog):
                 "6\N{COMBINING ENCLOSING KEYCAP}": ("modmail_channel_id", commands.TextChannelConverter, None),
                 "7\N{COMBINING ENCLOSING KEYCAP}": ("muted_role_id", commands.RoleConverter, None),
                 "8\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_id", commands.RoleConverter, "+Users with this role are able to make/manage their own custom role name and colour."),
+                "9\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_position_id", commands.RoleConverter, "+Give a role that newly created custom roles will be created _under_."),
                 self.TICK_EMOJI: None,
             }
             def check(r, u):
