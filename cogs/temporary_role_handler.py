@@ -42,6 +42,10 @@ class TemporaryRoleHandler(utils.Cog):
                 await member.remove_roles(role, reason="Role duration expired")
             except (discord.Forbidden, discord.NotFound):
                 pass
+            try:
+                await member.send(f"Removed the `{role.name}` role from you in the server **{guild.name}** - duration expired.")
+            except (discord.Forbidden, discord.NotFound):
+                pass
 
         # Remove from db
         for guild_id, role_id, user_id in removed_roles:
