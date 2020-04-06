@@ -61,6 +61,7 @@ class BotSettings(utils.Cog):
                     "5\N{COMBINING ENCLOSING KEYCAP} Set NSFW fursona accept archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("fursona_accept_nsfw_archive_channel_id")) or MentionableNone("none")),
                     "6\N{COMBINING ENCLOSING KEYCAP} Set mod action archive (currently {0.mention})".format(self.bot.get_channel(guild_settings.get("modmail_channel_id")) or MentionableNone("none")),
                     "7\N{COMBINING ENCLOSING KEYCAP} Set mute role (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("muted_role_id")) or MentionableNone("none")),
+                    "8\N{COMBINING ENCLOSING KEYCAP} Set custom role master (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_id")) or MentionableNone("none")),
                 ])
 
             # Send embed
@@ -74,13 +75,14 @@ class BotSettings(utils.Cog):
 
             # Wait for added reaction
             emoji_key_map = {
-                "1\N{COMBINING ENCLOSING KEYCAP}": ("verified_role_id", commands.RoleConverter),
-                "2\N{COMBINING ENCLOSING KEYCAP}": ("fursona_modmail_channel_id", commands.TextChannelConverter),
-                "3\N{COMBINING ENCLOSING KEYCAP}": ("fursona_decline_archive_channel_id", commands.TextChannelConverter),
-                "4\N{COMBINING ENCLOSING KEYCAP}": ("fursona_accept_archive_channel_id", commands.TextChannelConverter),
-                "5\N{COMBINING ENCLOSING KEYCAP}": ("fursona_accept_nsfw_archive_channel_id", commands.TextChannelConverter),
-                "6\N{COMBINING ENCLOSING KEYCAP}": ("modmail_channel_id", commands.TextChannelConverter),
-                "7\N{COMBINING ENCLOSING KEYCAP}": ("muted_role_id", commands.RoleConverter),
+                "1\N{COMBINING ENCLOSING KEYCAP}": ("verified_role_id", commands.RoleConverter, None),
+                "2\N{COMBINING ENCLOSING KEYCAP}": ("fursona_modmail_channel_id", commands.TextChannelConverter, None),
+                "3\N{COMBINING ENCLOSING KEYCAP}": ("fursona_decline_archive_channel_id", commands.TextChannelConverter, None),
+                "4\N{COMBINING ENCLOSING KEYCAP}": ("fursona_accept_archive_channel_id", commands.TextChannelConverter, None),
+                "5\N{COMBINING ENCLOSING KEYCAP}": ("fursona_accept_nsfw_archive_channel_id", commands.TextChannelConverter, None),
+                "6\N{COMBINING ENCLOSING KEYCAP}": ("modmail_channel_id", commands.TextChannelConverter, None),
+                "7\N{COMBINING ENCLOSING KEYCAP}": ("muted_role_id", commands.RoleConverter, None),
+                "8\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_id", commands.RoleConverter, "+Users with this role are able to make/manage their own custom role name and colour."),
                 self.TICK_EMOJI: None,
             }
             def check(r, u):
@@ -94,6 +96,10 @@ class BotSettings(utils.Cog):
             emoji = str(r.emoji)
             key = emoji_key_map[emoji]
             if key is None:
+                try:
+                    await message.clear_reactions()
+                except discord.HTTPException:
+                    pass
                 return await ctx.send("Alright, done setting up!")
 
             # Try and remove their reaction
@@ -103,15 +109,18 @@ class BotSettings(utils.Cog):
                 pass
 
             # And do some settin up
-            v = await self.set_data(ctx, key[0], key[1])
+            v = await self.set_data(ctx, key[0], key[1], prompt=key[2])
             if v is None:
                 return
 
-    async def set_data(self, ctx:utils.Context, key:str, converter:commands.Converter):
+    async def set_data(self, ctx:utils.Context, key:str, converter:commands.Converter, *, prompt:str=None):
         """Sets the datapoint for a key given its converter and index"""
 
         # Ask the user what they want to update to
-        bot_message = await ctx.send("What do you want to update this value to?")
+        if prompt and prompt[0] == '+':
+            prompt = "What do you want to update this value to? " + prompt[1:]
+        prompt = prompt or "What do you want to update this value to?"
+        bot_message = await ctx.send(prompt)
         def check(m):
             return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
         try:
