@@ -63,7 +63,7 @@ class ModerationCommands(utils.Cog):
             pass
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
     async def mute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
@@ -112,7 +112,7 @@ class ModerationCommands(utils.Cog):
         return await ctx.send(f"{user.mention} has been muted by {ctx.author.mention} with reason `{reason}`.")
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
     async def tempmute(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue, *, reason:str='<No reason provided>'):
@@ -169,7 +169,7 @@ class ModerationCommands(utils.Cog):
         return await ctx.send(f"{user.mention} has been muted for `{duration.clean_spaced}` by {ctx.author.mention} with reason `{reason}`.")
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
     async def unmute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
@@ -222,7 +222,7 @@ class ModerationCommands(utils.Cog):
         return await ctx.send(f"{user.mention} has been unmuted by {ctx.author.mention}.")
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_messages=True)
     @commands.guild_only()
     async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str):
         """Adds a warning to a user"""
