@@ -247,8 +247,22 @@ class FursonaComamnds(utils.Cog):
         verified = False
         nsfw = False
         archive_channel_id = None
+        delete_reason = "No reason provided"
         if emoji == "\N{HEAVY MULTIPLICATION X}":
             archive_channel_id = guild_settings.get("fursona_decline_archive_channel_id")
+            bot_reason_question = await message.channel.send("Why are you declining that sona?")
+            try:
+                reason_message = await self.bot.wait_for("message", check=lambda m: m.author.id == payload.user_id and m.channel.id == payload.channel_id)
+                delete_reason = reason_message.content
+                await reason_message.delete(delay=1)
+            except asyncio.TimeoutError:
+                pass
+            except discord.Forbidden:
+                pass
+            try:
+                await bot_reason_question.delete()
+            except discord.NotFound:
+                pass
         elif emoji == "\N{HEAVY CHECK MARK}":
             archive_channel_id = guild_settings.get("fursona_accept_archive_channel_id")
             verified = True
@@ -293,7 +307,7 @@ class FursonaComamnds(utils.Cog):
             if verified:
                 await fursona_member.send(f"Your fursona, `{fursona_name}`, on **{fursona_member.guild.name}** has been accepted!")
             else:
-                await fursona_member.send(f"Your fursona, `{fursona_name}`, on **{fursona_member.guild.name}** has been declined.")
+                await fursona_member.send(f"Your fursona, `{fursona_name}`, on **{fursona_member.guild.name}** has been declined, with the reason `{delete_reason}`.")
         except discord.Forbidden:
             pass
 
