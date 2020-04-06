@@ -107,7 +107,10 @@ class Cooldown(commands.Cooldown):
         self.mapping = mapping
 
     def predicate(self, ctx) -> bool:
-        """Returns whether or not the cooldown should be checked to be applied or not"""
+        """A function that runs before each command call, so you're able to update anything
+        before the command runs. Most likely you'll be using this to update the self.per attr so that
+        cooldowns can be tailored to the individual. Everything this method returns is discarded.
+        This method CAN be a coroutine."""
 
         return True
 
@@ -152,7 +155,7 @@ class Cooldown(commands.Cooldown):
     def copy(self) -> commands.Cooldown:
         """Returns a copy of the cooldown"""
 
-        kwargs = {attr: getattr(getattr(self, attr, None), 'copy', lambda x: x)() for attr in self._copy_kwargs}
+        kwargs = {attr: getattr(getattr(self, attr, None), 'copy', lambda: x)() for attr in self._copy_kwargs}
         cooldown = self.__class__(error=self.error, mapping=self.mapping, **kwargs)
         cooldown = cooldown(rate=self.rate, per=self.per, type=self.type)
         return cooldown
