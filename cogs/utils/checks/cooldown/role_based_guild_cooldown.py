@@ -19,7 +19,13 @@ class RoleBasedGuildCooldown(Cooldown):
         # Find the lowest number on the guild
         rate_per = min(cooldown_settings.get(i, sys.maxsize) for i in ctx.author._roles)
 
-        # It's the max int size? Let's just set that back to original
+        # If it's maxsize now they don't have any cooldown-applicable roles
+        try:
+            rate_per = max(cooldown_settings.values())  # Set it to the max value in their settings
+        except IndexError:
+            pass
+
+        # If it's maxsize now they don't have any cooldown info set
         if rate_per == sys.maxsize:
             rate_per = self.original_per
 
