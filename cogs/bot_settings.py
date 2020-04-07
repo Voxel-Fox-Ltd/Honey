@@ -186,8 +186,9 @@ class BotSettings(utils.Cog):
                 embed.description = '\n'.join([
                     "1\N{COMBINING ENCLOSING KEYCAP} Set verified role (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("verified_role_id")) or MentionableNone("none")),
                     "2\N{COMBINING ENCLOSING KEYCAP} Set mute role (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("muted_role_id")) or MentionableNone("none")),
-                    "3\N{COMBINING ENCLOSING KEYCAP} Set custom role master (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_id")) or MentionableNone("none")),
-                    "4\N{COMBINING ENCLOSING KEYCAP} Set custom role position (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_position_id")) or MentionableNone("none")),
+                    "3\N{COMBINING ENCLOSING KEYCAP} Set moderator role (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("guild_moderator_role_id")) or MentionableNone("none")),
+                    "4\N{COMBINING ENCLOSING KEYCAP} Set custom role master (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_id")) or MentionableNone("none")),
+                    "5\N{COMBINING ENCLOSING KEYCAP} Set custom role position (currently {0.mention})".format(ctx.guild.get_role(guild_settings.get("custom_role_position_id")) or MentionableNone("none")),
                 ])
 
             # Send embed
@@ -203,8 +204,9 @@ class BotSettings(utils.Cog):
             emoji_key_map = {
                 "1\N{COMBINING ENCLOSING KEYCAP}": ("verified_role_id", commands.RoleConverter, None),
                 "2\N{COMBINING ENCLOSING KEYCAP}": ("muted_role_id", commands.RoleConverter, None),
-                "3\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_id", commands.RoleConverter, "+Users with this role are able to make/manage their own custom role name and colour."),
-                "4\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_position_id", commands.RoleConverter, "+Give a role that newly created custom roles will be created _under_."),
+                "3\N{COMBINING ENCLOSING KEYCAP}": ("guild_moderator_role_id", commands.RoleConverter, None),
+                "4\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_id", commands.RoleConverter, "+Users with this role are able to make/manage their own custom role name and colour."),
+                "5\N{COMBINING ENCLOSING KEYCAP}": ("custom_role_position_id", commands.RoleConverter, "+Give a role that newly created custom roles will be created _under_."),
                 self.TICK_EMOJI: None,
             }
             def check(r, u):

@@ -8,6 +8,7 @@ CREATE TABLE guild_settings(
     fursona_accept_nsfw_archive_channel_id BIGINT,  -- The archive for accepted nsfw sonas
     modmail_channel_id BIGINT,  -- The channel ID for mod actions to be posted to
     muted_role_id BIGINT, -- The role muted members get
+    guild_moderator_role_id BIGINT, -- The guild moderator role
     custom_role_id BIGINT,  -- The role required for users to be able to manage their own roles
     custom_role_position_id BIGINT  -- The role that newly created custom roles are set below
 );
