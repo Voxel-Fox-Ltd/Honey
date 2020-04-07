@@ -161,12 +161,13 @@ class FursonaComamnds(utils.Cog):
             'nsfw': nsfw_message.content.lower() == "yes",
         }
         self.currently_setting_sonas.remove(user.id)
-        return await self.bot.get_command("setsonabyjson").invoke(ctx, json.dumps(information))
+        ctx.information = information
+        await self.bot.get_command("setsonabyjson").invoke(ctx)
 
     @commands.command(cls=utils.Command, hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def setsonabyjson(self, ctx:utils.Context, *, data:str):
+    async def setsonabyjson(self, ctx:utils.Context, *, data:str=None):
         """Lets you set your sona with a JSON string
         Valid keys are: name, gender, age, species, orientation, height, weight, bio, image, and nsfw.
         NSFW must be a boolean. All fields must be filled (apart from image, which must be a provided key but can contain
@@ -174,7 +175,7 @@ class FursonaComamnds(utils.Cog):
         """
 
         # Load up the information
-        information = json.loads(data)
+        information = getattr(ctx, 'information', None) or json.loads(data)
         information.update({
             'guild_id': ctx.guild.id,
             'user_id': ctx.author.id,
