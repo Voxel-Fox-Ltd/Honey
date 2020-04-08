@@ -89,7 +89,8 @@ class FursonaComamnds(utils.Cog):
         if name_message is None:
             return self.currently_setting_sonas.remove(user.id)
         if name_message.content.lower() in current_sona_names:
-            return user.send(f"You already have a sona with the name `{name_message.content}`. Please start your setup again and provide a different name.")
+            self.currently_setting_sonas.remove(user.id)
+            return await user.send(f"You already have a sona with the name `{name_message.content}`. Please start your setup again and provide a different name.")
 
         # Ask about gender
         gender_message = await self.send_verification_message(user, "What's your sona's gender?")
