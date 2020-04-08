@@ -161,12 +161,13 @@ class FursonaComamnds(utils.Cog):
             'nsfw': nsfw_message.content.lower() == "yes",
         }
         self.currently_setting_sonas.remove(user.id)
-        return await self.bot.get_command("setsonabyjson").invoke(ctx, json.dumps(information))
+        ctx.information = information
+        await self.bot.get_command("setsonabyjson").invoke(ctx)
 
     @commands.command(cls=utils.Command, hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def setsonabyjson(self, ctx:utils.Context, *, data:str):
+    async def setsonabyjson(self, ctx:utils.Context, *, data:str=None):
         """Lets you set your sona with a JSON string
         Valid keys are: name, gender, age, species, orientation, height, weight, bio, image, and nsfw.
         NSFW must be a boolean. All fields must be filled (apart from image, which must be a provided key but can contain
@@ -174,7 +175,7 @@ class FursonaComamnds(utils.Cog):
         """
 
         # Load up the information
-        information = json.loads(data)
+        information = getattr(ctx, 'information', None) or json.loads(data)
         information.update({
             'guild_id': ctx.guild.id,
             'user_id': ctx.author.id,
@@ -207,6 +208,8 @@ class FursonaComamnds(utils.Cog):
             except discord.Forbidden:
                 await modmail_message.delete()
                 return await user.send(f"The moderators for the server **{ctx.guild.name}** have disallowed me from adding reactions in their fursona modmail channel - please inform them of such and try again later.")
+        else:
+            sona_object.verified = True  # Auto verify if there's no modmail channel
 
         # Save sona to database now it's sent properly
         async with self.bot.database() as db:
@@ -247,8 +250,22 @@ class FursonaComamnds(utils.Cog):
         verified = False
         nsfw = False
         archive_channel_id = None
+        delete_reason = "No reason provided"
         if emoji == "\N{HEAVY MULTIPLICATION X}":
             archive_channel_id = guild_settings.get("fursona_decline_archive_channel_id")
+            bot_reason_question = await message.channel.send("Why are you declining that sona?")
+            try:
+                reason_message = await self.bot.wait_for("message", check=lambda m: m.author.id == payload.user_id and m.channel.id == payload.channel_id)
+                delete_reason = reason_message.content
+                await reason_message.delete(delay=1)
+            except asyncio.TimeoutError:
+                pass
+            except discord.Forbidden:
+                pass
+            try:
+                await bot_reason_question.delete()
+            except discord.NotFound:
+                pass
         elif emoji == "\N{HEAVY CHECK MARK}":
             archive_channel_id = guild_settings.get("fursona_accept_archive_channel_id")
             verified = True
@@ -293,7 +310,7 @@ class FursonaComamnds(utils.Cog):
             if verified:
                 await fursona_member.send(f"Your fursona, `{fursona_name}`, on **{fursona_member.guild.name}** has been accepted!")
             else:
-                await fursona_member.send(f"Your fursona, `{fursona_name}`, on **{fursona_member.guild.name}** has been declined.")
+                await fursona_member.send(f"Your fursona, `{fursona_name}`, on **{fursona_member.guild.name}** has been declined, with the reason `{delete_reason}`.")
         except discord.Forbidden:
             pass
 

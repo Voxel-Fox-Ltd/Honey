@@ -41,6 +41,7 @@ class ErrorHandler(utils.Cog):
         owner_reinvoke_errors = (
             commands.MissingAnyRole, commands.MissingPermissions,
             commands.MissingRole, commands.CommandOnCooldown, commands.DisabledCommand,
+            utils.errors.NotGuildModerator,
         )
         if ctx.original_author_id in self.bot.owner_ids and isinstance(error, owner_reinvoke_errors):
             return await ctx.reinvoke()
@@ -60,6 +61,10 @@ class ErrorHandler(utils.Cog):
         # Cooldown
         elif isinstance(error, commands.CommandOnCooldown):
             return await ctx.send(f"You can't use this command again for another {utils.TimeValue(error.retry_after).clean_spaced}.")
+
+        # Not a guild moderator or has `manage_messages` perms
+        elif isinstance(error, utils.errors.NotGuildModerator):
+            return await ctx.send(f"This command can only be run by a guild moderator (role `{error.guild_moderator_role.name}`).")
 
         # NSFW channel
         elif isinstance(error, commands.NSFWChannelRequired):

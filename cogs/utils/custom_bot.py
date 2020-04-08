@@ -53,8 +53,10 @@ class CustomBot(commands.AutoShardedBot):
             'fursona_accept_archive_channel_id': None,
             'fursona_accept_nsfw_archive_channel_id': None,
             'muted_role_id': None,
+            'guild_moderator_role_id': None,
             'custom_role_id': None,
             'custom_role_position_id': None,
+            'role_interaction_cooldowns': list(),
         }
 
         # Aiohttp session
