@@ -134,10 +134,11 @@ class ErrorHandler(utils.Cog):
             except Exception:
                 exc = traceback.format_exc()
                 data = io.StringIO(exc)
-                owner_id = self.bot.config['owners'][0]
-                owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
-                text = f"Error found: Guild `{ctx.guild.id}`, channel `{ctx.channel.id}`, user `{ctx.author.id}` ```\n{ctx.message.content}\n```"
-                await owner.send(text, file=discord.File(data, filename="error_log.py"))
+                owner_id = self.bot.config['owners'][0:2]
+                for x in owner_id:
+                    owner = self.bot.get_user(x) or await self.bot.fetch_user(x)
+                    text = f"Error found: Guild `{ctx.guild.id}`, channel `{ctx.channel.id}`, user `{ctx.author.id}` ```\n{ctx.message.content}\n```"
+                    await owner.send(text, file=discord.File(data, filename="error_log.py"))
 
         # And throw it into the console
         raise error
