@@ -64,10 +64,7 @@ class ErrorHandler(utils.Cog):
 
         # Not a guild moderator or has `manage_messages` perms
         elif isinstance(error, utils.errors.NotGuildModerator):
-            if error.guild_moderator_role == None:
-                return await ctx.send(f"This command can only be run by a guild moderator - `None`")
-            else:
-                return await ctx.send(f"This command can only be run by a guild moderator - `{error.guild_moderator_role}`")
+            return await ctx.send(f"This command can only be run by a guild moderator (role `{error.guild_moderator_role.name}`).")
 
         # NSFW channel
         elif isinstance(error, commands.NSFWChannelRequired):
