@@ -208,6 +208,8 @@ class FursonaComamnds(utils.Cog):
             except discord.Forbidden:
                 await modmail_message.delete()
                 return await user.send(f"The moderators for the server **{ctx.guild.name}** have disallowed me from adding reactions in their fursona modmail channel - please inform them of such and try again later.")
+        else:
+            sona_object.verified = True  # Auto verify if there's no modmail channel
 
         # Save sona to database now it's sent properly
         async with self.bot.database() as db:
