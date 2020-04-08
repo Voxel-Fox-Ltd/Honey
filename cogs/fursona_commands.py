@@ -366,6 +366,7 @@ class FursonaComamnds(utils.Cog):
             available_sonas = [i['name'].replace('`', '\\`').replace('*', '\\*').replace('_', '\\_') for i in rows]
             available_string = ', '.join(f"`{name}`" for name in available_sonas)
             return await ctx.send(f"You have multiple sonas - please specify which you want to delete. Available sonas: {available_string}")
+        name = rows[0]['name']
 
         # Delete it from pending
         if rows[0]['verified'] is False:
