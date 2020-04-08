@@ -22,7 +22,7 @@ class RoleBasedGuildCooldown(Cooldown):
         # If it's maxsize now they don't have any cooldown-applicable roles
         try:
             rate_per = max(cooldown_settings.values())  # Set it to the max value in their settings
-        except IndexError:
+        except ValueError:
             pass
 
         # If it's maxsize now they don't have any cooldown info set

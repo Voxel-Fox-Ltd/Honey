@@ -56,7 +56,7 @@ class CustomBot(commands.AutoShardedBot):
             'guild_moderator_role_id': None,
             'custom_role_id': None,
             'custom_role_position_id': None,
-            'role_interaction_cooldowns': list(),
+            'role_interaction_cooldowns': dict(),
         }
 
         # Aiohttp session
