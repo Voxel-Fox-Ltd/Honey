@@ -75,6 +75,29 @@ class CustomRoleHandler(utils.Cog):
             pass
         return await ctx.send("Successfully updated your role's colour.")
 
+    @customrole.command(cls=utils.Command)
+    @utils.checks.is_guild_moderator()
+    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
+    @commands.guild_only()
+    async def set(self, ctx:utils.Context, user:discord.Member, *, role:discord.Role):
+        """Set a user's custom role to an existing one"""
+
+        # Add it to the database
+        async with self.bot.database() as db:
+            await db(
+                """INSERT INTO custom_roles (guild_id, role_id, user_id)
+                VALUES ($1, $2, $3) ON CONFLICT (guild_id, user_id)
+                DO UPDATE SET role_id=$2""",
+                ctx.guild.id, role.id, user.id
+            )
+
+        # Add it to the user
+        try:
+            await user.add_roles(role, reason="Custom role setting")
+        except discord.Forbidden:
+            return await ctx.send(f"I was unable to add the role to {user.mention}.")
+        return await ctx.send(f"Set the custom role for {user.mention} to {role.mention}. They can manage it with the `{ctx.prefix}{ctx.command.parent.name} name` and `{ctx.prefix}{ctx.command.parent.name} colour` commands.")
+
     @customrole.command(cls=utils.Command, aliases=['make'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member)
