@@ -69,7 +69,7 @@ class ModerationCommands(utils.Cog):
         if role.id == self.bot.guild_settings[role.guild].get("guild_moderator_role_id"):
             self.bot.guild_settings[role.guild]["guild_moderator_role_id"] = None
             async with self.bot.database() as db:
-                await db("UPDATE guild_settings SET guild_moderator_role_id = null WHERE guild_id=$1", guild_id)
+                await db("UPDATE guild_settings SET guild_moderator_role_id = null WHERE guild_id=$1", role.guild.id)
 
     @commands.command(cls=utils.Command)
     @utils.checks.is_guild_moderator()
