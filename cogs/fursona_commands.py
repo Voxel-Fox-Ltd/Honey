@@ -127,7 +127,7 @@ class FursonaComamnds(utils.Cog):
         # Try and send them an initial DM
         user = ctx.author
         try:
-            await user.send(f"Now talking you through setting up your sona on **{ctx.guild.name}**!")
+            await user.send(f"Now taking you through setting up your sona on **{ctx.guild.name}**!")
         except discord.Forbidden:
             return await ctx.send("I couldn't send you a DM! Please open your DMs for this server and try again.")
         self.currently_setting_sonas.add(user.id)
@@ -295,7 +295,7 @@ class FursonaComamnds(utils.Cog):
 
         # Try and send them an initial DM
         try:
-            await ctx.author.send(f"Now talking you through importing your sona to **{ctx.guild.name}**!")
+            await ctx.author.send(f"Now taking you through importing your sona to **{ctx.guild.name}**!")
         except discord.Forbidden:
             return await ctx.send("I couldn't send you a DM! Please open your DMs for this server and try again.")
         self.currently_setting_sonas.add(ctx.author.id)
