@@ -339,8 +339,13 @@ class FursonaComamnds(utils.Cog):
                     menu_data.update({"guild_name": guild_name, "guild_id": guild_id})
                     all_user_sonas.append(menu_data)
 
-        # Send the menu to the user
+        # Filter the list
         all_user_sonas = [i for i in all_user_sonas if i['guild_id'] != ctx.guild.id]
+        if not all_user_sonas:
+            self.currently_setting_sonas.remove(ctx.author.id)
+            return await ctx.send("You have no sonas available to import from other servers.")
+
+        # Send it off to the user
         pages = menus.MenuPages(source=FursonaPageSource(all_user_sonas, per_page=1), clear_reactions_after=True)
         await pages.start(ctx, channel=ctx.author, wait=True)
 
