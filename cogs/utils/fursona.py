@@ -6,7 +6,7 @@ class Fursona(object):
 
     def __init__(self, guild_id:int, user_id:int, name:str, gender:str, age:str, species:str,
                  orientation:str, height:str, weight:str, bio:str, image:str, nsfw:bool=False,
-                 verified:bool=False,
+                 verified:bool=False, **kwargs
                  ):
         self.guild_id = guild_id
         self.user_id = user_id

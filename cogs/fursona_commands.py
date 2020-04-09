@@ -70,6 +70,7 @@ class FursonaComamnds(utils.Cog):
         async with self.bot.database() as db:
             rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
         current_sona_names = [row['name'].lower() for row in rows]
+        ctx.current_sona_names = current_sona_names
 
         # See if they're setting one up already
         if ctx.author.id in self.currently_setting_sonas:
@@ -175,12 +176,25 @@ class FursonaComamnds(utils.Cog):
         a null value)
         """
 
+        # Get current sona names
+        current_sona_names = getattr(ctx, "current_sona_names", None)
+        if current_sona_names is None:
+            async with self.bot.database() as db:
+                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
+            current_sona_names = [row['name'].lower() for row in rows]
+
+        # See if they already have a sona with that name
+
         # Load up the information
         information = getattr(ctx, 'information', None) or json.loads(data)
         information.update({
             'guild_id': ctx.guild.id,
             'user_id': ctx.author.id,
         })
+
+        # See if they already have a sona with that name
+        if information['name'].lower() in current_sona_names:
+            return await ctx.author.send(f"You already have a sona with the name `{information['name']}`. Please start your setup again and provide a different name.")
         sona_object = utils.Fursona(**information)
 
         # Send it back to the user so we can make sure it sends
@@ -220,6 +234,21 @@ class FursonaComamnds(utils.Cog):
         if modmail_channel_id:
             return await user.send("Your fursona has been sent to the moderators for approval! Please be patient as they review.")
         return await user.send("Your fursona has been saved!")
+
+    @commands.command(cls=utils.Command, hidden=True)
+    async def gettfksona(self, ctx:utils.Context, user_id:typing.Optional[int], index:int=1):
+        """Get your sona from TFK"""
+
+        params = {"user_id": user_id or ctx.author.id}
+        async with self.bot.session.get("http://51.15.53.104/api/v1/sona", params=params) as r:
+            data = await r.json()
+        sona_data = [i for i in data['data'] if i['index'] == index]
+        if not sona_data:
+            return await ctx.send(f"You have no sona data on TFK with index {index}.")
+        sona_json = sona_data[0]
+        sona_json.update({"guild_id": 587434387079954502})
+        sona = utils.Fursona(**sona_data[0])
+        return await ctx.send(embed=sona.get_embed())
 
     @utils.Cog.listener("on_raw_reaction_add")
     async def fursona_verification_reaction_handler(self, payload:discord.RawReactionActionEvent):
