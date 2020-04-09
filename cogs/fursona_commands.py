@@ -2,7 +2,6 @@ import asyncio
 import re
 import typing
 import json
-import collections
 
 import discord
 from discord.ext import commands
@@ -37,7 +36,7 @@ class FursonaComamnds(utils.Cog):
         {
             "name": "The Furry Kingdom",
             "guild_id": 587434387079954502,
-            "url": "http://51.15.53.104/api/v1/sona",
+            "url": "http://furrykingdom.voxelfox.co.uk/api/v1/sona",
             "params": {
                 "user_id": "{user.id}"
             },
