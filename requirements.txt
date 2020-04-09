@@ -1,7 +1,8 @@
 # Discord and config handling
 discord.py[voice]
 toml
-git+https://github.com/Rapptz/discord-ext-menus
+# git+https://github.com/Rapptz/discord-ext-menus
+git+https://github.com/4Kaylum/discord-ext-menus
 
 # Storage handling
 asyncpg

@@ -2,14 +2,62 @@ import asyncio
 import re
 import typing
 import json
+import collections
 
 import discord
 from discord.ext import commands
+from discord.ext import menus
 
 from cogs import utils
 
 
+class FursonaPageSource(menus.ListPageSource):
+
+    def format_page(self, menu:menus.Menu, entry:dict) -> dict:
+        """Formats a sona into a thingmie and returns the embed"""
+
+        # Format the data into an embed for the sona
+        menu.raw_sona_data = entry.copy()
+        content = f"Sona **{entry['name']}** from **{entry['guild_name']}** (sona {menu.current_page + 1}/{self.get_max_pages()})."
+        sona = utils.Fursona(**entry)
+        sona.verified = False
+        menu.sona = sona
+        embed = sona.get_embed(mention_user=False, add_image=True)
+
+        # And return it to the user
+        return {
+            "content": content,
+            "embed": embed,
+        }
+
+
 class FursonaComamnds(utils.Cog):
+
+    OTHER_FURRY_GUILD_DATA = [
+        {
+            "name": "The Furry Kingdom",
+            "guild_id": 587434387079954502,
+            "url": "http://51.15.53.104/api/v1/sona",
+            "params": {
+                "user_id": "{user.id}"
+            },
+            "headers": {
+            },
+        },
+        {
+            "name": "Winterhaven",
+            "guild_id": 676902163468910615,
+            "url": "http://winterhaven.voxelfox.co.uk/api/v1/sona",
+            "params": {
+                "user_id": "{user.id}"
+            },
+            "headers": {
+            },
+        },
+    ]
+
+    CHECK_MARK_EMOJI = "<:tickYes:596096897995899097>"
+    CROSS_MARK_EMOJI = "<:crossNo:596096897769275402>"
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
@@ -236,19 +284,86 @@ class FursonaComamnds(utils.Cog):
         return await user.send("Your fursona has been saved!")
 
     @commands.command(cls=utils.Command, hidden=True)
-    async def gettfksona(self, ctx:utils.Context, user_id:typing.Optional[int], index:int=1):
-        """Get your sona from TFK"""
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def importsona(self, ctx:utils.Context):
+        """Get your sona from another server"""
 
-        params = {"user_id": user_id or ctx.author.id}
-        async with self.bot.session.get("http://51.15.53.104/api/v1/sona", params=params) as r:
-            data = await r.json()
-        sona_data = [i for i in data['data'] if i['index'] == index]
-        if not sona_data:
-            return await ctx.send(f"You have no sona data on TFK with index {index}.")
-        sona_json = sona_data[0]
-        sona_json.update({"guild_id": 587434387079954502})
-        sona = utils.Fursona(**sona_data[0])
-        return await ctx.send(embed=sona.get_embed())
+        # See if they're setting one up already
+        if ctx.author.id in self.currently_setting_sonas:
+            return await ctx.send("You're already setting up a sona! Please finish that one off first!")
+
+        # Try and send them an initial DM
+        try:
+            await ctx.author.send(f"Now talking you through importing your sona to **{ctx.guild.name}**!")
+        except discord.Forbidden:
+            return await ctx.send("I couldn't send you a DM! Please open your DMs for this server and try again.")
+        self.currently_setting_sonas.add(ctx.author.id)
+        await ctx.send("Sent you a DM!")
+
+        # Get sona data
+        async with self.bot.database() as db:
+            database_rows = await db("SELECT * FROM fursonas WHERE user_id=$1", ctx.author.id)
+
+        # Format that into a list
+        all_user_sonas = []
+        for row in database_rows:
+            guild = self.bot.get_guild(row['guild_id']) or await self.bot.fetch_guild(row['guild_id'])
+            # user_sona_information[guild].append(row)
+
+            # Add to the all sona list
+            menu_data = dict(row)
+            menu_data.update({"guild_name": guild.name})
+            all_user_sonas.append(menu_data)
+
+        # Let's add our other servers via their APIs
+        for api_data in self.OTHER_FURRY_GUILD_DATA[::-1]:
+
+            # Format data
+            url = api_data['url']
+            params = {i:o.format(user=ctx.author, guild=ctx.guild, bot=self.bot) for i, o in api_data.get('params', dict()).copy().items()}
+            headers = {i:o.format(user=ctx.author, guild=ctx.guild, bot=self.bot) for i, o in api_data.get('headers', dict()).copy().items()}
+
+            # Run request
+            async with self.bot.session.get(url, params=params, headers=headers) as r:
+                grabbed_sona_data = await r.json()
+
+            # Add to lists
+            if grabbed_sona_data['data']:
+                guild_id = api_data['guild_id']
+                guild_name = api_data['name']
+
+                # Add to the all sona list
+                for sona in grabbed_sona_data['data']:
+                    menu_data = sona.copy()
+                    menu_data.update({"guild_name": guild_name, "guild_id": guild_id})
+                    all_user_sonas.append(menu_data)
+
+        # Send the menu to the user
+        all_user_sonas = [i for i in all_user_sonas if i['guild_id'] != ctx.guild.id]
+        pages = menus.MenuPages(source=FursonaPageSource(all_user_sonas, per_page=1), clear_reactions_after=True)
+        await pages.start(ctx, channel=ctx.author, wait=True)
+
+        # Ask if the user wants to import the sona they stopped on
+        sona_data = pages.raw_sona_data
+        ask_import_message = await ctx.author.send(f"Do you want to import your sona from **{sona_data['guild_name']}**?")
+        await ask_import_message.add_reaction(self.CHECK_MARK_EMOJI)
+        await ask_import_message.add_reaction(self.CROSS_MARK_EMOJI)
+        try:
+            check = lambda r, u: r.message.id == ask_import_message.id and u.id == ctx.author.id
+            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
+        except asyncio.TimeoutError:
+            self.currently_setting_sonas.remove(ctx.author.id)
+            return await ctx.author.send("Timed out asking about sona import.")
+
+        # Import data
+        self.currently_setting_sonas.remove(ctx.author.id)
+        emoji = str(reaction.emoji)
+        if emoji == self.CROSS_MARK_EMOJI:
+            return await ctx.author.send("Alright, cancelled importing your sona.")
+        command = self.bot.get_command("setsonabyjson")
+        ctx.information = sona_data
+        return await command.invoke(ctx)
 
     @utils.Cog.listener("on_raw_reaction_add")
     async def fursona_verification_reaction_handler(self, payload:discord.RawReactionActionEvent):
