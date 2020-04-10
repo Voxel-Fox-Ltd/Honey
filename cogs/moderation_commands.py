@@ -185,6 +185,12 @@ class ModerationCommands(utils.Cog):
     async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str):
         """Adds a warning to a user"""
 
+        # DM the user
+        try:
+            await user.send(f"You have been warned in **{ctx.guild.name}** with the reason `{reason}`.")
+        except discord.Forbidden:
+            pass
+
         # Throw the reason into the database
         self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Warn")
 
