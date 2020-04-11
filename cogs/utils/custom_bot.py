@@ -179,6 +179,16 @@ class CustomBot(commands.AutoShardedBot):
             for key, value in row.items():
                 self.guild_settings[row['guild_id']][key] = value
 
+        # Get stored interaction cooldowns
+        try:
+            interaction_data = await db("SELECT * FROM role_list WHERE key='Interactions'")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from role_list - {e}")
+            exit(1)
+        for row in interaction_data:
+            for key, value in row.items():
+                self.guild_settings[row['guild_id']]['role_interaction_cooldowns'][row['role_id']] = int(value)
+
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")
         await self.wait_until_ready()

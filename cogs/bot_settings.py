@@ -1,4 +1,5 @@
 import asyncio
+import typing
 
 import asyncpg
 import discord
@@ -20,6 +21,7 @@ class MentionableNone(object):
 class BotSettings(utils.Cog):
 
     TICK_EMOJI = "<:tickYes:596096897995899097>"
+    PLUS_EMOJI = "\N{HEAVY PLUS SIGN}"
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_guild=True)
@@ -58,6 +60,7 @@ class BotSettings(utils.Cog):
                 embed.description = '\n'.join([
                     "1\N{COMBINING ENCLOSING KEYCAP} Set up channels",
                     "2\N{COMBINING ENCLOSING KEYCAP} Set up roles",
+                    "3\N{COMBINING ENCLOSING KEYCAP} Set up interaction cooldowns",
                 ])
 
             # Send embed
@@ -73,6 +76,7 @@ class BotSettings(utils.Cog):
             emoji_key_map = {
                 "1\N{COMBINING ENCLOSING KEYCAP}": "setup channels",
                 "2\N{COMBINING ENCLOSING KEYCAP}": "setup roles",
+                "3\N{COMBINING ENCLOSING KEYCAP}": "setup interactions",
                 self.TICK_EMOJI: None,
             }
             def check(r, u):
@@ -164,7 +168,7 @@ class BotSettings(utils.Cog):
                 pass
 
             # And do some settin up
-            v = await self.set_data(ctx, key[0], key[1], prompt=key[2])
+            v = await self.set_data_in_guild_settings(ctx, key[0], key[1], prompt=key[2])
             if v is None:
                 try:
                     await message.delete()
@@ -233,7 +237,7 @@ class BotSettings(utils.Cog):
                 pass
 
             # And do some settin up
-            v = await self.set_data(ctx, key[0], key[1], prompt=key[2])
+            v = await self.set_data_in_guild_settings(ctx, key[0], key[1], prompt=key[2])
             if v is None:
                 try:
                     await message.delete()
@@ -241,7 +245,133 @@ class BotSettings(utils.Cog):
                     pass
                 return
 
-    async def set_data(self, ctx:utils.Context, key:str, converter:commands.Converter, *, prompt:str=None):
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def interactions(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        message = None
+        while True:
+
+            # Construct embed
+            role_settings = self.bot.guild_settings[ctx.guild.id].get("role_interaction_cooldowns", dict())
+            with utils.Embed() as embed:
+                role_emoji = []
+                description = ["@everyone - 30m"]
+                for i, o in role_settings.items():
+                    role = ctx.guild.get_role(i)
+                    if role is None:
+                        continue
+                    text = f"{len(role_emoji) + 1}\N{COMBINING ENCLOSING KEYCAP} {role.mention} - {utils.TimeValue(o).clean}"
+                    description.append(text)
+                    role_emoji.append((f"{len(role_emoji) + 1}\N{COMBINING ENCLOSING KEYCAP}", role))
+                embed.description = '\n'.join(description)
+
+            # Send embed
+            if message is None:
+                message = await ctx.send(embed=embed)
+            else:
+                await message.edit(embed=embed)
+                await message.clear_reactions()
+            for i in range(1, embed.description.count('\n') + 1):
+                await message.add_reaction(f"{i}\N{COMBINING ENCLOSING KEYCAP}")
+            await message.add_reaction(self.PLUS_EMOJI)
+            await message.add_reaction(self.TICK_EMOJI)
+
+            # Wait for added reaction
+            emoji_key_map = {
+                self.PLUS_EMOJI: False,
+                self.TICK_EMOJI: None,
+            }
+            emoji_key_map.update({i:o for i, o in role_emoji})
+            def check(r, u):
+                return u.id == ctx.author.id and r.message.id == message.id and str(r.emoji) in emoji_key_map.keys()
+            try:
+                r, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
+            except asyncio.TimeoutError:
+                return await ctx.send("Timed out setting up database.")
+
+            # See what our key is
+            emoji = str(r.emoji)
+            key = emoji_key_map[emoji]
+            if key is None:
+                try:
+                    await message.delete()
+                except discord.HTTPException:
+                    pass
+                return
+
+            # Try and remove their reaction
+            try:
+                await message.remove_reaction(r, ctx.author)
+            except discord.Forbidden:
+                pass
+
+            # They wanna delete a role
+            if isinstance(key, discord.Role):
+                del self.bot.guild_settings[ctx.guild.id]['role_interaction_cooldowns'][role.id]
+                async with self.bot.database() as db:
+                    await db("DELETE FROM role_list WHERE guild_id=$1 AND role_id=$2 AND key='Interactions'", ctx.guild.id, role.id)
+                continue
+
+            # They wanna add a new role
+            if key is False:
+                new_role = await self.ask_for_information(ctx, "What role do you want to add?", "role", commands.RoleConverter)
+                if new_role is None:
+                    continue
+                cooldown_time: utils.TimeValue = await self.ask_for_information(ctx, "How long should the cooldown for this role be (eg 5m)?", "role", utils.TimeValue)
+                if cooldown_time is None:
+                    continue
+                async with self.bot.database() as db:
+                    await db(
+                        """INSERT INTO role_list (guild_id, role_id, key, value) VALUES ($1, $2, 'Interactions', $3)
+                        ON CONFLICT (guild_id, role_id, key) DO UPDATE SET value=excluded.value""",
+                        ctx.guild.id, new_role.id, str(cooldown_time.duration)
+                    )
+                self.bot.guild_settings[ctx.guild.id]['role_interaction_cooldowns'][new_role.id] = cooldown_time.duration
+
+    async def ask_for_information(self, ctx:utils.Context, prompt:str, asking_for:str, converter:commands.Converter):
+        """Ask for some user information babeyeyeyeyyeyeyeye"""
+
+        # Send message
+        bot_message = await ctx.send(prompt)
+        def check(m):
+            return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
+        try:
+            user_message = await self.bot.wait_for("message", timeout=120, check=check)
+        except asyncio.TimeoutError:
+            await ctx.send(f"Timed out asking for {asking_for}.")
+            return None
+
+        # Convert the user's message
+        if hasattr(converter, 'convert'):
+        # if isinstance(converter, commands.Converter):
+            try:
+                converter = converter()
+            except TypeError:
+                pass
+            try:
+                value = await converter.convert(ctx, user_message.content)
+            except commands.CommandError:
+                value = None
+        else:
+            try:
+                value = converter(user_message.content)
+            except Exception as e:
+                value = None
+
+        # Delete messages
+        try:
+            await bot_message.delete()
+        except discord.NotFound:
+            pass
+        try:
+            await user_message.delete()
+        except (discord.Forbidden, discord.NotFound):
+            pass
+        return value
+
+    async def set_data_in_guild_settings(self, ctx:utils.Context, key:str, converter:commands.Converter, *, prompt:str=None):
         """Sets the datapoint for a key given its converter and index"""
 
         # Ask the user what they want to update to
@@ -252,44 +382,22 @@ class BotSettings(utils.Cog):
         if prompt and prompt[0] == '+':
             prompt = f"What do you want to set this {converter_type} to? " + prompt[1:]
         prompt = prompt or f"What do you want to set this {converter_type} to?"
-        bot_message = await ctx.send(prompt)
-        def check(m):
-            return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
-        try:
-            user_message = await self.bot.wait_for("message", timeout=120, check=check)
-        except asyncio.TimeoutError:
-            await ctx.send("Timed out setting up bot.")
-            return None
 
-        # Let's try updating it
-        try:
-            value = await converter().convert(ctx, user_message.content)
-        except commands.CommandError:
-            try:
-                await bot_message.delete()
-            except discord.NotFound:
-                pass
-            try:
-                await user_message.delete()
-            except (discord.Forbidden, discord.NotFound):
-                pass
+        # Ask the user
+        asking_for = {
+            commands.RoleConverter: "role",
+            commands.TextChannelConverter: "channel",
+        }
+        value = await self.ask_for_information(ctx, prompt, asking_for, converter)
+        if value is None:
             return True
 
         # Save to db
         async with self.bot.database() as db:
             await db(f"INSERT INTO guild_settings (guild_id, {key}) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET {key}=excluded.{key}", ctx.guild.id, value.id)
         self.bot.guild_settings[ctx.guild.id][key] = value.id
-
-        # Delete messasges
-        try:
-            await bot_message.delete()
-        except discord.NotFound:
-            pass
-        try:
-            await user_message.delete()
-        except (discord.Forbidden, discord.NotFound):
-            pass
         return True
+
 
 def setup(bot:utils.Bot):
     x = BotSettings(bot)
