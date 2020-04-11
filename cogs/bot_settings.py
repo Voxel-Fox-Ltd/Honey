@@ -61,6 +61,7 @@ class BotSettings(utils.Cog):
                     "1\N{COMBINING ENCLOSING KEYCAP} Set up channels",
                     "2\N{COMBINING ENCLOSING KEYCAP} Set up roles",
                     "3\N{COMBINING ENCLOSING KEYCAP} Set up interaction cooldowns",
+                    "4\N{COMBINING ENCLOSING KEYCAP} Set up max sona counts",
                 ])
 
             # Send embed
@@ -77,6 +78,7 @@ class BotSettings(utils.Cog):
                 "1\N{COMBINING ENCLOSING KEYCAP}": "setup channels",
                 "2\N{COMBINING ENCLOSING KEYCAP}": "setup roles",
                 "3\N{COMBINING ENCLOSING KEYCAP}": "setup interactions",
+                "4\N{COMBINING ENCLOSING KEYCAP}": "setup sonacount",
                 self.TICK_EMOJI: None,
             }
             def check(r, u):
@@ -319,7 +321,7 @@ class BotSettings(utils.Cog):
                 new_role = await self.ask_for_information(ctx, "What role do you want to add?", "role", commands.RoleConverter)
                 if new_role is None:
                     continue
-                cooldown_time: utils.TimeValue = await self.ask_for_information(ctx, "How long should the cooldown for this role be (eg 5m)?", "role", utils.TimeValue)
+                cooldown_time: utils.TimeValue = await self.ask_for_information(ctx, "How long should the cooldown for this role be (eg 5m)?", "duration", utils.TimeValue)
                 if cooldown_time is None:
                     continue
                 async with self.bot.database() as db:
@@ -329,6 +331,91 @@ class BotSettings(utils.Cog):
                         ctx.guild.id, new_role.id, str(cooldown_time.duration)
                     )
                 self.bot.guild_settings[ctx.guild.id]['role_interaction_cooldowns'][new_role.id] = cooldown_time.duration
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def sonacount(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        message = None
+        while True:
+
+            # Construct embed
+            role_settings = self.bot.guild_settings[ctx.guild.id].get("role_sona_count", dict())
+            with utils.Embed() as embed:
+                role_emoji = []
+                description = ["@everyone - 1 sona"]
+                for i, o in role_settings.items():
+                    role = ctx.guild.get_role(i)
+                    if role is None:
+                        continue
+                    text = f"{len(role_emoji) + 1}\N{COMBINING ENCLOSING KEYCAP} {role.mention} - {o} sonas"
+                    description.append(text)
+                    role_emoji.append((f"{len(role_emoji) + 1}\N{COMBINING ENCLOSING KEYCAP}", role))
+                embed.description = '\n'.join(description)
+
+            # Send embed
+            if message is None:
+                message = await ctx.send(embed=embed)
+            else:
+                await message.edit(embed=embed)
+                await message.clear_reactions()
+            for i in range(1, embed.description.count('\n') + 1):
+                await message.add_reaction(f"{i}\N{COMBINING ENCLOSING KEYCAP}")
+            await message.add_reaction(self.PLUS_EMOJI)
+            await message.add_reaction(self.TICK_EMOJI)
+
+            # Wait for added reaction
+            emoji_key_map = {
+                self.PLUS_EMOJI: False,
+                self.TICK_EMOJI: None,
+            }
+            emoji_key_map.update({i:o for i, o in role_emoji})
+            def check(r, u):
+                return u.id == ctx.author.id and r.message.id == message.id and str(r.emoji) in emoji_key_map.keys()
+            try:
+                r, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
+            except asyncio.TimeoutError:
+                return await ctx.send("Timed out setting up database.")
+
+            # See what our key is
+            emoji = str(r.emoji)
+            key = emoji_key_map[emoji]
+            if key is None:
+                try:
+                    await message.delete()
+                except discord.HTTPException:
+                    pass
+                return
+
+            # Try and remove their reaction
+            try:
+                await message.remove_reaction(r, ctx.author)
+            except discord.Forbidden:
+                pass
+
+            # They wanna delete a role
+            if isinstance(key, discord.Role):
+                del self.bot.guild_settings[ctx.guild.id]['role_sona_count'][role.id]
+                async with self.bot.database() as db:
+                    await db("DELETE FROM role_list WHERE guild_id=$1 AND role_id=$2 AND key='SonaCount'", ctx.guild.id, role.id)
+                continue
+
+            # They wanna add a new role
+            if key is False:
+                new_role = await self.ask_for_information(ctx, "What role do you want to add?", "role", commands.RoleConverter)
+                if new_role is None:
+                    continue
+                sona_amount: int = await self.ask_for_information(ctx, "How many sonas can people with this role create?", "integer", int)
+                if sona_amount is None:
+                    continue
+                async with self.bot.database() as db:
+                    await db(
+                        """INSERT INTO role_list (guild_id, role_id, key, value) VALUES ($1, $2, 'SonaCount', $3)
+                        ON CONFLICT (guild_id, role_id, key) DO UPDATE SET value=excluded.value""",
+                        ctx.guild.id, new_role.id, str(sona_amount)
+                    )
+                self.bot.guild_settings[ctx.guild.id]['role_sona_count'][new_role.id] = sona_amount
 
     async def ask_for_information(self, ctx:utils.Context, prompt:str, asking_for:str, converter:commands.Converter):
         """Ask for some user information babeyeyeyeyyeyeyeye"""

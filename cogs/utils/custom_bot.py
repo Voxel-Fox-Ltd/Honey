@@ -57,6 +57,7 @@ class CustomBot(commands.AutoShardedBot):
             'custom_role_id': None,
             'custom_role_position_id': None,
             'role_interaction_cooldowns': dict(),
+            'role_sona_count': dict(),
         }
 
         # Aiohttp session
@@ -186,7 +187,16 @@ class CustomBot(commands.AutoShardedBot):
             self.logger.critical(f"Error selecting from role_list - {e}")
             exit(1)
         for row in interaction_data:
-            self.guild_settings[row['guild_id']]['role_interaction_cooldowns'][row['role_id']] = row['value']
+            self.guild_settings[row['guild_id']]['role_interaction_cooldowns'][row['role_id']] = int(row['value'])
+
+        # Get max sona count
+        try:
+            interaction_data = await db("SELECT * FROM role_list WHERE key='SonaCount'")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from role_list - {e}")
+            exit(1)
+        for row in interaction_data:
+            self.guild_settings[row['guild_id']]['role_sona_count'][row['role_id']] = int(row['value'])
 
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")

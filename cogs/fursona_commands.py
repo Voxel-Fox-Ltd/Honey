@@ -119,6 +119,14 @@ class FursonaComamnds(utils.Cog):
         current_sona_names = [row['name'].lower() for row in rows]
         ctx.current_sona_names = current_sona_names
 
+        # See if they're at the limit
+        try:
+            sona_limit = min(o for i, o in self.bot.guild_settings[ctx.guild.id]['role_sona_count'] if int(i) in ctx.author._roles)
+        except ValueError:
+            sona_limit = 1
+        if len(current_sona_names) >= sona_limit:
+            return await ctx.send("You're already at the sona limit - you have to delete one to be able to set another.")
+
         # See if they're setting one up already
         if ctx.author.id in self.currently_setting_sonas:
             return await ctx.send("You're already setting up a sona! Please finish that one off first!")
@@ -230,7 +238,13 @@ class FursonaComamnds(utils.Cog):
                 rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
             current_sona_names = [row['name'].lower() for row in rows]
 
-        # See if they already have a sona with that name
+        # See if they're at the sona limit
+        try:
+            sona_limit = min(o for i, o in self.bot.guild_settings[ctx.guild.id]['role_sona_count'] if int(i) in ctx.author._roles)
+        except ValueError:
+            sona_limit = 1
+        if len(current_sona_names) >= sona_limit:
+            return await ctx.send("You're already at the sona limit - you have to delete one to be able to set another.")
 
         # Load up the information
         information = getattr(ctx, 'information', None) or json.loads(data)
