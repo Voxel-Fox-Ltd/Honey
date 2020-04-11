@@ -1,5 +1,6 @@
 import typing
-from datetime import datetime as dt
+import collections
+from datetime import datetime as dt, timedelta
 
 import discord
 from discord.ext import commands
@@ -8,6 +9,10 @@ from cogs import utils
 
 
 class ModerationCommands(utils.Cog):
+
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.watched_users = collections.defaultdict(list)  # (guildid, userid): [(modid, timestamp)]
 
     @utils.Cog.listener()
     async def on_guild_role_delete(self, role:discord.Role):
@@ -181,6 +186,7 @@ class ModerationCommands(utils.Cog):
 
     @commands.command(cls=utils.Command)
     @utils.checks.is_guild_moderator()
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str):
         """Adds a warning to a user"""
@@ -196,6 +202,58 @@ class ModerationCommands(utils.Cog):
 
         # Warn the user
         return await ctx.send(f"{user.mention} has been warned by {ctx.author.mention} with reason `{reason}`.")
+
+    @commands.command(cls=utils.Command)
+    @utils.checks.is_guild_moderator()
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def watch(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue=None):
+        """Pipe all of a user's messages (in channels you can see) to your DMs for an hour"""
+
+        if duration is None:
+            delta = timedelta(hours=1)
+        else:
+            delta = duration.delta
+        self.watched_users[(ctx.guild.id, user.id)].append((ctx.author.id, dt.utcnow() + delta))
+        return await ctx.send("Now watching user.")
+
+    @commands.command(cls=utils.Command)
+    @utils.checks.is_guild_moderator()
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def unwatch(self, ctx:utils.Context, user:discord.Member):
+        """Stop watching a user"""
+
+        value = self.watched_users[(ctx.guild.id, user.id)]
+        if value:
+            self.watched_users[(ctx.guild.id, user.id)] = [i for i in value if i[0] != ctx.author.id]
+            return await ctx.send("No longer watching user.")
+        return await ctx.send("You aren't watching that user.")
+
+    @utils.Cog.listener("on_message")
+    async def user_watch_handler(self, message:discord.Message):
+        """Handle pinging users"""
+
+        # Get their watching mods
+        if message.guild is None:
+            return
+        watching_mods = self.watched_users.get((message.guild.id, message.author.id))
+        if watching_mods is None or len(watching_mods) == 0:
+            return
+
+        # DM the mod
+        for mod_id, timestamp in watching_mods:
+            if timestamp < dt.utcnow():
+                continue
+            moderator = message.guild.get_member(mod_id)
+            if moderator is None:
+                continue
+            if message.channel.permissions_for(moderator).read_messages is False:
+                continue
+            try:
+                await moderator.send(f"**Message from {message.author.mention} in {message.guild.name} ({message.channel.mention})**\n{message.content}")
+            except (discord.Forbidden, discord.NotFound):
+                pass
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(kick_members=True)
