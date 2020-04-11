@@ -186,8 +186,7 @@ class CustomBot(commands.AutoShardedBot):
             self.logger.critical(f"Error selecting from role_list - {e}")
             exit(1)
         for row in interaction_data:
-            for key, value in row.items():
-                self.guild_settings[row['guild_id']]['role_interaction_cooldowns'][row['role_id']] = int(value)
+            self.guild_settings[row['guild_id']]['role_interaction_cooldowns'][row['role_id']] = row['value']
 
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")
