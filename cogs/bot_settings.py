@@ -245,9 +245,13 @@ class BotSettings(utils.Cog):
         """Sets the datapoint for a key given its converter and index"""
 
         # Ask the user what they want to update to
+        converter_type = {
+            commands.RoleConverter: "role",
+            commands.TextChannelConverter: "channel"
+        }.get(converter, "value")
         if prompt and prompt[0] == '+':
-            prompt = "What do you want to update this value to? " + prompt[1:]
-        prompt = prompt or "What do you want to update this value to?"
+            prompt = f"What do you want to set this {converter_type} to? " + prompt[1:]
+        prompt = prompt or f"What do you want to set this {converter_type} to?"
         bot_message = await ctx.send(prompt)
         def check(m):
             return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
