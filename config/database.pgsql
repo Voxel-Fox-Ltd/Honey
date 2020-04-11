@@ -42,7 +42,8 @@ CREATE TABLE infractions(
     user_id BIGINT,
     infraction_type type,
     infraction_reason VARCHAR(60),
-    timestamp timestamp
+    timestamp TIMESTAMP,
+    deleted_by BIGINT
 );
 
 
@@ -50,7 +51,7 @@ CREATE TABLE temporary_roles(
     guild_id BIGINT,
     role_id BIGINT,
     user_id BIGINT,
-    remove_timestamp timestamp,
+    remove_timestamp TIMESTAMP,
     PRIMARY KEY (guild_id, role_id, user_id)
 );
 
