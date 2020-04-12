@@ -1,67 +1,27 @@
-# DiscordpyBotBase
+# Honey
 
-This is a base bot template that I tend to use in all of the bots I make. This skips all of the copy/pasting I would have to do for commands like invite, Github, all of the error handling and database handling, etc.
+Honey is a multiple use public Furry Discord bot. It's got a few features you may be interested in, so I'll try and list stuff for you here. Its prefix is `f.` by default, but you can update it with `f.prefix` (eg `f.prefix ;`). You can set up all relevant roles, channels, and settings with `f.setup`.
 
-## How to use
+[Add Honey to your server now!](https://discordapp.com/oauth2/authorize?client_id=690477072270753792&scope=bot&permissions=268484614)
 
-This repository is marked as a template, so you should just be able to make a new repo based on this one. If you don't want to do that, you can add this repo as a remote and pull or clone it so you can make your own. It's all pretty alright, but I'm willing to take PRs or suggestions on how to make this better.
+## Fursona Storage
 
-## What's in it
+Honey is able to store your fursonas! Just run `f.setsona` and the bot will DM you to talk you through setting one up. These can later be pulled up with `f.sona` for yourself, or `f.sona @User` to look at someone else's sona.
 
-You may be thinking "why the heckie hoo would I use this?"
+Server mods can set up an approval flow so sonas have to be verified before they can be pulled up by other users - all relevant settings are shown in `f.setup`. Mods can also set up certain roles on the server to have more allowed sonas - users are allowed one sona by default, but mods can raise this limit per role.
 
-You'd be right! It's the same as normal D.py (mostly) with just a lil few changes. Which I'll now note!
+## Moderation Commands
 
-### Database
+All the classic moderation commands like kick, mute, ban, warn, and infractions are all present. Also present is the `f.watch @User` command for when mods need to keep a closer eye on any given user. Logs of what commands mods are running can all be sent to a modlogs channel, set with the `f.setup` command.
 
-I've included a database util! It's great! I like it! It uses PostgreSQL, using the data supplied in your [config file](config/config.example.json). Used like so:
+## Custom Roles
 
-```py
-async with self.bot.database() as db:
-    await db("INSERT INTO table_name (a, b, c) VALUES ($1, $2, $3)", 1, 2, 3)
-    data = await db("SELECT * FROM table_name")
-for row in data:
-    print(row['a'])
-```
+Many servers use a custom role system for their Patreon supporters, so Honey is looking to incorperate these things. Using the `f.customrole create` commands, users with the Patreon role can create a custom role, which they can later change the name/colour of using the `f.customrole colour #5dadec` or `f.customrole name Renamed Role` commands. Only users with a designated role (set in `f.setup`) can create/manage custom roles.
 
-### Redis
+## Verification System
 
-REDIS! What a gem. I've only used it a couple of times so I'm not a big expert and I've not added a whole bunch to the util for it, but it's used in much the same way as the database in terms of SET/GET at least.
+It's understood that some servers want a verification system in place for allowing new people into a server, which is why Honey has the `f.verify` command! Once you set up a verification role via `f.setup`, you can assign the verified role to a user with the `f.verify` command.
 
-```py
-async with self.bot.redis() as re:
-    await re.set("KEY", "Value")
-    data = await re.get("KEY")
-if data is not None:
-    print(data)
-```
+## Interaction Commands
 
-### Cooldowns
-
-Rapptz's cooldown handling is not great if you want to do anything more complicated than "you all get cooldowns for X time". You want cooldowns in some channels and not others? You want cooldowns based on roles? That's possible with this.
-
-```py
-@commands.command(cls=utils.Command)
-@utils.cooldown.cooldown(1, 60, commands.BucketType.user, cls=utils.cooldown.RoleBasedCooldown())
-async def commandname(self, ctx):
-    ...
-
-@commands.command(cls=utils.Command)
-@utils.cooldown.cooldown(1, 60, commands.BucketType.user, cls=utils.cooldown.CooldownWithChannelExemptions(cooldown_in=["general"]))
-async def commandname(self, ctx):
-    ...
-```
-
-The current cooldowns I've got built into this right now aren't really wonderful but all of the systems are there for if you want to expand it.
-
-### Context Embeds
-
-Setting up embeds always looked a bit messy to me, so I just added support for the `with` syntax so I could clean it up a lil. Apart from that they work pretty much identically to normal embeds.
-
-```py
-with utils.Embed() as embed:
-    embed.set_author(name="Test")
-    embed.set_author_to_user(user=self.bot.get_user(user_id))
-    embed.description = "Lorem ipsum"
-    embed.use_random_colour()
-```
+The classic `f.hug @User` is back. Many commands including hug, pat, kiss, and nuzzle are all available within the bot. Interactions can be run once every 30 minutes, but server mods can set certain roles to have a lower cooldown, allowing systems like Patreon perks to be in place, ie lower cooldowns for higher tiers of support.
