@@ -1,6 +1,6 @@
 token = "bot_token"
 owners = [ 141231597155385344, 590794167362388011, ]  # The first should always be the developer
-default_prefix = "!"  # The prefix for the bot's commands
+default_prefix = "h."  # The prefix for the bot's commands
 guild_id = 1  # The ID of the main/support guild
 dm_uncaught_errors = false
 

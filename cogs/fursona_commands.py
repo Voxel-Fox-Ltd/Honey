@@ -30,7 +30,7 @@ class FursonaPageSource(menus.ListPageSource):
         }
 
 
-class FursonaComamnds(utils.Cog):
+class FursonaCommands(utils.Cog):
 
     OTHER_FURRY_GUILD_DATA = [
         {
@@ -553,5 +553,5 @@ class FursonaComamnds(utils.Cog):
 
 
 def setup(bot:utils.Bot):
-    x = FursonaComamnds(bot)
+    x = FursonaCommands(bot)
     bot.add_cog(x)
