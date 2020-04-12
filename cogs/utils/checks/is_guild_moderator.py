@@ -26,6 +26,8 @@ def is_guild_moderator():
 
     async def predicate(ctx:commands.Context):
 
+        if ctx.guild is None:
+            raise NotGuildModerator(None)
         if is_guild_moderator_predicate(ctx):
             return True
         mod_role_id = ctx.bot.guild_settings[ctx.guild.id].get("guild_moderator_role_id")
