@@ -1,5 +1,4 @@
 import asyncio
-import typing
 
 import asyncpg
 import discord
@@ -495,7 +494,7 @@ class BotSettings(utils.Cog):
 
         # Convert the user's message
         if hasattr(converter, 'convert'):
-        # if isinstance(converter, commands.Converter):
+            # if isinstance(converter, commands.Converter):
             try:
                 converter = converter()
             except TypeError:
@@ -507,7 +506,7 @@ class BotSettings(utils.Cog):
         else:
             try:
                 value = converter(user_message.content)
-            except Exception as e:
+            except Exception:
                 value = None
 
         # Delete messages
