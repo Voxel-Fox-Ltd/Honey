@@ -79,6 +79,12 @@ class ItemHandler(utils.Cog):
             # Get a random role colour
             colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
 
+            # See if there's any point
+            upper_roles = [i for i in user.roles if i.position >= role_position.position and i.colour.value > 0]
+            if upper_roles:
+                await db.disconnect()
+                return await ctx.send("There's no point in painting that user - they have coloured roles above the paint role positions.")
+
             # Make a role
             try:
                 role: discord.Role = await ctx.guild.create_role(
