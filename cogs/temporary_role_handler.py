@@ -30,22 +30,30 @@ class TemporaryRoleHandler(utils.Cog):
         for row in rows:
             if row['remove_timestamp'] > dt.utcnow():
                 continue
+
+            # Get the relevant information
             removed_roles.append((row['guild_id'], row['role_id'], row['user_id']))
             guild = self.bot.get_guild(row['guild_id'])
             member = guild.get_member(row['user_id'])
-            if member is None:
-                continue
             role = guild.get_role(row['role_id'])
-            if role is None:
-                continue
-            try:
-                await member.remove_roles(role, reason="Role duration expired")
-            except (discord.Forbidden, discord.NotFound):
-                pass
-            try:
-                await member.send(f"Removed the `{role.name}` role from you in the server **{guild.name}** - duration expired.")
-            except (discord.Forbidden, discord.NotFound):
-                pass
+
+            # Remove the role
+            if role is not None and row['delete_role']:
+                try:
+                    await role.delete(reason="Temporary role expired")
+                except (discord.Forbidden, discord.NotFound):
+                    pass
+            elif role is not None and member is not None:
+                try:
+                    await member.remove_roles(role, reason="Role duration expired")
+                except (discord.Forbidden, discord.NotFound):
+                    pass
+
+                # DM the user
+                try:
+                    await member.send(f"Removed the `{role.name}` role from you in the server **{guild.name}** - duration expired.")
+                except (discord.Forbidden, discord.NotFound):
+                    pass
 
         # Remove from db
         for guild_id, role_id, user_id in removed_roles:

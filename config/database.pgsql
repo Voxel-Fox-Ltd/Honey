@@ -52,6 +52,7 @@ CREATE TABLE temporary_roles(
     role_id BIGINT,
     user_id BIGINT,
     remove_timestamp TIMESTAMP,
+    delete_role BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (guild_id, role_id, user_id)
 );
 
