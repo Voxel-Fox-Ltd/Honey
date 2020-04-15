@@ -67,6 +67,7 @@ class ShopHandler(utils.Cog):
             return
         user = self.bot.get_user(payload.user_id)
         guild = self.bot.get_guild(payload.guild_id)
+        channel = self.bot.get_channel(payload.channel_id)
 
         # Check the reaction they're giving
         emoji = str(payload.emoji)
@@ -102,6 +103,13 @@ class ShopHandler(utils.Cog):
         )
         await db.commit_transaction()
         await db.disconnect()
+
+        # Try and remove the reaction
+        try:
+            message = await channel.fetch_message(payload.message_id)
+            await message.remove_reaction(payload.emoji, guild.get_member(payload.user_id))
+        except (discord.Forbidden, discord.NotFound, discord.HTTPException):
+            pass
 
         # Send them a DM
         try:
