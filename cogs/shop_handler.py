@@ -6,6 +6,10 @@ from cogs import utils
 
 class ShopHandler(utils.Cog):
 
+    SHOP_ITEMS = {
+        "\N{LOWER LEFT PAINTBRUSH}": ("\N{LOWER LEFT PAINTBRUSH}", "Paintbrush", 100, "Paint your friends, paint your enemies. Adds a custom paint colour role to you for an hour.")
+    }
+
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True, external_emojis=True)
@@ -36,11 +40,8 @@ class ShopHandler(utils.Cog):
         # Make a shop message
         coin_emoji = self.bot.guild_settings[ctx.guild.id].get("coin_emoji", None) or "coins"
         with utils.Embed() as embed:
-            embed.add_field(
-                f"Paintbrush (\N{LOWER LEFT PAINTBRUSH}) - 100 {coin_emoji}",
-                "Paint your friends, paint your enemies. Adds a custom paint colour role to you for an hour.",
-                inline=False,
-            )
+            for emoji, (_, name, amount, description) in self.SHOP_ITEMS.items():
+                embed.add_field(f"{name} ({name}) - {amount} {coin_emoji}", description, inline=False)
         shop_message = await shop_channel.send(embed=embed)
         await shop_message.add_reaction("\N{LOWER LEFT PAINTBRUSH}")
 
@@ -69,9 +70,7 @@ class ShopHandler(utils.Cog):
 
         # Check the reaction they're giving
         emoji = str(payload.emoji)
-        item_data = {
-            "\N{LOWER LEFT PAINTBRUSH}": ("Paintbrush", 100)
-        }.get(emoji)
+        item_data = self.SHOP_ITEMS.get(emoji)
 
         # Not a valid reaction
         if item_data is None:
@@ -84,22 +83,22 @@ class ShopHandler(utils.Cog):
         # Check their money
         db = await self.bot.database.get_connection()
         rows = await db("SELECT * FROM user_money WHERE guild_id=$1 AND user_id=$2", payload.guild_id, payload.user_id)
-        if not rows or rows[0]['amount'] < item_data[1]:
+        if not rows or rows[0]['amount'] < item_data[2]:
             await db.disconnect()
             try:
-                await user.send(f"You don't have enough to purchase a **{item_data[0]}** item in **{guild.name}**!")
+                await user.send(f"You don't have enough to purchase a **{item_data[1]}** item in **{guild.name}**!")
             except (discord.Forbidden, AttributeError):
                 pass
             return
 
         # Alter their inventory
         await db.start_transaction()
-        await db("UPDATE user_money SET amount=amount-$3 WHERE guild_id=$1 AND user_id=$2", payload.guild_id, payload.user_id, item_data[1])
+        await db("UPDATE user_money SET amount=amount-$3 WHERE guild_id=$1 AND user_id=$2", payload.guild_id, payload.user_id, item_data[2])
         await db(
             """INSERT INTO user_inventory (guild_id, user_id, item_name, amount)
             VALUES ($1, $2, $3, $4) ON CONFLICT (guild_id, user_id, item_name) DO UPDATE SET
             amount=user_inventory.amount+excluded.amount""",
-            payload.guild_id, payload.user_id, item_data[0], 1
+            payload.guild_id, payload.user_id, item_data[1], 1
         )
         await db.commit_transaction()
         await db.disconnect()
