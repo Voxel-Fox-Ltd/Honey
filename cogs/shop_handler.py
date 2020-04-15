@@ -7,7 +7,7 @@ from cogs import utils
 class ShopHandler(utils.Cog):
 
     SHOP_ITEMS = {
-        "\N{LOWER LEFT PAINTBRUSH}": ("\N{LOWER LEFT PAINTBRUSH}", "Paintbrush", 100, "Paint your friends, paint your enemies. Adds a custom paint colour role to you for an hour.")
+        "\N{LOWER LEFT PAINTBRUSH}": ("\N{LOWER LEFT PAINTBRUSH}", "Paintbrush", 100, "Paint your friends, paint your enemies. Adds a custom paint colour role to you for an hour.", ['Paint'])
     }
 
     @commands.command(cls=utils.Command)
