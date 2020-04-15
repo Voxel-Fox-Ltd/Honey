@@ -57,6 +57,7 @@ class CustomBot(commands.AutoShardedBot):
             'custom_role_id': None,
             'custom_role_position_id': None,
             'coin_emoji': None,
+            'shop_message_id': None,
             'role_interaction_cooldowns': dict(),
             'role_sona_count': dict(),
         }
@@ -198,6 +199,15 @@ class CustomBot(commands.AutoShardedBot):
             exit(1)
         for row in interaction_data:
             self.guild_settings[row['guild_id']]['role_sona_count'][row['role_id']] = int(row['value'])
+
+        # Get shop message ID
+        try:
+            interaction_data = await db("SELECT * FROM shopping_channels")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from shopping_channels - {e}")
+            exit(1)
+        for row in interaction_data:
+            self.guild_settings[row['guild_id']]['shop_message_id'] = row['message_id']
 
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")

@@ -83,6 +83,15 @@ CREATE TABLE user_money(
 );
 
 
+CREATE TABLE user_inventory(
+    guild_id BIGINT,
+    user_id BIGINT,
+    item_name VARCHAR(100),
+    amount INTEGER,
+    PRIMARY KEY (guild_id, user_id, item_name)
+);
+
+
 CREATE TABLE shopping_channels(
     guild_id BIGINT PRIMARY KEY,
     channel_id BIGINT,
