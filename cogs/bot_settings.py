@@ -62,6 +62,7 @@ class BotSettings(utils.Cog):
                     "2\N{COMBINING ENCLOSING KEYCAP} Set up roles",
                     "3\N{COMBINING ENCLOSING KEYCAP} Set up interaction cooldowns",
                     "4\N{COMBINING ENCLOSING KEYCAP} Set up max sona counts",
+                    "5\N{COMBINING ENCLOSING KEYCAP} Misc settings",
                 ])
 
             # Send embed
@@ -79,6 +80,7 @@ class BotSettings(utils.Cog):
                 "2\N{COMBINING ENCLOSING KEYCAP}": "setup roles",
                 "3\N{COMBINING ENCLOSING KEYCAP}": "setup interactions",
                 "4\N{COMBINING ENCLOSING KEYCAP}": "setup sonacount",
+                "5\N{COMBINING ENCLOSING KEYCAP}": "setup misc",
                 self.TICK_EMOJI: None,
             }
             def check(r, u):
@@ -417,6 +419,67 @@ class BotSettings(utils.Cog):
                     )
                 self.bot.guild_settings[ctx.guild.id]['role_sona_count'][new_role.id] = sona_amount
 
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def misc(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        message = None
+        while True:
+
+            # Construct embed
+            guild_settings = self.bot.guild_settings[ctx.guild.id]
+            with utils.Embed() as embed:
+                embed.description = '\n'.join([
+                    "1\N{COMBINING ENCLOSING KEYCAP} Set coin emoji (currently `{0}`)".format(guild_settings.get("coin_emoji") or " coins"),
+                ])
+
+            # Send embed
+            if message is None:
+                message = await ctx.send(embed=embed)
+                for i in range(1, embed.description.count('\n') + 2):
+                    await message.add_reaction(f"{i}\N{COMBINING ENCLOSING KEYCAP}")
+                await message.add_reaction(self.TICK_EMOJI)
+            else:
+                await message.edit(embed=embed)
+
+            # Wait for added reaction
+            emoji_key_map = {
+                "1\N{COMBINING ENCLOSING KEYCAP}": ("coin_emoji", str, "What do you want to set the coin emoji to? This appears when users run the coins command."),
+                self.TICK_EMOJI: None,
+            }
+            def check(r, u):
+                return u.id == ctx.author.id and r.message.id == message.id and str(r.emoji) in emoji_key_map.keys()
+            try:
+                r, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
+            except asyncio.TimeoutError:
+                return await ctx.send("Timed out setting up misc.")
+
+            # See what our key is
+            emoji = str(r.emoji)
+            key = emoji_key_map[emoji]
+            if key is None:
+                try:
+                    await message.delete()
+                except discord.HTTPException:
+                    pass
+                return
+
+            # Try and remove their reaction
+            try:
+                await message.remove_reaction(r, ctx.author)
+            except discord.Forbidden:
+                pass
+
+            # And do some settin up
+            v = await self.set_data_in_guild_settings(ctx, key[0], key[1], prompt=key[2])
+            if v is None:
+                try:
+                    await message.delete()
+                except discord.HTTPException:
+                    pass
+                return
+
     async def ask_for_information(self, ctx:utils.Context, prompt:str, asking_for:str, converter:commands.Converter):
         """Ask for some user information babeyeyeyeyyeyeyeye"""
 
@@ -471,11 +534,7 @@ class BotSettings(utils.Cog):
         prompt = prompt or f"What do you want to set this {converter_type} to?"
 
         # Ask the user
-        asking_for = {
-            commands.RoleConverter: "role",
-            commands.TextChannelConverter: "channel",
-        }
-        value = await self.ask_for_information(ctx, prompt, asking_for, converter)
+        value = await self.ask_for_information(ctx, prompt, converter_type, converter)
         if value is None:
             return True
 
