@@ -32,7 +32,7 @@ CREATE TABLE fursonas(
 );
 
 
-CREATE TYPE type AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute', 'Verify', 'Tempmute');
+CREATE TYPE moderation_action AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute', 'Verify', 'Tempmute');
 
 
 CREATE TABLE infractions(
@@ -40,7 +40,7 @@ CREATE TABLE infractions(
     guild_id BIGINT,
     moderator_id BIGINT,
     user_id BIGINT,
-    infraction_type type,
+    infraction_type moderation_action,
     infraction_reason VARCHAR(60),
     timestamp TIMESTAMP,
     deleted_by BIGINT
