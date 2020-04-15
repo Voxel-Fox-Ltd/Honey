@@ -65,8 +65,8 @@ class ShopHandler(utils.Cog):
         guild_settings = self.bot.guild_settings[payload.guild_id]
         if guild_settings['shop_message_id'] != payload.message_id:
             return
-        user = self.bot.get_user(payload.user_id)
         guild = self.bot.get_guild(payload.guild_id)
+        user = guild.get_member(payload.user_id)
         channel = self.bot.get_channel(payload.channel_id)
 
         # Check the reaction they're giving
@@ -94,7 +94,8 @@ class ShopHandler(utils.Cog):
 
         # Alter their inventory
         await db.start_transaction()
-        await db("UPDATE user_money SET amount=amount-$3 WHERE guild_id=$1 AND user_id=$2", payload.guild_id, payload.user_id, item_data[2])
+        await db("UPDATE user_money SET amount=user_money.amount-$3 WHERE guild_id=$1 AND user_id=$2", guild.id, user.id, item_data[2])
+        await db("UPDATE user_money SET amount=user_money.amount+$3 WHERE guild_id=$1 AND user_id=$2", guild.id, guild.me.id, item_data[2])
         await db(
             """INSERT INTO user_inventory (guild_id, user_id, item_name, amount)
             VALUES ($1, $2, $3, $4) ON CONFLICT (guild_id, user_id, item_name) DO UPDATE SET
