@@ -472,7 +472,7 @@ class BotSettings(utils.Cog):
                 pass
 
             # And do some settin up
-            v = await self.set_data_in_guild_settings(ctx, key[0], key[1], prompt=key[2])
+            v = await self.set_data_in_guild_settings(ctx, key[0], key[1], prompt=key[2], attrs=[])
             if v is None:
                 try:
                     await message.delete()
@@ -521,7 +521,7 @@ class BotSettings(utils.Cog):
             pass
         return value
 
-    async def set_data_in_guild_settings(self, ctx:utils.Context, key:str, converter:commands.Converter, *, prompt:str=None):
+    async def set_data_in_guild_settings(self, ctx:utils.Context, key:str, converter:commands.Converter, *, prompt:str=None, attrs:list=['id']):
         """Sets the datapoint for a key given its converter and index"""
 
         # Ask the user what they want to update to
@@ -538,10 +538,15 @@ class BotSettings(utils.Cog):
         if value is None:
             return True
 
+        # Get our attrs from the value
+        set_value = value
+        for i in attrs:
+            set_value = getattr(set_value, i)
+
         # Save to db
         async with self.bot.database() as db:
-            await db(f"INSERT INTO guild_settings (guild_id, {key}) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET {key}=excluded.{key}", ctx.guild.id, value.id)
-        self.bot.guild_settings[ctx.guild.id][key] = value.id
+            await db(f"INSERT INTO guild_settings (guild_id, {key}) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET {key}=excluded.{key}", ctx.guild.id, set_value)
+        self.bot.guild_settings[ctx.guild.id][key] = set_value
         return True
 
 

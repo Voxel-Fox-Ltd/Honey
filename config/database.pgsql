@@ -73,3 +73,11 @@ CREATE TABLE role_list(
     value VARCHAR(50),
     PRIMARY KEY (guild_id, role_id, key)
 );
+
+
+CREATE TABLE user_money(
+    guild_id BIGINT,
+    user_id BIGINT,
+    amount INTEGER,
+    PRIMARY KEY (guild_id, user_id)
+);

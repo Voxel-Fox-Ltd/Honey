@@ -34,7 +34,7 @@ class EconomyHandler(utils.Cog):
                         DO UPDATE SET amount=user_money.amount+excluded.amount""",
                         guild.id, guild.me.id
                     )
-                    await db("INSERT INTO user_money (guild_id, user_id, amount) VALUES ($1, $2, 10000)", guild.id, member.id)
+                    await db("INSERT INTO user_money (guild_id, user_id, amount) VALUES ($1, $2, 0)", guild.id, member.id)
                     await db.commit_transaction()
 
     @utils.Cog.listener("on_member_join")
@@ -81,10 +81,10 @@ class EconomyHandler(utils.Cog):
             rows = await db("SELECT * FROM user_money WHERE guild_id=$1 AND user_id=$2", user.guild.id, user.id)
 
         # Throw it into an embed
-        coin_emoji = self.bot.guild_Settings[ctx.guild.id].get("coin_emoji", None) or " coins"
+        coin_emoji = self.bot.guild_settings[ctx.guild.id].get("coin_emoji", None) or "coins"
         with utils.Embed(user_random_colour=True) as embed:
             embed.set_author_to_user(user)
-            embed.description = f"{rows[0]['amount']}{coin_emoji}"
+            embed.description = f"{rows[0]['amount']} {coin_emoji}"
         return await ctx.send(embed=embed)
 
 
