@@ -10,6 +10,8 @@ Honey is able to store your fursonas! Just run `h.setsona` and the bot will DM y
 
 Server mods can set up an approval flow so sonas have to be verified before they can be pulled up by other users - all relevant settings are shown in `h.setup`. Mods can also set up certain roles on the server to have more allowed sonas - users are allowed one sona by default, but mods can raise this limit per role.
 
+Already made a sona through the bot and you want to import that into a new server? You can run `h.importsona` and the bot'll talk you through copying a sona from one of your servers into another. Currently supported are all servers where you use Honey, as well as The Furry Kingdom and Winterhaven.
+
 ## Moderation Commands
 
 All the classic moderation commands like kick, mute, ban, warn, and infractions are all present. Also present is the `h.watch @User` command for when mods need to keep a closer eye on any given user. Logs of what commands mods are running can all be sent to a modlogs channel, set with the `h.setup` command.
