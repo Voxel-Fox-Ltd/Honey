@@ -72,8 +72,9 @@ class ItemHandler(utils.Cog):
             # See if there's a valid role position
             guild_settings = self.bot.guild_settings[ctx.guild.id]
             role_position_role_id = guild_settings.get('custom_role_position_id')
-            role_position_role = ctx.guild.get_role(role_position_role_id)
-            if role_position_role is None:
+            try:
+                role_position_role = [i for i in await ctx.guild.fetch_roles() if i.id == role_position_role_id][0]
+            except IndexError:
                 await db.disconnect()
                 return await ctx.send(f"This item can't be used unless the custom role position is set (`{ctx.prefix}setup`).")
             position = role_position_role.position

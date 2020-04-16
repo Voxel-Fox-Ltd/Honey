@@ -130,9 +130,11 @@ class CustomRoleHandler(utils.Cog):
         position = 1
         position_role_id = self.bot.guild_settings[ctx.guild.id].get('custom_role_position_id')
         if position_role_id:
-            position_role = ctx.guild.get_role(position_role_id)
-            if position_role:
+            try:
+                position_role = [i for i in await ctx.guild.fetch_roles() if i.id == position_role_id][0]
                 position = position_role.position
+            except IndexError:
+                pass
 
         # Create role
         try:
