@@ -124,7 +124,7 @@ class EconomyHandler(utils.Cog):
         self.last_message[(message.guild.id, message.author.id)] = dt.utcnow()
 
         # Add some money to the user
-        amount = random.randint(15, 25)
+        amount = random.randint(3, 5)
         async with self.bot.database() as db:
             await db.start_transaction()
             await db(
