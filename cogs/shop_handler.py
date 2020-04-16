@@ -73,6 +73,13 @@ class ShopHandler(utils.Cog):
         emoji = str(payload.emoji)
         item_data = self.SHOP_ITEMS.get(emoji)
 
+        # Try and remove the reaction
+        try:
+            message = await channel.fetch_message(payload.message_id)
+            await message.remove_reaction(payload.emoji, guild.get_member(payload.user_id))
+        except (discord.Forbidden, discord.NotFound, discord.HTTPException):
+            pass
+
         # Not a valid reaction
         if item_data is None:
             try:
@@ -104,13 +111,6 @@ class ShopHandler(utils.Cog):
         )
         await db.commit_transaction()
         await db.disconnect()
-
-        # Try and remove the reaction
-        try:
-            message = await channel.fetch_message(payload.message_id)
-            await message.remove_reaction(payload.emoji, guild.get_member(payload.user_id))
-        except (discord.Forbidden, discord.NotFound, discord.HTTPException):
-            pass
 
         # Send them a DM
         try:
