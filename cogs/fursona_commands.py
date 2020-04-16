@@ -459,7 +459,7 @@ class FursonaCommands(utils.Cog):
                     text = f"Sona of {fursona_member.mention} declined by <@{payload.user_id}>"
                     archive_embed = None
                 await archive_channel.send(text, embed=archive_embed)
-            except discord.Forbidden:
+            except (discord.Forbidden, AttributeError):
                 pass
 
         # Delete from modmail
