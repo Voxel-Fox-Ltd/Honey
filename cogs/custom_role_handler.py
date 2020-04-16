@@ -45,7 +45,7 @@ class CustomRoleHandler(utils.Cog):
 
         # Edit name
         try:
-            await role.edit(name=name)
+            await role.edit(name=name.strip() + " (Custom)")
         except discord.Forbidden:
             return await ctx.send("I'm unable to edit your custom role.")
         except discord.NotFound:
@@ -136,7 +136,7 @@ class CustomRoleHandler(utils.Cog):
 
         # Create role
         try:
-            new_role = await ctx.guild.create_role(name=f"Custom Role: {ctx.author.id}")
+            new_role = await ctx.guild.create_role(name=f"{ctx.author.id} (Custom)")
             await new_role.edit(position=position)
         except discord.Forbidden:
             return await ctx.send("I'm unable to create new roles on this server.")
