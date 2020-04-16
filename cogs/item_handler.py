@@ -72,34 +72,33 @@ class ItemHandler(utils.Cog):
             # See if there's a valid role position
             guild_settings = self.bot.guild_settings[ctx.guild.id]
             role_position_role_id = guild_settings.get('custom_role_position_id')
-            role_position = ctx.guild.get_role(role_position_role_id)
-            if role_position is None:
+            role_position_role = ctx.guild.get_role(role_position_role_id)
+            if role_position_role is None:
                 await db.disconnect()
                 return await ctx.send(f"This item can't be used unless the custom role position is set (`{ctx.prefix}setup`).")
+            position = role_position_role.position
 
             # Get a random role colour
             colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
 
             # See if there's any point
-            upper_roles = [i for i in user.roles if i.position >= role_position.position and i.colour.value > 0]
+            upper_roles = [i for i in user.roles if i.position >= position and i.colour.value > 0]
             if upper_roles:
                 await db.disconnect()
                 return await ctx.send("There's no point in painting that user - they have coloured roles above the paint role positions.")
 
             # Make a role
             try:
-                role: discord.Role = await ctx.guild.create_role(
+                role = await ctx.guild.create_role(
                     name=colour_name.title(), colour=discord.Colour(colour_value), reason="Paintbrush used"
                 )
+                await role.edit(position=position)
             except discord.Forbidden:
                 await db.disconnect()
                 return await ctx.send("I couldn't make a new colour role for you.")
-
-            # Update its position
-            try:
-                await role.edit(position=role_position.position - 1)
-            except discord.HTTPException as e:
-                self.logger.error(e)
+            except discord.HTTPException:
+                await db.disconnect()
+                return await ctx.send("I couldn't make a new colour role for you - I think the server may have hit the role limit?")
 
             # Add it to the user
             try:
