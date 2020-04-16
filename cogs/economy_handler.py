@@ -1,4 +1,7 @@
+import collections
 import random
+import re
+from datetime import datetime as dt, timedelta
 
 import discord
 from discord.ext import commands
@@ -7,6 +10,12 @@ from cogs import utils
 
 
 class EconomyHandler(utils.Cog):
+
+    EMOJI_REGEX = re.compile(r"<:.{1,32}:\d{16,32}>")
+
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.last_message = collections.defaultdict(lambda: dt(2000, 1, 1))
 
     @utils.Cog.listener("on_ready")
     async def free_money_handler(self):
@@ -62,7 +71,7 @@ class EconomyHandler(utils.Cog):
                 DO UPDATE SET amount=user_money.amount+excluded.amount""",
                 member.guild.id, member.guild.me.id
             )
-            await db("INSERT INTO user_money (guild_id, user_id, amount) VALUES ($1, $2, 10000)", member.guild.id, member.id)
+            await db("INSERT INTO user_money (guild_id, user_id, amount) VALUES ($1, $2, 0)", member.guild.id, member.id)
             await db.commit_transaction()
 
     @commands.command(cls=utils.Command, enabled=False)
@@ -95,6 +104,38 @@ class EconomyHandler(utils.Cog):
             "Placeholder work text giving you {amount} coins xoxo"
         ]).format(guild=ctx.guild, user=ctx.author, channel=ctx.channel, amount=amount)
         await ctx.send(work_text)
+
+    @utils.Cog.listener("on_message")
+    async def user_message_money_handler(self, message:discord.Message):
+        """Add some money to the user's account when they send a message"""
+
+        # Add some filters
+        if message.guild is None:
+            return
+        clean_emojiless_content = self.EMOJI_REGEX.sub("x", message.clean_content)
+        if len(clean_emojiless_content.replace(" ", "")) <= 3:
+            return
+        if message.author.bot:
+            return
+        if self.last_message[(message.guild.id, message.author.id)] + timedelta(minutes=1) > dt.utcnow():
+            return
+
+        # Update timestamp
+        self.last_message[(message.guild.id, message.author.id)] = dt.utcnow()
+
+        # Add some money to the user
+        amount = random.randint(15, 25)
+        async with self.bot.database() as db:
+            await db.start_transaction()
+            await db(
+                "UPDATE user_money SET amount=user_money.amount+$3 WHERE guild_id=$1 AND user_id=$2",
+                message.guild.id, message.author.id, amount,
+            )
+            await db(
+                "UPDATE user_money SET amount=user_money.amount-$3 WHERE guild_id=$1 AND user_id=$2",
+                message.guild.id, message.guild.me.id, amount,
+            )
+            await db.commit_transaction()
 
 
 def setup(bot:utils.Bot):
