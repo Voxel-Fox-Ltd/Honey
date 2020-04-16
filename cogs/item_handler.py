@@ -64,6 +64,7 @@ class ItemHandler(utils.Cog):
 
         # Use the item
         user = user or ctx.author
+        await ctx.trigger_typing()
 
         # Paint
         if item_data[1] == "Paintbrush":
