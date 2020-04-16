@@ -114,7 +114,8 @@ class ShopHandler(utils.Cog):
 
         # Send them a DM
         try:
-            await user.send(f"You just bought 1x **{item_data[0]}** in **{guild.name}**!")
+            guild_prefix = self.bot.guild_settings[payload.guild_id].get("prefix")
+            await user.send(f"You just bought 1x **{item_data[0]}** in **{guild.name}**! You can use it with the `{guild_prefix}use {item_data[1].lower()}` command.")
         except (discord.Forbidden, AttributeError):
             pass
         return
