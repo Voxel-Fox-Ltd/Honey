@@ -49,7 +49,8 @@ class TemporaryRoleHandler(utils.Cog):
                 except (discord.Forbidden, discord.NotFound):
                     pass
 
-                # DM the user
+            # DM the user
+            if role is not None and member is not None:
                 try:
                     await member.send(f"Removed the `{role.name}` role from you in the server **{guild.name}** - duration expired.")
                 except (discord.Forbidden, discord.NotFound):
