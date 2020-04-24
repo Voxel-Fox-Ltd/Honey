@@ -36,6 +36,7 @@ class ShopHandler(utils.Cog):
             ctx.author: user_permissions,
         }
         shop_channel = await ctx.guild.create_text_channel("coin-shop", overwrites=overwrites)
+        self.logger.info(f"Created shop channel (G{shop_channel.guild.id}/C{shop_channel.id})")
 
         # Make a shop message
         coin_emoji = self.bot.guild_settings[ctx.guild.id].get("coin_emoji", None) or "coins"
@@ -44,6 +45,7 @@ class ShopHandler(utils.Cog):
                 embed.add_field(f"{name} ({name}) - {amount} {coin_emoji}", description, inline=False)
         shop_message = await shop_channel.send(embed=embed)
         await shop_message.add_reaction("\N{LOWER LEFT PAINTBRUSH}")
+        self.logger.info(f"Created shop channel shop message (G{shop_channel.guild.id}/C{shop_channel.id}/M{shop_message.id})")
 
         # Save it all to db
         async with self.bot.database() as db:
@@ -86,6 +88,7 @@ class ShopHandler(utils.Cog):
                 await user.send(f"The emoji you added to the shop channel in **{guild.name}** doesn't refer to a valid shop item.")
             except (discord.Forbidden, AttributeError):
                 pass
+            self.logger.info(f"Invalid reaction on shop message (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")
             return
 
         # Check their money
@@ -97,6 +100,7 @@ class ShopHandler(utils.Cog):
                 await user.send(f"You don't have enough to purchase a **{item_data[1]}** item in **{guild.name}**!")
             except (discord.Forbidden, AttributeError):
                 pass
+            self.logger.info(f"User unable to purchase item (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")
             return
 
         # Alter their inventory
@@ -118,6 +122,7 @@ class ShopHandler(utils.Cog):
             await user.send(f"You just bought 1x **{item_data[0]}** in **{guild.name}**! You can use it with the `{guild_prefix}use {item_data[1].lower()}` command.")
         except (discord.Forbidden, AttributeError):
             pass
+        self.logger.info(f"User successfully purchased item (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")
         return
 
 
