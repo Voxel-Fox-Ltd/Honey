@@ -20,7 +20,6 @@ class TemporaryRoleHandler(utils.Cog):
         """Loops once a minute to remove the roles of a user should they need to be taken"""
 
         # Get data
-        self.logger.info(f"Attempting to remove/delete expired temporary roles")
         db = await self.bot.database.get_connection()
         rows = await db("SELECT * FROM temporary_roles")
         if not rows:
@@ -66,6 +65,7 @@ class TemporaryRoleHandler(utils.Cog):
 
         # Disconnect from db
         await db.disconnect()
+        self.logger.info(f"Removed/deleted {len(removed_roles)} expired temporary roles")
 
     @role_removal_handler.before_loop
     async def before_role_removal_handler(self):
