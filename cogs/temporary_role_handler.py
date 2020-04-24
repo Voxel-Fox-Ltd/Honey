@@ -20,6 +20,7 @@ class TemporaryRoleHandler(utils.Cog):
         """Loops once a minute to remove the roles of a user should they need to be taken"""
 
         # Get data
+        self.logger.info(f"Attempting to remove/delete expired temporary roles")
         db = await self.bot.database.get_connection()
         rows = await db("SELECT * FROM temporary_roles")
         if not rows:
@@ -41,20 +42,23 @@ class TemporaryRoleHandler(utils.Cog):
             if role is not None and row['delete_role']:
                 try:
                     await role.delete(reason="Temporary role expired")
-                except (discord.Forbidden, discord.NotFound):
-                    pass
+                    self.logger.info(f"Deleted role - duration expired (G{guild.id}/R{role.id})")
+                except (discord.Forbidden, discord.NotFound) as e:
+                    self.logger.info(f"Couldn't delete duration expired role (G{guild.id}/R{role.id}) - {e}")
             elif role is not None and member is not None:
                 try:
                     await member.remove_roles(role, reason="Role duration expired")
-                except (discord.Forbidden, discord.NotFound):
-                    pass
+                    self.logger.info(f"Removed role from user - duration expired (G{guild.id}/R{role.id}/U{member.id})")
+                except (discord.Forbidden, discord.NotFound) as e:
+                    self.logger.info(f"Couldn't remove duration expired role form user (G{guild.id}/R{role.id}/U{member.id}) - {e}")
 
             # DM the user
             if role is not None and member is not None:
                 try:
                     await member.send(f"Removed the `{role.name}` role from you in the server **{guild.name}** - duration expired.")
+                    self.logger.info(f"Sent DM to user about expired role (G{guild.id}/R{role.id}/U{member.id})")
                 except (discord.Forbidden, discord.NotFound):
-                    pass
+                    self.logger.info(f"Couldn't send DM to user about expired role (G{guild.id}/R{role.id}/U{member.id})")
 
         # Remove from db
         for guild_id, role_id, user_id in removed_roles:
