@@ -74,6 +74,9 @@ class ItemHandler(utils.Cog):
             role_position_role_id = guild_settings.get('custom_role_position_id')
             try:
                 role_position_role = [i for i in await ctx.guild.fetch_roles() if i.id == role_position_role_id][0]
+                # role_position_role = ctx.guild.get_role(role_position_role_id)
+                # if role_position_role is None:
+                #     raise IndexError()
             except IndexError:
                 await db.disconnect()
                 return await ctx.send(f"This item can't be used unless the custom role position is set (`{ctx.prefix}setup`).")
@@ -86,6 +89,7 @@ class ItemHandler(utils.Cog):
             upper_roles = [i for i in user.roles if i.position >= position and i.colour.value > 0]
             if upper_roles:
                 await db.disconnect()
+                self.logger.info(f"Not painting user (G{user.guild.id}/U{user.id}) due to higher roles - {upper_roles}")
                 return await ctx.send("There's no point in painting that user - they have coloured roles above the paint role positions.")
 
             # Make a role
@@ -93,17 +97,39 @@ class ItemHandler(utils.Cog):
                 role = await ctx.guild.create_role(
                     name=colour_name.title(), colour=discord.Colour(colour_value), reason="Paintbrush used"
                 )
-                await role.edit(position=position)
+                self.logger.info(f"Created paint role in guild (G{ctx.guild.id}/R{role.id})")
             except discord.Forbidden:
                 await db.disconnect()
-                return await ctx.send("I couldn't make a new colour role for you.")
-            except discord.HTTPException:
+                self.logger.error(f"Couldn't create paint role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
+                return await ctx.send("I couldn't make a new colour role for you - missing permissions.")
+            except discord.HTTPException as e:
                 await db.disconnect()
-                return await ctx.send("I couldn't make a new colour role for you - I think the server may have hit the role limit?")
+                self.logger.error(f"Couldn't create paint role (G{ctx.guild.id}/U{ctx.author.id}) - {e}")
+                await role.delete(reason="Messed up making paint role")
+                return await ctx.send(f"I couldn't make a new colour role for you - I think we hit the role limit?")
+
+            # Fetch all the roles from the API
+            await ctx.guild.fetch_roles()  # TODO this only needs to exist until roles are cached on creation
+
+            # Edit the role position
+            try:
+                self.logger.info(f"Moving role {role.id} to position {position - 1} (my highest is {role.guild.me.top_role.position})")
+                await role.edit(position=position - 1, reason="Update positioning")
+                self.logger.info(f"Edited paint role position in guild (G{ctx.guild.id}/R{role.id})")
+            except discord.Forbidden:
+                await db.disconnect()
+                self.logger.error(f"Couldn't move paint role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
+                return await ctx.send("I couldn't move the new colour role position - missing permissions.")
+            except discord.HTTPException as e:
+                await db.disconnect()
+                self.logger.error(f"Couldn't move paint role (G{ctx.guild.id}/U{ctx.author.id}) - {e}")
+                await role.delete(reason="Messed up making paint role")
+                return await ctx.send(f"I couldn't move the new paint role - {e}")
 
             # Add it to the user
             try:
                 await user.add_roles(role, reason="Paintbrush used")
+                self.logger.info(f"Add paint role to user (G{ctx.guild.id}/R{role.id}/U{user.id})")
             except discord.Forbidden:
                 await db.disconnect()
                 return await ctx.send("I created the paint role, but I couldn't add it to you.")
@@ -125,6 +151,7 @@ class ItemHandler(utils.Cog):
             "UPDATE user_inventory SET amount=user_inventory.amount-1 WHERE guild_id=$1 AND user_id=$2 AND item_name=$3",
             ctx.guild.id, ctx.author.id, item_data[1],
         )
+        self.logger.info(f"Remove item ({item_data[1]}) from user (G{ctx.guild.id}/U{ctx.author.id})")
         await db.disconnect()
 
 
