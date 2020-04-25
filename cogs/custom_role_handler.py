@@ -127,7 +127,7 @@ class CustomRoleHandler(utils.Cog):
                 pass
 
         # See if the server has a position set
-        position = 1
+        position = -1
         position_role_id = self.bot.guild_settings[ctx.guild.id].get('custom_role_position_id')
         if position_role_id:
             try:
@@ -138,12 +138,28 @@ class CustomRoleHandler(utils.Cog):
 
         # Create role
         try:
-            new_role = await ctx.guild.create_role(name=f"{ctx.author.id} (Custom)")
-            await new_role.edit(position=position)
+            new_role = await ctx.guild.create_role(name=f"{ctx.author.name} (Custom)")
+            self.logger.info(f"Created custom role in guild (G{ctx.guild.id}/R{new_role.id}/U{ctx.author.id})")
         except discord.Forbidden:
+            self.logger.error(f"Couldn't create custom role in guild, forbidden (G{ctx.guild.id}/R{new_role.id}/U{ctx.author.id})")
             return await ctx.send("I'm unable to create new roles on this server.")
-        except discord.HTTPException:
+        except discord.HTTPException as e:
+            self.logger.error(f"Couldn't create custom role in guild (G{ctx.guild.id}/R{new_role.id}/U{ctx.author.id}) - {e}")
             return await ctx.send("Discord wouldn't let me create a new role - maybe this server is at the limit?")
+
+        # Fetch all the roles from the API
+        await ctx.guild.fetch_roles()  # TODO this only needs to exist until roles are cached on creation
+
+        # Edit the role position
+        if position == -1:
+            try:
+                self.logger.info(f"Moving role {new_role.id} to position {position - 1} (my highest is {new_role.guild.me.top_role.position})")
+                await new_role.edit(position=position - 1, reason="Update positioning")
+                self.logger.info(f"Edited custom role position in guild (G{ctx.guild.id}/R{new_role.id})")
+            except discord.Forbidden:
+                self.logger.error(f"Couldn't move custom role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
+            except discord.HTTPException as e:
+                self.logger.error(f"Couldn't move custom role role (G{ctx.guild.id}/U{ctx.author.id}) - {e}")
 
         # Add it to the database
         async with self.bot.database() as db:
