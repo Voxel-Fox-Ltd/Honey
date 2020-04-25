@@ -33,7 +33,7 @@ class VerificationSystem(utils.Cog):
             self.logger.info(f"Verification attempt failed, forbidden (G{ctx.guild.id}) - {e}")
             return await ctx.send(f"I was unable to add the verified role to {user.mention}.")
         except discord.NotFound as e:
-            self.logger.info(f"Verification attempt failed (G{ctx.guild.id}) - {e}")
+            self.logger.error(f"Verification attempt failed (G{ctx.guild.id}) - {e}")
             return await ctx.send("To me it looks like that user doesn't exist :/")
 
         # Throw the reason into the database
