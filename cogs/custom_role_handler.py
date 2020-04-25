@@ -46,11 +46,12 @@ class CustomRoleHandler(utils.Cog):
         # Edit name
         try:
             await role.edit(name=name.strip() + " (Custom)")
+            self.logger.info(f"Changed the name of a custom role to '{name}' (G{ctx.guild.id}/R{role.id})")
         except discord.Forbidden:
+            self.logger.info(f"Unable to change the name of a custom role, forbidden (G{ctx.guild.id}/R{role.id})")
             return await ctx.send("I'm unable to edit your custom role.")
-        except discord.NotFound:
-            pass
-        except discord.HTTPException:
+        except discord.HTTPException as e:
+            self.logger.info(f"Unable to change the name of a custom role (G{ctx.guild.id}/R{role.id}) - {e}")
             return await ctx.send("You gave an invalid name - Discord wouldn't let me change it to your given value.")
         return await ctx.send("Successfully updated your role's name.")
 
@@ -69,10 +70,10 @@ class CustomRoleHandler(utils.Cog):
         # Edit name
         try:
             await role.edit(color=colour)
+            self.logger.info(f"Changed the colour of a custom role to '{colour.value:0>6X}' (G{ctx.guild.id}/R{role.id})")
         except discord.Forbidden:
+            self.logger.info(f"Unable to change the colour of a custom role, forbidden (G{ctx.guild.id}/R{role.id})")
             return await ctx.send("I'm unable to edit your custom role.")
-        except discord.NotFound:
-            pass
         return await ctx.send("Successfully updated your role's colour.")
 
     @customrole.command(cls=utils.Command)
@@ -90,12 +91,13 @@ class CustomRoleHandler(utils.Cog):
                 DO UPDATE SET role_id=$2""",
                 ctx.guild.id, role.id, user.id
             )
+        self.logger.info(f"Set custom role for a user to a current role (G{ctx.guild.id}/R{role.id}/U{user.id})")
 
         # Add it to the user
         try:
             await user.add_roles(role, reason="Custom role setting")
         except discord.Forbidden:
-            return await ctx.send(f"I was unable to add the {role.mention} role to {user.mention} (I'm unable to manage it), but it's been saved as their custom role regardless.", discord.AllowedMentions(roles=False))
+            pass
         return await ctx.send(f"Set the custom role for {user.mention} to {role.mention}. They can manage it with the `{ctx.prefix}{ctx.command.parent.name} name` and `{ctx.prefix}{ctx.command.parent.name} colour` commands.", discord.AllowedMentions(roles=False))
 
     @customrole.command(cls=utils.Command, aliases=['make'])
