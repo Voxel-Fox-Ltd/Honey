@@ -137,6 +137,37 @@ class EconomyHandler(utils.Cog):
             )
             await db.commit_transaction()
 
+    @commands.command(cls=utils.Command, aliases=['givemoney'])
+    @commands.guild_only()
+    async def givecoins(self, ctx:utils.Context, user:discord.Member, transfer_amount:int):
+        """Give a certain amount of money to a user"""
+
+        # Filter users
+        coin_emoji = self.bot.guild_settings[ctx.guild.id].get("coin_emoji", None) or "coins"
+        if transfer_amount <= 0:
+            return await ctx.send("You need to give a number larger than 0.")
+        if ctx.author.id == user.id:
+            return await ctx.send(f"You hand your coins from one hand to the other. You did it. You gave yourself {transfer_amount:,} {coin_emoji}.")
+        if user.bot:
+            return await ctx.send("Bots have no need for coins, I don't think.")
+
+        # Money handle
+        async with self.bot.database() as db:
+            rows = await db("SELECT * FROM user_money WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
+            try:
+                amount = rows[0]['amount']
+            except IndexError:
+                amount = 0
+            if amount < transfer_amount:
+                return await ctx.send("You don't have that many coins to give.")
+            await db.start_transaction()
+            await db("UPDATE user_money SET amount=user_money.amount-$3 WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id, transfer_amount)
+            await db("UPDATE user_money SET amount=user_money.amount+$3 WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, user.id, transfer_amount)
+            await db.commit_transaction()
+
+        # Output
+        return await ctx.send(f"Successfully transferred {transfer_amount:,} {coin_emoji} to {user.mention}.")
+
 
 def setup(bot:utils.Bot):
     x = EconomyHandler(bot)
