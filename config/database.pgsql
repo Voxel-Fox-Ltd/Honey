@@ -60,6 +60,17 @@ CREATE TABLE temporary_roles(
 );
 
 
+CREATE TABLE temporary_removed_roles(
+    guild_id BIGINT,
+    role_id BIGINT,
+    user_id BIGINT,
+    readd_timestamp TIMESTAMP,
+    dm_user BOOLEAN NOT NULL DEFAULT TRUE,
+    key VARCHAR(50),
+    PRIMARY KEY (guild_id, role_id, user_id)
+);
+
+
 CREATE TABLE custom_roles(
     guild_id BIGINT,
     role_id BIGINT,
