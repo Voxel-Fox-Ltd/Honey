@@ -40,11 +40,14 @@ class ShopHandler(utils.Cog):
 
         # Make a shop message
         coin_emoji = self.bot.guild_settings[ctx.guild.id].get("coin_emoji", None) or "coins"
+        emojis = []
         with utils.Embed() as embed:
             for emoji, (_, name, amount, description, aliases) in self.SHOP_ITEMS.items():
-                embed.add_field(f"{name} ({name}) - {amount} {coin_emoji}", description, inline=False)
+                embed.add_field(f"{name} - {amount} {coin_emoji}", description, inline=False)
+                emojis.append(emoji)
         shop_message = await shop_channel.send(embed=embed)
-        await shop_message.add_reaction("\N{LOWER LEFT PAINTBRUSH}")
+        for e in emojis:
+            await shop_message.add_reaction(e)
         self.logger.info(f"Created shop channel shop message (G{shop_channel.guild.id}/C{shop_channel.id}/M{shop_message.id})")
 
         # Save it all to db
