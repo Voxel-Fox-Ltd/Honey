@@ -11,7 +11,7 @@ COLOURS_BY_NAME = {
     "azure": 0xf0ffff,
     "beige": 0xf5f5dc,
     "bisque": 0xffe4c4,
-    "black": 0x000000,
+    "black": 0x000001,
     "blanched almond": 0xffebcd,
     "blue": 0x0000ff,
     "blue violet": 0x8a2be2,
