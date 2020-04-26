@@ -93,13 +93,24 @@ class ItemHandler(utils.Cog):
             # Get a random role colour
             colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
 
+            # See if they have a paint role already
+            paint_rows = await db("SELECT * FROM temporary_roles WHERE guild_id=$1 AND user_id=$2 AND key='Paint'", ctx.guild.id, user.id)
+            role = None
+            if paint_rows:
+                role = ctx.guild.get_role(paint_rows[0]['role_id'])
+
             # Make a role
             logging.getLogger("discord.http").setLevel(logging.DEBUG)
+            role_kwargs = dict(name=colour_name.title(), colour=discord.Colour(colour_value), reason="Paintbrush used")
+            role_created = False
             try:
-                role = await ctx.guild.create_role(
-                    name=colour_name.title(), colour=discord.Colour(colour_value), reason="Paintbrush used"
-                )
-                self.logger.info(f"Created paint role in guild (G{ctx.guild.id}/R{role.id})")
+                if role is None:
+                    role = await ctx.guild.create_role(**role_kwargs)
+                    role_created = True
+                    self.logger.info(f"Created paint role in guild (G{ctx.guild.id}/R{role.id})")
+                else:
+                    await role.edit(**role_kwargs)
+                    self.logger.info(f"Updated paint role in guild (G{ctx.guild.id}/R{role.id})")
             except discord.Forbidden:
                 await db.disconnect()
                 self.logger.error(f"Couldn't create paint role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
@@ -113,40 +124,52 @@ class ItemHandler(utils.Cog):
                     pass
                 return await ctx.send(f"I couldn't make a new colour role for you - I think we hit the role limit?")
 
-            # Fetch all the role positions from the API to keep us up to date
-            self.logger.info(f"Sleeping before updating role position... (G{ctx.guild.id})")
-            await asyncio.sleep(1)
-            role_position_role = ctx.guild.get_role(role_position_role_id)
+            # Update the role position if a new role was created
+            if role_created:
 
-            # Edit the role position
-            try:
-                self.logger.info(f"Moving role {role.id} to position {role_position_role.position - 1} (my highest is {role.guild.me.top_role.position})")
-                await role.edit(position_below=role_position_role, reason="Update positioning")
-                self.logger.info(f"Edited paint role position in guild (G{ctx.guild.id}/R{role.id})")
-            except discord.Forbidden:
-                await db.disconnect()
-                self.logger.error(f"Couldn't move paint role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
-                return await ctx.send("I couldn't move the new colour role position - missing permissions.")
-            except discord.HTTPException as e:
-                await db.disconnect()
-                self.logger.error(f"Couldn't move paint role (G{ctx.guild.id}/U{ctx.author.id}) - {e}")
-                await role.delete(reason="Messed up making paint role")
-                return await ctx.send(f"I couldn't move the new paint role - {e}")
+                # Fetch all the role positions from the API to keep us up to date
+                self.logger.info(f"Sleeping before updating role position... (G{ctx.guild.id})")
+                await asyncio.sleep(1)
+                role_position_role = ctx.guild.get_role(role_position_role_id)
+
+                # Edit the role position
+                try:
+                    self.logger.info(f"Moving role {role.id} to position {role_position_role.position - 1} (my highest is {role.guild.me.top_role.position})")
+                    await role.edit(position_below=role_position_role, reason="Update positioning")
+                    self.logger.info(f"Edited paint role position in guild (G{ctx.guild.id}/R{role.id})")
+                except discord.Forbidden:
+                    await db.disconnect()
+                    self.logger.error(f"Couldn't move paint role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
+                    return await ctx.send("I couldn't move the new colour role position - missing permissions.")
+                except discord.HTTPException as e:
+                    await db.disconnect()
+                    self.logger.error(f"Couldn't move paint role (G{ctx.guild.id}/U{ctx.author.id}) - {e}")
+                    await role.delete(reason="Messed up making paint role")
+                    return await ctx.send(f"I couldn't move the new paint role - {e}")
             logging.getLogger("discord.http").setLevel(logging.INFO)
 
             # Add it to the user
-            try:
-                await user.add_roles(role, reason="Paintbrush used")
-                self.logger.info(f"Add paint role to user (G{ctx.guild.id}/R{role.id}/U{user.id})")
-            except discord.Forbidden:
-                await db.disconnect()
-                return await ctx.send("I created the paint role, but I couldn't add it to you.")
+            if role_created:
+                try:
+                    await user.add_roles(role, reason="Paintbrush used")
+                    self.logger.info(f"Add paint role to user (G{ctx.guild.id}/R{role.id}/U{user.id})")
+                except discord.Forbidden:
+                    await db.disconnect()
+                    return await ctx.send("I created the paint role, but I couldn't add it to you.")
 
             # Add to database as a temporary role
-            await db(
-                "INSERT INTO temporary_roles (guild_id, user_id, role_id, remove_timestamp, delete_role) VALUES ($1, $2, $3, $4, true)",
-                ctx.guild.id, user.id, role.id, dt.utcnow() + timedelta(hours=1),
-            )
+            if role_created:
+                await db(
+                    """INSERT INTO temporary_roles (guild_id, user_id, role_id, remove_timestamp, delete_role, key)
+                    VALUES ($1, $2, $3, $4, true, 'Paint')""",
+                    ctx.guild.id, user.id, role.id, dt.utcnow() + timedelta(hours=1),
+                )
+            else:
+                await db(
+                    """UPDATE temporary_roles SET remove_timestamp=$4 WHERE
+                    guild_id=$1 AND user_id=$2 AND role_id=$3 AND key='Paint'""",
+                    ctx.guild.id, user.id, role.id, dt.utcnow() + timedelta(hours=1),
+                )
             await ctx.send(f"Painted {user.mention} with {role.mention}!")
 
         # It's nothing else
