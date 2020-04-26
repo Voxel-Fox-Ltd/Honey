@@ -60,6 +60,7 @@ class CustomBot(commands.AutoShardedBot):
             'shop_message_id': None,
             'role_interaction_cooldowns': dict(),
             'role_sona_count': dict(),
+            'removed_on_mute_roles': list(),
         }
 
         # Aiohttp session
@@ -199,6 +200,15 @@ class CustomBot(commands.AutoShardedBot):
             exit(1)
         for row in interaction_data:
             self.guild_settings[row['guild_id']]['role_sona_count'][row['role_id']] = int(row['value'])
+
+        # Get roles to be removed on mute
+        try:
+            interaction_data = await db("SELECT * FROM role_list WHERE key='RemoveOnMute'")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from role_list - {e}")
+            exit(1)
+        for row in interaction_data:
+            self.guild_settings[row['guild_id']]['removed_on_mute_roles'].append(int(row['value']))
 
         # Get shop message ID
         try:
