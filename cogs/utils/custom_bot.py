@@ -208,7 +208,7 @@ class CustomBot(commands.AutoShardedBot):
             self.logger.critical(f"Error selecting from role_list - {e}")
             exit(1)
         for row in interaction_data:
-            self.guild_settings[row['guild_id']]['removed_on_mute_roles'].append(int(row['value']))
+            self.guild_settings[row['guild_id']]['removed_on_mute_roles'].append(row['role_id'])
 
         # Get shop message ID
         try:
