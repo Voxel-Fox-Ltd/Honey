@@ -1,7 +1,6 @@
 import random
 import typing
 from datetime import datetime as dt, timedelta
-import logging
 import asyncio
 
 import discord
@@ -94,11 +93,8 @@ class ItemHandler(utils.Cog):
         # See if there's a valid role position
         guild_settings = self.bot.guild_settings[ctx.guild.id]
         role_position_role_id = guild_settings.get('custom_role_position_id')
-        try:
-            role_position_role = ctx.guild.get_role(role_position_role_id)
-            if role_position_role is None:
-                raise IndexError()
-        except IndexError:
+        role_position_role = ctx.guild.get_role(role_position_role_id)
+        if role_position_role is None:
             await ctx.send(f"This item can't be used unless the custom role position is set (`{ctx.prefix}setup`).")
             return False
         visibility_position = role_position_role.position  # This is the position we want the role to be at when it's made
