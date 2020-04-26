@@ -94,7 +94,10 @@ class ItemHandler(utils.Cog):
             colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
 
             # See if they have a paint role already
-            paint_rows = await db("SELECT * FROM temporary_roles WHERE guild_id=$1 AND user_id=$2 AND key='Paint'", ctx.guild.id, user.id)
+            paint_rows = await db(
+                "SELECT * FROM temporary_roles WHERE guild_id=$1 AND user_id=$2 AND key='Paint'",
+                ctx.guild.id, user.id
+            )
             role = None
             if paint_rows:
                 role = ctx.guild.get_role(paint_rows[0]['role_id'])
@@ -157,7 +160,7 @@ class ItemHandler(utils.Cog):
                     await db.disconnect()
                     return await ctx.send("I created the paint role, but I couldn't add it to you.")
 
-            # Add to database as a temporary role
+            # Add to database
             if role_created:
                 await db(
                     """INSERT INTO temporary_roles (guild_id, user_id, role_id, remove_timestamp, delete_role, key)
