@@ -1,6 +1,8 @@
 import random
 import typing
 from datetime import datetime as dt, timedelta
+import logging
+import asyncio
 
 import discord
 from discord.ext import commands
@@ -73,26 +75,26 @@ class ItemHandler(utils.Cog):
             guild_settings = self.bot.guild_settings[ctx.guild.id]
             role_position_role_id = guild_settings.get('custom_role_position_id')
             try:
-                role_position_role = [i for i in await ctx.guild.fetch_roles() if i.id == role_position_role_id][0]
-                # role_position_role = ctx.guild.get_role(role_position_role_id)
-                # if role_position_role is None:
-                #     raise IndexError()
+                role_position_role = ctx.guild.get_role(role_position_role_id)
+                if role_position_role is None:
+                    raise IndexError()
             except IndexError:
                 await db.disconnect()
                 return await ctx.send(f"This item can't be used unless the custom role position is set (`{ctx.prefix}setup`).")
-            position = role_position_role.position
-
-            # Get a random role colour
-            colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
+            visibility_position = role_position_role.position  # This is the position we want the role to be at when it's made
 
             # See if there's any point
-            upper_roles = [i for i in user.roles if i.position >= position and i.colour.value > 0]
+            upper_roles = [i for i in user.roles if i.position >= visibility_position and i.colour.value > 0]
             if upper_roles:
                 await db.disconnect()
                 self.logger.info(f"Not painting user (G{user.guild.id}/U{user.id}) due to higher roles - {upper_roles}")
                 return await ctx.send("There's no point in painting that user - they have coloured roles above the paint role positions.")
 
+            # Get a random role colour
+            colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
+
             # Make a role
+            logging.getLogger("discord.http").setLevel(logging.DEBUG)
             try:
                 role = await ctx.guild.create_role(
                     name=colour_name.title(), colour=discord.Colour(colour_value), reason="Paintbrush used"
@@ -105,16 +107,21 @@ class ItemHandler(utils.Cog):
             except discord.HTTPException as e:
                 await db.disconnect()
                 self.logger.error(f"Couldn't create paint role (G{ctx.guild.id}/U{ctx.author.id}) - {e}")
-                await role.delete(reason="Messed up making paint role")
+                try:
+                    await role.delete(reason="Messed up making paint role")
+                except discord.NotFound:
+                    pass
                 return await ctx.send(f"I couldn't make a new colour role for you - I think we hit the role limit?")
 
-            # Fetch all the roles from the API
-            await ctx.guild.fetch_roles()  # TODO this only needs to exist until roles are cached on creation
+            # Fetch all the role positions from the API to keep us up to date
+            self.logger.info(f"Sleeping before updating role position... (G{ctx.guild.id})")
+            await asyncio.sleep(1)
+            role_position_role = ctx.guild.get_role(role_position_role_id)
 
             # Edit the role position
             try:
-                self.logger.info(f"Moving role {role.id} to position {position - 1} (my highest is {role.guild.me.top_role.position})")
-                await role.edit(position=position - 1, reason="Update positioning")
+                self.logger.info(f"Moving role {role.id} to position {role_position_role.position - 1} (my highest is {role.guild.me.top_role.position})")
+                await role.edit(position_below=role_position_role, reason="Update positioning")
                 self.logger.info(f"Edited paint role position in guild (G{ctx.guild.id}/R{role.id})")
             except discord.Forbidden:
                 await db.disconnect()
@@ -125,6 +132,7 @@ class ItemHandler(utils.Cog):
                 self.logger.error(f"Couldn't move paint role (G{ctx.guild.id}/U{ctx.author.id}) - {e}")
                 await role.delete(reason="Messed up making paint role")
                 return await ctx.send(f"I couldn't move the new paint role - {e}")
+            logging.getLogger("discord.http").setLevel(logging.INFO)
 
             # Add it to the user
             try:

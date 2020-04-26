@@ -1,4 +1,5 @@
 import typing
+import asyncio
 
 import discord
 from discord.ext import commands
@@ -128,16 +129,6 @@ class CustomRoleHandler(utils.Cog):
             except discord.HTTPException:
                 pass
 
-        # See if the server has a position set
-        position = -1
-        position_role_id = self.bot.guild_settings[ctx.guild.id].get('custom_role_position_id')
-        if position_role_id:
-            try:
-                position_role = [i for i in await ctx.guild.fetch_roles() if i.id == position_role_id][0]
-                position = position_role.position
-            except IndexError:
-                pass
-
         # Create role
         try:
             new_role = await ctx.guild.create_role(name=f"{ctx.author.name} (Custom)")
@@ -149,14 +140,21 @@ class CustomRoleHandler(utils.Cog):
             self.logger.error(f"Couldn't create custom role in guild (G{ctx.guild.id}/R{new_role.id}/U{ctx.author.id}) - {e}")
             return await ctx.send("Discord wouldn't let me create a new role - maybe this server is at the limit?")
 
-        # Fetch all the roles from the API
-        await ctx.guild.fetch_roles()  # TODO this only needs to exist until roles are cached on creation
+        # Get the right role position
+        self.logger.info(f"Sleeping before updating role position... (G{ctx.guild.id})")
+        await asyncio.sleep(1)
+        position_role_id = self.bot.guild_settings[ctx.guild.id].get('custom_role_position_id')
+        if position_role_id:
+            try:
+                position_role = [i for i in ctx.guild.roles if i.id == position_role_id][0]
+            except IndexError:
+                position_role = None
 
         # Edit the role position
-        if position == -1:
+        if position_role:
             try:
-                self.logger.info(f"Moving role {new_role.id} to position {position - 1} (my highest is {new_role.guild.me.top_role.position})")
-                await new_role.edit(position=position - 1, reason="Update positioning")
+                self.logger.info(f"Moving role {new_role.id} to position {position_role.position - 1} (my highest is {new_role.guild.me.top_role.position})")
+                await new_role.edit(position_below=position_role, reason="Update positioning")
                 self.logger.info(f"Edited custom role position in guild (G{ctx.guild.id}/R{new_role.id})")
             except discord.Forbidden:
                 self.logger.error(f"Couldn't move custom role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
