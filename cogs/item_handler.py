@@ -93,14 +93,15 @@ class ItemHandler(utils.Cog):
         # See if there's a valid role position
         guild_settings = self.bot.guild_settings[ctx.guild.id]
         role_position_role_id = guild_settings.get('custom_role_position_id')
-        role_position_role = ctx.guild.get_role(role_position_role_id)
+        guild_roles = {r.id: r for r in await ctx.guild.fetch_roles()}
+        role_position_role = guild_roles.get(role_position_role_id)
         if role_position_role is None:
             await ctx.send(f"This item can't be used unless the custom role position is set (`{ctx.prefix}setup`).")
             return False
         visibility_position = role_position_role.position  # This is the position we want the role to be at when it's made
 
         # See if there's any point
-        upper_roles = [i for i in user.roles if i.position >= visibility_position and i.colour.value > 0]
+        upper_roles = [i for i in user._roles if guild_roles[i] >= role_position_role and guild_roles[i].colour.value > 0]
         if upper_roles:
             self.logger.info(f"Not painting user (G{user.guild.id}/U{user.id}) due to higher roles - {upper_roles}")
             await ctx.send("There's no point in painting that user - they have coloured roles above the paint role positions.")
