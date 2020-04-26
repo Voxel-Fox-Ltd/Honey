@@ -72,10 +72,10 @@ class TemporaryRoleHandler(utils.Cog):
             member = guild.get_member(row['user_id'])
             role = guild.get_role(row['role_id'])
 
-            # Remove the role
+            # Readd the role
             if role is not None and member is not None:
                 try:
-                    await member.remove_roles(role, reason="Role duration expired")
+                    await member.add_roles(role, reason="Role duration expired")
                     self.logger.info(f"Removed role from user - duration expired (G{guild.id}/R{role.id}/U{member.id})")
                 except (discord.Forbidden, discord.NotFound) as e:
                     self.logger.info(f"Couldn't remove duration expired role form user (G{guild.id}/R{role.id}/U{member.id}) - {e}")
@@ -97,8 +97,7 @@ class TemporaryRoleHandler(utils.Cog):
                     await db("DELETE FROM temporary_removed_roles WHERE guild_id=$1 AND role_id=$2 AND user_id=$3", guild_id, role_id, user_id)
 
         # Disconnect from db
-        self.logger.info(f"Removed/deleted {len(removed_roles)} expired temporary roles")
-        self.logger.info(f"Added back {len(readded_roles)} expired temporary roles")
+        self.logger.info(f"Removed/deleted {len(removed_roles)} expired temporary roles, added back {len(readded_roles)} expired temporary roles")
 
     @role_handler.before_loop
     async def before_role_handler(self):
