@@ -10,24 +10,24 @@ class TemporaryRoleHandler(utils.Cog):
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
-        self.role_removal_handler.start()
+        self.role_handler.start()
 
     def cog_unload(self):
-        self.role_removal_handler.stop()
+        self.role_handler.stop()
 
     @tasks.loop(minutes=1)
-    async def role_removal_handler(self):
+    async def role_handler(self):
         """Loops once a minute to remove the roles of a user should they need to be taken"""
 
         # Get data
-        db = await self.bot.database.get_connection()
-        rows = await db("SELECT * FROM temporary_roles")
-        if not rows:
-            return await db.disconnect()
+        async with self.bot.database() as db:
+            temporary_roles_rows = await db("SELECT * FROM temporary_roles")
+        if not temporary_roles_rows:
+            return
 
         # Remove roles
         removed_roles = []
-        for row in rows:
+        for row in temporary_roles_rows:
             if row['remove_timestamp'] > dt.utcnow():
                 continue
 
@@ -52,7 +52,7 @@ class TemporaryRoleHandler(utils.Cog):
                     self.logger.info(f"Couldn't remove duration expired role form user (G{guild.id}/R{role.id}/U{member.id}) - {e}")
 
             # DM the user
-            if role is not None and member is not None:
+            if role is not None and member is not None and row['dm_user']:
                 try:
                     await member.send(f"Removed the `{role.name}` role from you in the server **{guild.name}** - duration expired.")
                     self.logger.info(f"Sent DM to user about expired role (G{guild.id}/R{role.id}/U{member.id})")
@@ -60,15 +60,15 @@ class TemporaryRoleHandler(utils.Cog):
                     self.logger.info(f"Couldn't send DM to user about expired role (G{guild.id}/R{role.id}/U{member.id})")
 
         # Remove from db
-        for guild_id, role_id, user_id in removed_roles:
-            await db("DELETE FROM temporary_roles WHERE guild_id=$1 AND role_id=$2 AND user_id=$3", guild_id, role_id, user_id)
+        async with self.bot.database() as db:
+            for guild_id, role_id, user_id in removed_roles:
+                await db("DELETE FROM temporary_roles WHERE guild_id=$1 AND role_id=$2 AND user_id=$3", guild_id, role_id, user_id)
 
         # Disconnect from db
-        await db.disconnect()
         self.logger.info(f"Removed/deleted {len(removed_roles)} expired temporary roles")
 
-    @role_removal_handler.before_loop
-    async def before_role_removal_handler(self):
+    @role_handler.before_loop
+    async def before_role_handler(self):
         await self.bot.wait_until_ready()
 
 

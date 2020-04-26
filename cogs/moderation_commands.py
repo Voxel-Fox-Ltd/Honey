@@ -120,8 +120,8 @@ class ModerationCommands(utils.Cog):
         # Store the temporary role
         async with self.bot.database() as db:
             await db(
-                """INSERT INTO temporary_roles (guild_id, role_id, user_id, remove_timestamp, key)
-                VALUES ($1, $2, $3, $4, 'Muted')""",
+                """INSERT INTO temporary_roles (guild_id, role_id, user_id, remove_timestamp, key, dm_user)
+                VALUES ($1, $2, $3, $4, 'Muted', true)""",
                 ctx.guild.id, muted_role_id, user.id, dt.utcnow() + duration.delta
             )
 

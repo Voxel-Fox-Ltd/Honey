@@ -181,8 +181,8 @@ class ItemHandler(utils.Cog):
         # Add to database
         if role_created:
             await db(
-                """INSERT INTO temporary_roles (guild_id, user_id, role_id, remove_timestamp, delete_role, key)
-                VALUES ($1, $2, $3, $4, true, 'Paint')""",
+                """INSERT INTO temporary_roles (guild_id, user_id, role_id, remove_timestamp, delete_role, key, dm_user)
+                VALUES ($1, $2, $3, $4, true, 'Paint', true)""",
                 ctx.guild.id, user.id, role.id, dt.utcnow() + timedelta(hours=1),
             )
         else:
