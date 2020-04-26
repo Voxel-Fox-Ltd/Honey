@@ -145,6 +145,6 @@ COLOURS_BY_NAME = {
     "white": 0xffffff,
     "white smoke": 0xf5f5f5,
     "yellow": 0xffff00,
-    "payne's grey": 0x536878,
+    "paynes grey": 0x536878,
 }
 COLOURS_BY_VALUE = {o:i for i, o in COLOURS_BY_NAME.items()}

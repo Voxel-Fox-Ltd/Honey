@@ -62,6 +62,21 @@ class ShopHandler(utils.Cog):
         # And tell the mod it's done
         await ctx.send(f"Created new shop channel at {shop_channel.mention} - please verify the channel works before updating permissions for the everyone role.")
 
+    @utils.Cog.listener("on_raw_reaction_clear")
+    async def shop_reaction_clear_listener(self, payload:discord.RawReactionClearEvent):
+        """Pinged when all reactions are cleared from a shop message"""
+
+        guild_settings = self.bot.guild_settings[payload.guild_id]
+        if guild_settings['shop_message_id'] != payload.message_id:
+            return
+        channel = self.bot.get_channel(payload.channel_id)
+        try:
+            message = await channel.fetch_message(payload.message_id)
+        except (discord.Forbidden, discord.NotFound, discord.HTTPException):
+            return
+        for emoji in self.SHOP_ITEMS.keys():
+            await message.add_reaction(emoji)
+
     @utils.Cog.listener("on_raw_reaction_add")
     async def shop_reaction_listener(self, payload:discord.RawReactionActionEvent):
         """Pinged when a user is trying to buy something from a shop"""
@@ -72,6 +87,8 @@ class ShopHandler(utils.Cog):
             return
         guild = self.bot.get_guild(payload.guild_id)
         user = guild.get_member(payload.user_id)
+        if user.bot:
+            return
         channel = self.bot.get_channel(payload.channel_id)
 
         # Check the reaction they're giving
@@ -81,7 +98,10 @@ class ShopHandler(utils.Cog):
         # Try and remove the reaction
         try:
             message = await channel.fetch_message(payload.message_id)
-            await message.remove_reaction(payload.emoji, guild.get_member(payload.user_id))
+            if item_data:
+                await message.remove_reaction(payload.emoji, guild.get_member(payload.user_id))
+            else:
+                await message.clear_reactions()
         except (discord.Forbidden, discord.NotFound, discord.HTTPException):
             pass
 

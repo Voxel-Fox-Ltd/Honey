@@ -98,7 +98,6 @@ class ItemHandler(utils.Cog):
         if role_position_role is None:
             await ctx.send(f"This item can't be used unless the custom role position is set (`{ctx.prefix}setup`).")
             return False
-        visibility_position = role_position_role.position  # This is the position we want the role to be at when it's made
 
         # See if there's any point
         upper_roles = [i for i in user._roles if guild_roles[i] >= role_position_role and guild_roles[i].colour.value > 0]
