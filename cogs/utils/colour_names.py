@@ -18,6 +18,7 @@ COLOURS_BY_NAME = {
     "brown": 0xa52a2a,
     "burly wood": 0xdeb887,
     "cadet blue": 0x5f9ea0,
+    "caleb blue": 0x5dadec,
     "chartreuse": 0x7fff00,
     "chocolate": 0xd2691e,
     "coral": 0xff7f50,
@@ -49,6 +50,7 @@ COLOURS_BY_NAME = {
     "fire brick": 0xb22222,
     "floral white": 0xfffaf0,
     "forest green": 0x228b22,
+    "frank green": 0x9acd32,
     "gainsboro": 0xdcdcdc,
     "ghost white": 0xf8f8ff,
     "gold": 0xffd700,
@@ -143,7 +145,6 @@ COLOURS_BY_NAME = {
     "white": 0xffffff,
     "white smoke": 0xf5f5f5,
     "yellow": 0xffff00,
-    "yellow green": 0x9acd32,
     "payne's grey": 0x536878,
 }
 COLOURS_BY_VALUE = {o:i for i, o in COLOURS_BY_NAME.items()}

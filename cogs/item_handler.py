@@ -191,7 +191,10 @@ class ItemHandler(utils.Cog):
                 guild_id=$1 AND user_id=$2 AND role_id=$3 AND key='Paint'""",
                 ctx.guild.id, user.id, role.id, dt.utcnow() + timedelta(hours=1),
             )
-        await ctx.send(f"Painted {user.mention} with {role.mention}!")
+        await ctx.send(
+            f"Painted {user.mention} with {role.mention}!",
+            allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False)
+        )
         return True
 
 
