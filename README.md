@@ -34,6 +34,8 @@ Users with 100 coins are able to purchase and use _paint_. Paint allows users to
 
 Honey uses the custom role creation position (defined in the "custom role" section of the setup) to create a new paint role for the user, pulling from a list of 140+ distinct roles (using the CSS named colours). If a user is painted while they're already painted, then the role assinged to them will simply be edited. Once the paint's one-hour duration is up, the role will be deleted from your server.
 
+![](/marketing/paint_used.png)
+
 ## Moderation Commands
 
 All the classic moderation commands like kick, mute, tempmute, ban, warn, and infractions are all present. Also present is the `h.watch @User` command for when mods need to keep a closer eye on any given user. Logs of what commands mods are running can all be sent to a modlogs channel, set with the `h.setup` command.
