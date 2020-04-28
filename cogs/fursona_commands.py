@@ -339,7 +339,10 @@ class FursonaCommands(utils.Cog):
 
             # Run request
             async with self.bot.session.get(url, params=params, headers=headers) as r:
-                grabbed_sona_data = await r.json()
+                try:
+                    grabbed_sona_data = await r.json()
+                except Exception:
+                    grabbed_sona_data = {'data': []}
 
             # Add to lists
             if grabbed_sona_data['data']:
@@ -359,7 +362,7 @@ class FursonaCommands(utils.Cog):
             return await ctx.send("You have no sonas available to import from other servers.")
 
         # Send it off to the user
-        pages = menus.MenuPages(source=FursonaPageSource(all_user_sonas, per_page=1), clear_reactions_after=True)
+        pages = menus.MenuPages(source=FursonaPageSource(all_user_sonas, per_page=1))
         await pages.start(ctx, channel=ctx.author, wait=True)
 
         # Ask if the user wants to import the sona they stopped on
