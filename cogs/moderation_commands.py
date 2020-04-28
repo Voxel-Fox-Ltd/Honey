@@ -36,6 +36,8 @@ class ModerationCommands(utils.Cog):
         muted_role_id = self.bot.guild_settings[ctx.guild.id].get("muted_role_id", None)
         if muted_role_id is None:
             return await ctx.send("There is no mute role set for this server.")
+        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+            return await ctx.send("You can't moderate users set as moderators.")
 
         # Grab the mute role
         mute_role = ctx.guild.get_role(muted_role_id)
@@ -99,6 +101,8 @@ class ModerationCommands(utils.Cog):
         muted_role_id = self.bot.guild_settings[ctx.guild.id].get("muted_role_id", None)
         if muted_role_id is None:
             return await ctx.send("There is no mute role set for this server.")
+        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+            return await ctx.send("You can't moderate users set as moderators.")
 
         # Grab the mute role
         mute_role = ctx.guild.get_role(muted_role_id)
@@ -167,6 +171,8 @@ class ModerationCommands(utils.Cog):
         muted_role_id = self.bot.guild_settings[ctx.guild.id].get("muted_role_id", None)
         if muted_role_id is None:
             return await ctx.send("There is no mute role set for this server.")
+        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+            return await ctx.send("You can't moderate users set as moderators.")
 
         # Grab the mute role
         mute_role = ctx.guild.get_role(muted_role_id)
@@ -213,6 +219,10 @@ class ModerationCommands(utils.Cog):
     async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str):
         """Adds a warning to a user"""
 
+        # Add moderator check to target user
+        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+            return await ctx.send("You can't moderate users set as moderators.")
+
         # DM the user
         try:
             await user.send(f"You have been warned in **{ctx.guild.name}** with the reason `{reason}`.")
@@ -232,6 +242,11 @@ class ModerationCommands(utils.Cog):
     async def watch(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue=None):
         """Pipe all of a user's messages (in channels you can see) to your DMs for an hour"""
 
+        # Add moderator check to target user
+        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+            return await ctx.send("You can't moderate users set as moderators.")
+
+        # Add stufferoo to cache
         if duration is None:
             delta = timedelta(hours=1)
         else:
@@ -284,6 +299,10 @@ class ModerationCommands(utils.Cog):
     async def kick(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Kicks a user from the server"""
 
+        # Add mod check to target user
+        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+            return await ctx.send("You can't moderate users set as moderators.")
+
         # DM the user
         dm_reason = f"You have been kicked from **{ctx.guild.name}** with the reason `{reason}`."
         try:
@@ -312,6 +331,10 @@ class ModerationCommands(utils.Cog):
     @commands.guild_only()
     async def ban(self, ctx:utils.Context, user:typing.Union[discord.Member, int], *, reason:str='<No reason provided>'):
         """Bans a user from the server"""
+
+        # Add mod check to target user
+        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+            return await ctx.send("You can't moderate users set as moderators.")
 
         # Do some setup here for users not in the server
         if isinstance(user, int):

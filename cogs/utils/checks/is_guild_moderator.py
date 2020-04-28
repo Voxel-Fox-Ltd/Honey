@@ -9,16 +9,13 @@ class NotGuildModerator(commands.CommandError):
         self.guild_moderator_role = guild_moderator_role
 
 
-def is_guild_moderator_predicate(ctx:commands.Context) -> bool:
+def is_guild_moderator_predicate(bot:commands.Bot, user:discord.Member) -> bool:
     """Returns True if the the user has manage_messages perm or has a guild moderator role"""
 
-    if ctx.author.guild_permissions.manage_messages:
-        return True
-    if ctx.bot.guild_settings[ctx.guild.id].get("guild_moderator_role_id", None) is None:
-        return False
-    if ctx.bot.guild_settings[ctx.guild.id].get("guild_moderator_role_id", None) in ctx.author._roles:
-        return True
-    return False
+    guild_moderator_role_id = bot.guild_settings[user.guild.id].get("guild_moderator_role_id", None)
+    if guild_moderator_role_id is None:
+        return user.guild_permissions.manage_messages
+    return guild_moderator_role_id in user._roles
 
 
 def is_guild_moderator():
@@ -27,8 +24,8 @@ def is_guild_moderator():
     async def predicate(ctx:commands.Context):
 
         if ctx.guild is None:
-            raise NotGuildModerator(None)
-        if is_guild_moderator_predicate(ctx):
+            raise commands.NoPrivateMessage()
+        if is_guild_moderator_predicate(ctx.bot, ctx.author):
             return True
         mod_role_id = ctx.bot.guild_settings[ctx.guild.id].get("guild_moderator_role_id")
         mod_role = ctx.guild.get_role(mod_role_id)
