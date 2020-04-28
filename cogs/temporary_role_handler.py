@@ -23,7 +23,7 @@ class TemporaryRoleHandler(utils.Cog):
         async with self.bot.database() as db:
             temporary_added_rows = await db("SELECT * FROM temporary_roles")  # For roles that may need removing
             temporary_removed_rows = await db("SELECT * FROM temporary_removed_roles")  # For roles that may need readding
-        if not temporary_added_rows:
+        if not (temporary_added_rows or temporary_removed_rows):
             return
 
         # Remove roles that have expired
@@ -63,7 +63,7 @@ class TemporaryRoleHandler(utils.Cog):
         # Readd roles that may have been removed
         readded_roles = []
         for row in temporary_removed_rows:
-            if row['readd_timestamp'] > dt.utcnow():
+            if row['readd_timestamp'] is None or row['readd_timestamp'] > dt.utcnow():
                 continue
 
             # Get the relevant information

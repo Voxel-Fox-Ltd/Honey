@@ -37,20 +37,12 @@ class ModerationCommands(utils.Cog):
         if muted_role_id is None:
             return await ctx.send("There is no mute role set for this server.")
 
-        # Check the user can run the command on who they want
-        if user.top_role.position >= ctx.author.top_role.position:
-            return await ctx.send("That user is too highly ranked for you to be able to punish them.")
-        if user.top_role.position >= ctx.guild.me.top_role.position:
-            return await ctx.send("That user is too highly ranked for me to be able to punish them.")
-
         # Grab the mute role
         mute_role = ctx.guild.get_role(muted_role_id)
         if mute_role is None:
             return await ctx.send("The mute role for this server is set to a deleted role.")
         if mute_role in user.roles:
             return await ctx.send(f"{user.mention} is already muted.")
-        if mute_role.position >= ctx.guild.me.top_role.position:
-            return await ctx.send("The mute role is too high for me to manage.")
 
         # DM the user
         dm_reason = f"You have been muted in **{ctx.guild.name}** with the reason `{reason}`."
@@ -67,6 +59,28 @@ class ModerationCommands(utils.Cog):
             return await ctx.send(f"I was unable to add the mute role to {user.mention}.")
         except discord.NotFound:
             return await ctx.send("To me it looks like that user doesn't exist :/")
+
+        # Remove any roles that are in the setup
+        remove_on_mute_role_ids = self.bot.guild_settings[ctx.guild.id]['removed_on_mute_roles']
+        removed_roles = []
+        for id_to_remove in remove_on_mute_role_ids:
+            role = ctx.guild.get_role(id_to_remove)
+            if role is None:
+                continue
+            try:
+                await user.remove_roles(role, reason="User muted")
+                removed_roles.append(role)
+            except (discord.Forbidden, discord.NotFound):
+                pass
+
+        # Store the temporary roles
+        async with self.bot.database() as db:
+            for role in removed_roles:
+                await db(
+                    """INSERT INTO temporary_removed_roles (guild_id, role_id, user_id, readd_timestamp, key, dm_user)
+                    VALUES ($1, $2, $3, null, 'Muted', false)""",
+                    ctx.guild.id, role.id, user.id,
+                )
 
         # Throw the reason into the database
         self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Mute")
@@ -86,20 +100,12 @@ class ModerationCommands(utils.Cog):
         if muted_role_id is None:
             return await ctx.send("There is no mute role set for this server.")
 
-        # Check the user can run the command on who they want
-        if user.top_role.position >= ctx.author.top_role.position:
-            return await ctx.send("That user is too highly ranked for you to be able to punish them.")
-        if user.top_role.position >= ctx.guild.me.top_role.position:
-            return await ctx.send("That user is too highly ranked for me to be able to punish them.")
-
         # Grab the mute role
         mute_role = ctx.guild.get_role(muted_role_id)
         if mute_role is None:
             return await ctx.send("The mute role for this server is set to a deleted role.")
         if mute_role in user.roles:
             return await ctx.send(f"{user.mention} is already muted.")
-        if mute_role.position >= ctx.guild.me.top_role.position:
-            return await ctx.send("The mute role is too high for me to manage.")
 
         # DM the user
         dm_reason = f"You have been temporarily muted in **{ctx.guild.name}** with the reason `{reason}`."
@@ -117,13 +123,32 @@ class ModerationCommands(utils.Cog):
         except discord.NotFound:
             return await ctx.send("To me it looks like that user doesn't exist :/")
 
-        # Store the temporary role
+        # Remove any roles that are in the setup
+        remove_on_mute_role_ids = self.bot.guild_settings[ctx.guild.id]['removed_on_mute_roles']
+        removed_roles = []
+        for id_to_remove in remove_on_mute_role_ids:
+            role = ctx.guild.get_role(id_to_remove)
+            if role is None:
+                continue
+            try:
+                await user.remove_roles(role, reason="User muted")
+                removed_roles.append(role)
+            except (discord.Forbidden, discord.NotFound):
+                pass
+
+        # Store the temporary roles
         async with self.bot.database() as db:
             await db(
                 """INSERT INTO temporary_roles (guild_id, role_id, user_id, remove_timestamp, key, dm_user)
                 VALUES ($1, $2, $3, $4, 'Muted', true)""",
                 ctx.guild.id, muted_role_id, user.id, dt.utcnow() + duration.delta
             )
+            for role in removed_roles:
+                await db(
+                    """INSERT INTO temporary_removed_roles (guild_id, role_id, user_id, readd_timestamp, key, dm_user)
+                    VALUES ($1, $2, $3, $4, 'Muted', false)""",
+                    ctx.guild.id, role.id, user.id, dt.utcnow() + duration.delta
+                )
 
         # Throw the reason into the database
         self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Tempmute")
@@ -143,20 +168,12 @@ class ModerationCommands(utils.Cog):
         if muted_role_id is None:
             return await ctx.send("There is no mute role set for this server.")
 
-        # Check the user can run the command on who they want
-        if user.top_role.position >= ctx.author.top_role.position:
-            return await ctx.send("That user is too highly ranked for you to be able to punish them.")
-        if user.top_role.position >= ctx.guild.me.top_role.position:
-            return await ctx.send("That user is too highly ranked for me to be able to punish them.")
-
         # Grab the mute role
         mute_role = ctx.guild.get_role(muted_role_id)
         if mute_role is None:
             return await ctx.send("The mute role for this server is set to a deleted role.")
         if mute_role not in user.roles:
             return await ctx.send(f"{user.mention} is not muted.")
-        if mute_role.position >= ctx.guild.me.top_role.position:
-            return await ctx.send("The mute role is too high for me to manage.")
 
         # DM the user
         dm_reason = f"You have been unmuted in **{ctx.guild.name}** with the reason `{reason}`."
@@ -180,9 +197,14 @@ class ModerationCommands(utils.Cog):
         # Remove role from db
         async with self.bot.database() as db:
             await db("DELETE FROM temporary_roles WHERE guild_id=$1 AND role_id=$2 AND user_id=$3", ctx.guild.id, muted_role_id, user.id)
+            await db(
+                """UPDATE temporary_removed_roles SET readd_timestamp=TIMEZONE('UTC', NOW())
+                WHERE guild_id=$1 AND user_id=$2 AND key='Muted'""",
+                ctx.guild.id, user.id
+            )
 
         # Output to chat
-        return await ctx.send(f"{user.mention} has been unmuted by {ctx.author.mention}.")
+        return await ctx.send(f"{user.mention} has been unmuted by {ctx.author.mention}. Any roles removed on mute will reappear in the next minute or so.")
 
     @commands.command(cls=utils.Command)
     @utils.checks.is_guild_moderator()
@@ -262,12 +284,6 @@ class ModerationCommands(utils.Cog):
     async def kick(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
         """Kicks a user from the server"""
 
-        # Check the user can run the command on who they want
-        if user.top_role.position >= ctx.author.top_role.position:
-            return await ctx.send("That user is too highly ranked for you to be able to punish them.")
-        if user.top_role.position >= ctx.guild.me.top_role.position:
-            return await ctx.send("That user is too highly ranked for me to be able to punish them.")
-
         # DM the user
         dm_reason = f"You have been kicked from **{ctx.guild.name}** with the reason `{reason}`."
         try:
@@ -303,12 +319,6 @@ class ModerationCommands(utils.Cog):
             user = discord.Object(user)
         else:
             user_in_guild = True
-
-        # Check the user can run the command on who they want
-        if user_in_guild and user.top_role.position >= user.top_role.position:
-            return await ctx.send("That user is too highly ranked for you to be able to punish them.")
-        if user_in_guild and user.top_role.position >= ctx.guild.me.top_role.position:
-            return await ctx.send("That user is too highly ranked for me to be able to punish them.")
 
         # DM the user
         if user_in_guild:

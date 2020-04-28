@@ -56,7 +56,7 @@ class InfractionHandler(utils.Cog):
             )
 
         # Get log channel
-        log_channel_id = self.bot.guild_settings[moderator.guild_id].get("modmail_channel_id", None)
+        log_channel_id = self.bot.guild_settings[moderator.guild.id].get("modmail_channel_id", None)
         log_channel = self.bot.get_channel(log_channel_id)
         if log_channel is None:
             return
