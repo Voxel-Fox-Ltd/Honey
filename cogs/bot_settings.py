@@ -21,20 +21,16 @@ class BotSettings(utils.Cog):
         menu.bulk_add_options(
             ctx,
             {
-                'display': "Channel settings",
-                'callback': self.bot.get_command("setup channels"),
+                'display': "Custom Role settings",
+                'callback': self.bot.get_command("setup customroles"),
             },
             {
-                'display': "Role settings",
-                'callback': self.bot.get_command("setup roles"),
+                'display': "Fursona settings",
+                'callback': self.bot.get_command("setup fursonas"),
             },
             {
                 'display': "Interaction Cooldowns",
                 'callback': self.bot.get_command("setup interactions"),
-            },
-            {
-                'display': "Max Sona Counts",
-                'callback': self.bot.get_command("setup sonacount"),
             },
             {
                 'display': "Misc settings",
@@ -42,10 +38,11 @@ class BotSettings(utils.Cog):
             },
         )
         await menu.start(ctx)
+        await ctx.send("Done with setup!")
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
-    async def channels(self, ctx:utils.Context):
+    async def fursonas(self, ctx:utils.Context):
         """Talks the bot through a setup"""
 
         menu = utils.SettingsMenu()
@@ -73,16 +70,37 @@ class BotSettings(utils.Cog):
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('fursona_accept_nsfw_archive_channel_id'),
             },
             {
-                'display': lambda c: "Set moderator action archive channel (currently {0})".format(settings_mention(c, 'modmail_channel_id')),
-                'converter_args': [("What channel do you want moderator actions (like kicks/mutes, etc) to go to?", "modmail archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('modmail_channel_id'),
+                'display': "Set max sona counts by role",
+                'callback': self.bot.get_command("setup sonacount"),
             },
         )
         await menu.start(ctx)
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
-    async def roles(self, ctx:utils.Context):
+    async def customroles(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        menu = utils.SettingsMenu()
+        settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
+        menu.bulk_add_options(
+            ctx,
+            {
+                'display': lambda c: "Set custom role master (currently {0})".format(settings_mention(c, 'custom_role_id')),
+                'converter_args': [("What do you want to set this role to? Users with this role are able to make/manage their own custom role name and colour.", "verified role", commands.RoleConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('custom_role_id'),
+            },
+            {
+                'display': lambda c: "Set custom role position (currently below {0})".format(settings_mention(c, 'custom_role_position_id')),
+                'converter_args': [("What do you want to set this role to? Give a role that newly created custom roles will be created _under_.", "custom role position", commands.RoleConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('custom_role_position_id'),
+            },
+        )
+        await menu.start(ctx)
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def moderation(self, ctx:utils.Context):
         """Talks the bot through a setup"""
 
         menu = utils.SettingsMenu()
@@ -109,14 +127,9 @@ class BotSettings(utils.Cog):
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_moderator_role_id'),
             },
             {
-                'display': lambda c: "Set custom role master (currently {0})".format(settings_mention(c, 'custom_role_id')),
-                'converter_args': [("What do you want to set this role to? Users with this role are able to make/manage their own custom role name and colour.", "verified role", commands.RoleConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('custom_role_id'),
-            },
-            {
-                'display': lambda c: "Set custom role position (currently below {0})".format(settings_mention(c, 'custom_role_position_id')),
-                'converter_args': [("What do you want to set this role to? Give a role that newly created custom roles will be created _under_.", "custom role position", commands.RoleConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('custom_role_position_id'),
+                'display': lambda c: "Set moderator action archive channel (currently {0})".format(settings_mention(c, 'modmail_channel_id')),
+                'converter_args': [("What channel do you want moderator actions (like kicks/mutes, etc) to go to?", "modmail archive", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('modmail_channel_id'),
             },
         )
         await menu.start(ctx)
