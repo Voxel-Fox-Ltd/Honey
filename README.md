@@ -14,6 +14,8 @@ Server mods can set up an approval flow so sonas have to be verified before they
 
 Already made a sona through the bot and you want to import that into a new server? You can run `h.importsona` and the bot'll talk you through copying a sona from one of your servers into another. Currently supported are all servers where you use Honey, as well as The Furry Kingdom and Winterhaven.
 
+![](/marketing/kaiden_sona.png)
+
 ## Interaction Commands
 
 The classic `h.hug @User` is back. Many commands including hug, pat, kiss, and nuzzle are all available within the bot. Interactions can be run once every 30 minutes by default, but server mods can set certain roles to have a lower cooldown, allowing systems like Patreon perks to be in place, ie lower cooldowns for higher tiers of support.
@@ -43,6 +45,8 @@ Many servers use a custom role system for their Patreon supporters, so Honey is 
 Custom roles can be managed by the users who have them; the commands `h.customrole colour #5dadec` and `h.customrole name Renamed Role` can be used to recolour and rename the custom role.
 
 Only users with a designated master role (set in `h.setup`) can create/manage custom roles, though a mod can _set_ a custom role for a user with the `h.customrole set @User role` if your server doesn't want to create a master role.
+
+![](/marketing/custom_role.png)
 
 ## Verification System
 
