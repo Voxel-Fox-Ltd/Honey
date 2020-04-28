@@ -43,7 +43,7 @@ class ShopHandler(utils.Cog):
         emojis = []
         with utils.Embed() as embed:
             for emoji, (_, name, amount, description, aliases) in self.SHOP_ITEMS.items():
-                embed.add_field(f"{name} - {amount} {coin_emoji}", description, inline=False)
+                embed.add_field(f"{name} ({emoji}) - {amount} {coin_emoji}", description, inline=False)
                 emojis.append(emoji)
         shop_message = await shop_channel.send(embed=embed)
         for e in emojis:
