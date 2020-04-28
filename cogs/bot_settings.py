@@ -25,23 +25,23 @@ class BotSettings(utils.Cog):
         menu.bulk_add_options(
             ctx,
             {
-                'display': "Channel settings"
+                'display': "Channel settings",
                 'callback': self.bot.get_command("setup channels"),
             },
             {
-                'display': "Role settings"
+                'display': "Role settings",
                 'callback': self.bot.get_command("setup roles"),
             },
             {
-                'display': "Interaction Cooldowns"
+                'display': "Interaction Cooldowns",
                 'callback': self.bot.get_command("setup interactions"),
             },
             {
-                'display': "Max Sona Counts"
+                'display': "Max Sona Counts",
                 'callback': self.bot.get_command("setup sonacount"),
             },
             {
-                'display': "Misc settings"
+                'display': "Misc settings",
                 'callback': self.bot.get_command("setup misc"),
             },
         )
