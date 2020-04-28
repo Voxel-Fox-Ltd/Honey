@@ -150,7 +150,7 @@ class BotSettings(utils.Cog):
             utils.TimeValue, "How long should this role's cooldown be (eg `5m`, `15s`, etc)?",
             lambda x: x.duration
         )
-        await menu.start(ctx)
+        await menu.start(ctx, clear_reactions_on_loop=True)
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
@@ -161,7 +161,7 @@ class BotSettings(utils.Cog):
             'removed_on_mute_roles', 'RemoveOnMute',
             commands.RoleConverter, "What role do you want to be removed on mute?",
         )
-        await menu.start(ctx)
+        await menu.start(ctx, clear_reactions_on_loop=True)
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
@@ -173,7 +173,7 @@ class BotSettings(utils.Cog):
             commands.RoleConverter, "What role do you want to set the sona count for?",
             int, "How many sonas should people with this role be able to create?",
         )
-        await menu.start(ctx)
+        await menu.start(ctx, clear_reactions_on_loop=True)
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
