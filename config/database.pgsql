@@ -110,3 +110,12 @@ CREATE TABLE shopping_channels(
     channel_id BIGINT,
     message_id BIGINT
 );
+
+
+CREATE TABLE role_list(
+    guild_id BIGINT,
+    role_id BIGINT,
+    key VARCHAR(50),
+    value VARCHAR(50),
+    PRIMARY KEY (guild_id, role_id, key)
+);
