@@ -11,7 +11,8 @@ CREATE TABLE guild_settings(
     guild_moderator_role_id BIGINT, -- The guild moderator role
     custom_role_id BIGINT,  -- The role required for users to be able to manage their own roles
     custom_role_position_id BIGINT,  -- The role that newly created custom roles are set below
-    coin_emoji VARCHAR(100)  -- The emoji used when users run the coins command
+    coin_emoji VARCHAR(100),  -- The emoji used when users run the coins command
+    custom_role_xfix VARCHAR(33)  -- The emoji used when users run the coins command
 );
 
 

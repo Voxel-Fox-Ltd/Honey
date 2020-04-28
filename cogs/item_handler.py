@@ -119,7 +119,7 @@ class ItemHandler(utils.Cog):
             role = ctx.guild.get_role(paint_rows[0]['role_id'])
 
         # Make a role
-        role_kwargs = dict(name=colour_name.title(), colour=discord.Colour(colour_value), reason="Paintbrush used")
+        role_kwargs = dict(name=colour_name.title() + " (Paint)", colour=discord.Colour(colour_value), reason="Paintbrush used")
         role_created = False
         try:
             if role is None:

@@ -58,6 +58,7 @@ class CustomBot(commands.AutoShardedBot):
             'custom_role_position_id': None,
             'coin_emoji': None,
             'shop_message_id': None,
+            'custom_role_xfix': None,
             'role_interaction_cooldowns': dict(),
             'role_sona_count': dict(),
             'removed_on_mute_roles': list(),

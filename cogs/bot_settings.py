@@ -95,6 +95,11 @@ class BotSettings(utils.Cog):
                 'converter_args': [("What do you want to set this role to? Give a role that newly created custom roles will be created _under_.", "custom role position", commands.RoleConverter)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('custom_role_position_id'),
             },
+            {
+                'display': lambda c: "Set custom role name xfix (currently `{0}`)".format(c.bot.guild_settings[c.guild.id].get('custom_role_xfix', None) or ':(Custom)'),
+                'converter_args': [("What do you want your custom role suffix to be? If your name ends with a colon (eg `(Custom):`) then it'll be added to the role as a prefix rather than a suffix.", "custom role suffix", str)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('custom_role_xfix'),
+            },
         )
         await menu.start(ctx)
 

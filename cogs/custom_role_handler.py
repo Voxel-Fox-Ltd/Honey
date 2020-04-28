@@ -46,7 +46,12 @@ class CustomRoleHandler(utils.Cog):
 
         # Edit name
         try:
-            await role.edit(name=name.strip() + " (Custom)")
+            role_xfix = self.bot.guild_settings[ctx.guild.id].get('custom_role_xfix', None) or '(Custom)'
+            if role_xfix.endswith(':'):
+                role_name = f"{role_xfix.strip(':')} {name.strip()}"
+            else:
+                role_name = f"{name.strip()} {role_xfix.strip(':')}"
+            await role.edit(name=role_name)
             self.logger.info(f"Changed the name of a custom role to '{name}' (G{ctx.guild.id}/R{role.id})")
         except discord.Forbidden:
             self.logger.info(f"Unable to change the name of a custom role, forbidden (G{ctx.guild.id}/R{role.id})")
@@ -131,7 +136,12 @@ class CustomRoleHandler(utils.Cog):
 
         # Create role
         try:
-            new_role = await ctx.guild.create_role(name=f"{ctx.author.name} (Custom)")
+            role_xfix = self.bot.guild_settings[ctx.guild.id].get('custom_role_xfix', None) or '(Custom)'
+            if role_xfix.endswith(':'):
+                role_name = f"{role_xfix.strip(':')} {ctx.author.name}"
+            else:
+                role_name = f"{ctx.author.name} {role_xfix.strip(':')}"
+            new_role = await ctx.guild.create_role(name=role_name)
             self.logger.info(f"Created custom role in guild (G{ctx.guild.id}/R{new_role.id}/U{ctx.author.id})")
         except discord.Forbidden:
             self.logger.error(f"Couldn't create custom role in guild, forbidden (G{ctx.guild.id}/R{new_role.id}/U{ctx.author.id})")
