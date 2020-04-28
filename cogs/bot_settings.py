@@ -1,6 +1,3 @@
-import asyncio
-
-import discord
 from discord.ext import commands
 
 from cogs import utils
@@ -21,7 +18,6 @@ class BotSettings(utils.Cog):
             return
 
         menu = utils.SettingsMenu()
-        settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
         menu.bulk_add_options(
             ctx,
             {
