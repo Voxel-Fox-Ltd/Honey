@@ -45,7 +45,7 @@ class ItemHandler(utils.Cog):
     @commands.command(cls=utils.Command, aliases=['use'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
-    async def useitem(self, ctx:utils.Context, item_name:str, user:typing.Optional[discord.Member]):
+    async def useitem(self, ctx:utils.Context, item_name:str, user:typing.Optional[discord.Member], *, args:str=None):
         """Use an item that you purchased from the shop"""
 
         # Get the items they own
@@ -69,7 +69,7 @@ class ItemHandler(utils.Cog):
 
         # Paint
         if item_data[1] == "Paintbrush":
-            success = await self.use_paintbrush(ctx, db=db, user=user)
+            success = await self.use_paintbrush(ctx, args, db=db, user=user)
             if success is False:
                 await db.disconnect()
                 return
@@ -87,7 +87,7 @@ class ItemHandler(utils.Cog):
         self.logger.info(f"Remove item ({item_data[1]}) from user (G{ctx.guild.id}/U{ctx.author.id})")
         await db.disconnect()
 
-    async def use_paintbrush(self, ctx:utils.Context, db:utils.DatabaseConnection, user:discord.Member):
+    async def use_paintbrush(self, ctx:utils.Context, args:str, db:utils.DatabaseConnection, user:discord.Member):
         """Use the paintbrush on a user in a given server"""
 
         # See if there's a valid role position
@@ -107,7 +107,14 @@ class ItemHandler(utils.Cog):
             return False
 
         # Get a random role colour
-        colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
+        colour_name, colour_value = None, None
+        if args:
+            try:
+                colour_name, colour_value = args, utils.colour_names.COLOURS_BY_NAME[args.lower().strip()]
+            except KeyError:
+                pass
+        if colour_name is None:
+            colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
 
         # See if they have a paint role already
         paint_rows = await db(

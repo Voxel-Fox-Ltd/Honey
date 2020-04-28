@@ -85,6 +85,7 @@ COLOURS_BY_NAME = {
     "lime green": 0x32cd32,
     "linen": 0xfaf0e6,
     "magenta": 0xff00ff,
+    "malachite": 0x0bda51,
     "maroon": 0x800000,
     "medium aquamarine": 0x66cdaa,
     "medium blue": 0x0000cd,
