@@ -21,15 +21,19 @@ class BotSettings(utils.Cog):
         menu.bulk_add_options(
             ctx,
             {
-                'display': "Custom Role settings",
+                'display': "Custom role settings",
                 'callback': self.bot.get_command("setup customroles"),
+            },
+            {
+                'display': "Moderation settings",
+                'callback': self.bot.get_command("setup moderation"),
             },
             {
                 'display': "Fursona settings",
                 'callback': self.bot.get_command("setup fursonas"),
             },
             {
-                'display': "Interaction Cooldowns",
+                'display': "Interaction cooldowns",
                 'callback': self.bot.get_command("setup interactions"),
             },
             {
