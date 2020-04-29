@@ -80,7 +80,8 @@ class ModerationCommands(utils.Cog):
             for role in removed_roles:
                 await db(
                     """INSERT INTO temporary_removed_roles (guild_id, role_id, user_id, readd_timestamp, key, dm_user)
-                    VALUES ($1, $2, $3, null, 'Muted', false)""",
+                    VALUES ($1, $2, $3, null, 'Muted', false) ON CONFLICT (guild_id, role_id, user_id) DO UPDATE
+                    SET readd_timestamp=excluded.readd_timestamp, key=excluded.key, dm_user=excluded.dm_user""",
                     ctx.guild.id, role.id, user.id,
                 )
 
@@ -144,13 +145,15 @@ class ModerationCommands(utils.Cog):
         async with self.bot.database() as db:
             await db(
                 """INSERT INTO temporary_roles (guild_id, role_id, user_id, remove_timestamp, key, dm_user)
-                VALUES ($1, $2, $3, $4, 'Muted', true)""",
+                VALUES ($1, $2, $3, $4, 'Muted', true) ON CONFLICT (guild_id, role_id, user_id) DO UPDATE
+                SET remove_timestamp=excluded.remove_timestamp, key=excluded.key, dm_user=excluded.dm_user""",
                 ctx.guild.id, muted_role_id, user.id, dt.utcnow() + duration.delta
             )
             for role in removed_roles:
                 await db(
                     """INSERT INTO temporary_removed_roles (guild_id, role_id, user_id, readd_timestamp, key, dm_user)
-                    VALUES ($1, $2, $3, $4, 'Muted', false)""",
+                    VALUES ($1, $2, $3, $4, 'Muted', false) ON CONFLICT (guild_id, role_id, user_id) DO UPDATE
+                    SET readd_timestamp=excluded.readd_timestamp, key=excluded.key, dm_user=excluded.dm_user""",
                     ctx.guild.id, role.id, user.id, dt.utcnow() + duration.delta
                 )
 
@@ -208,9 +211,10 @@ class ModerationCommands(utils.Cog):
                 WHERE guild_id=$1 AND user_id=$2 AND key='Muted'""",
                 ctx.guild.id, user.id
             )
+        self.bot.dispatch("temporary_role_handle")
 
         # Output to chat
-        return await ctx.send(f"{user.mention} has been unmuted by {ctx.author.mention}. Any roles removed on mute will reappear in the next minute or so.")
+        return await ctx.send(f"{user.mention} has been unmuted by {ctx.author.mention}.")
 
     @commands.command(cls=utils.Command)
     @utils.checks.is_guild_moderator()

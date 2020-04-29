@@ -5,9 +5,6 @@ from cogs import utils
 
 class BotSettings(utils.Cog):
 
-    TICK_EMOJI = "<:tickYes:596096897995899097>"
-    PLUS_EMOJI = "\N{HEAVY PLUS SIGN}"
-
     @commands.group(cls=utils.Group, aliases=['settings'])
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True, external_emojis=True)

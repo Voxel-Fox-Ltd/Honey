@@ -15,9 +15,14 @@ class TemporaryRoleHandler(utils.Cog):
     def cog_unload(self):
         self.role_handler.stop()
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(seconds=10)
     async def role_handler(self):
         """Loops once a minute to remove the roles of a user should they need to be taken"""
+
+        self.bot.dispatch("temporary_role_handle")
+
+    @utils.Cog.listener()
+    async def on_temporary_role_handle(self):
 
         # Get data
         async with self.bot.database() as db:
