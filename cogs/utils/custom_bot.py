@@ -68,6 +68,8 @@ class CustomBot(commands.AutoShardedBot):
             'role_sona_count': dict(),
             'removed_on_mute_roles': list(),
         }
+        self.DEFAULT_USER_SETTINGS = {
+        }
 
         # Aiohttp session
         self.session = aiohttp.ClientSession(loop=self.loop)
@@ -82,6 +84,8 @@ class CustomBot(commands.AutoShardedBot):
 
         # Here's the storage for cached stuff
         self.guild_settings = collections.defaultdict(self.DEFAULT_GUILD_SETTINGS.copy)
+        self.user_settings = collections.defaultdict(self.DEFAULT_USER_SETTINGS.copy)
+
 
     def get_invite_link(self, *, scope:str='bot', response_type:str=None, redirect_uri:str=None, guild_id:int=None, **kwargs):
         """Gets the invite link for the bot, with permissions all set properly"""
@@ -184,6 +188,16 @@ class CustomBot(commands.AutoShardedBot):
         for row in guild_data:
             for key, value in row.items():
                 self.guild_settings[row['guild_id']][key] = value
+
+        # Get user settings
+        try:
+            data = await db("SELECT * FROM user_settings")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from user_settings - {e}")
+            exit(1)
+        for row in data:
+            for key, value in row.items():
+                self.user_settings[row['user_id']][key] = value
 
         # Get stored interaction cooldowns
         try:
