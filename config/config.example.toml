@@ -19,13 +19,6 @@ dm_uncaught_errors = false
     port = 5432
     enabled = false
 
-# This data is passed directly over to aioredis
-[redis]
-    host = "127.0.0.1"
-    port = 6379
-    db = 0
-    enabled = false
-
 # What the bot is playing
 [presence]
     activity_type = "playing"  # Should be one of 'playing', 'listening', 'watching'
