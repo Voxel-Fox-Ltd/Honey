@@ -1,22 +1,26 @@
 CREATE TABLE guild_settings(
     guild_id BIGINT PRIMARY KEY,
     prefix VARCHAR(30),
-    verified_role_id BIGINT,  -- The role verified members get
+
     fursona_modmail_channel_id BIGINT,  -- The ID of the channel sonas are sent to be approved
     fursona_decline_archive_channel_id BIGINT,  -- The archive for declined sonas
     fursona_accept_archive_channel_id BIGINT,  -- The archive for accepted sfw sonas
     fursona_accept_nsfw_archive_channel_id BIGINT,  -- The archive for accepted nsfw sonas
+
+    verified_role_id BIGINT,  -- The role verified members get
     muted_role_id BIGINT, -- The role muted members get
     guild_moderator_role_id BIGINT, -- The guild moderator role
+
+    custom_role_xfix VARCHAR(33),  -- The emoji used when users run the coins command
     custom_role_id BIGINT,  -- The role required for users to be able to manage their own roles
     custom_role_position_id BIGINT,  -- The role that newly created custom roles are set below
-    coin_emoji VARCHAR(100),  -- The emoji used when users run the coins command
-    custom_role_xfix VARCHAR(33),  -- The emoji used when users run the coins command
 
-    kick_modlog_channel_id BIGINT,  -- The channel ID for mod actions to be posted to (modmail_channel_id)
-    ban_modlog_channel_id BIGINT,  -- The channel ID for mod actions to be posted to (modmail_channel_id)
-    mute_modlog_channel_id BIGINT,  -- The channel ID for mod actions to be posted to (modmail_channel_id)
-    warn_modlog_channel_id BIGINT  -- The channel ID for mod actions to be posted to (modmail_channel_id)
+    coin_emoji VARCHAR(100),  -- The emoji used when users run the coins command
+
+    kick_modlog_channel_id BIGINT,  -- The channel ID for mod actions to be posted to
+    ban_modlog_channel_id BIGINT,
+    mute_modlog_channel_id BIGINT,
+    warn_modlog_channel_id BIGINT
 );
 
 
