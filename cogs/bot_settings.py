@@ -25,7 +25,7 @@ class BotSettings(utils.Cog):
                 await db("UPDATE guild_settings SET prefix=$2 WHERE guild_id=$1", ctx.guild.id, new_prefix)
         await ctx.send(f"My prefix has been updated to `{new_prefix}`.")
 
-    @commands.command(cls=utils.Command)
+    @commands.command(cls=utils.Group)
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True, external_emojis=True)
     @commands.guild_only()
