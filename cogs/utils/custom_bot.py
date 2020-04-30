@@ -69,6 +69,7 @@ class CustomBot(commands.AutoShardedBot):
             'removed_on_mute_roles': list(),
         }
         self.DEFAULT_USER_SETTINGS = {
+            'dm_on_paint_remove': True,
         }
 
         # Aiohttp session

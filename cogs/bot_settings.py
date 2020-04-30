@@ -5,6 +5,9 @@ from cogs import utils
 
 class BotSettings(utils.Cog):
 
+    TICK_EMOJI = "<:tickYes:596096897995899097>"
+    CROSS_EMOJI = "<:crossNo:596096897769275402>"
+
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
@@ -255,7 +258,7 @@ class BotSettings(utils.Cog):
         except utils.errors.InvokedMetaCommand:
             pass
 
-    @commands.command(cls=utils.Command, enabled=False)
+    @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
@@ -263,16 +266,20 @@ class BotSettings(utils.Cog):
         """Run the bot setup"""
 
         menu = utils.SettingsMenu()
-        settings_mention = utils.SettingsMenuOption.get_user_settings_mention
+        # settings_mention = utils.SettingsMenuOption.get_user_settings_mention
         menu.bulk_add_options(
             ctx,
             {
-                'display': lambda c: "Set setting (currently {0})".format(settings_mention(c, 'setting_id')),
-                'converter_args': [("What do you want to set the setting to?", "setting channel", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('setting_id'),
+                'display': lambda c: "Do you want to be DMd on paint removal (currently {0})".format(c.bot.user_settings[c.author.id].get('dm_on_paint_remove', True)),
+                'converter_args': [("Do you want to receive a DM when paint is removed from you?", "paint DM", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
+                'callback': utils.SettingsMenuOption.get_set_user_settings_callback('dm_on_paint_remove'),
             },
         )
-        await menu.start(ctx)
+        try:
+            await menu.start(ctx)
+            await ctx.send("Done setting up!")
+        except utils.errors.InvokedMetaCommand:
+            pass
 
 
 def setup(bot:utils.Bot):

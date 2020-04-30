@@ -59,11 +59,14 @@ class TemporaryRoleHandler(utils.Cog):
 
             # DM the user
             if role is not None and member is not None and row['dm_user']:
-                try:
-                    await member.send(f"Removed the `{role.name}` role from you in the server **{guild.name}** - duration expired.")
-                    self.logger.info(f"Sent DM to user about expired role (G{guild.id}/R{role.id}/U{member.id})")
-                except (discord.Forbidden, discord.NotFound):
-                    self.logger.info(f"Couldn't send DM to user about expired role (G{guild.id}/R{role.id}/U{member.id})")
+                if row['key'] == 'Paint' and self.bot.user_settings[member.id]['dm_on_paint_remove'] is False:
+                    pass
+                else:
+                    try:
+                        await member.send(f"Removed the `{role.name}` role from you in the server **{guild.name}** - duration expired.")
+                        self.logger.info(f"Sent DM to user about expired role (G{guild.id}/R{role.id}/U{member.id})")
+                    except (discord.Forbidden, discord.NotFound):
+                        self.logger.info(f"Couldn't send DM to user about expired role (G{guild.id}/R{role.id}/U{member.id})")
 
         # Readd roles that may have been removed
         readded_roles = []
