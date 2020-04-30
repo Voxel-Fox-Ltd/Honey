@@ -168,6 +168,16 @@ class BotSettings(utils.Cog):
                 'converter_args': [("What channel do you want warns to go to?", "modmail archive", commands.TextChannelConverter)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('warn_modlog_channel_id'),
             },
+            {
+                'display': lambda c: "Set edited message archive channel (currently {0})".format(settings_mention(c, 'edited_message_modlog_channel_id')),
+                'converter_args': [("What channel do you want edited message logs to go to?", "modmail archive", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('edited_message_modlog_channel_id'),
+            },
+            {
+                'display': lambda c: "Set deleted message archive channel (currently {0})".format(settings_mention(c, 'deleted_message_modlog_channel_id')),
+                'converter_args': [("What channel do you want deleted message logs to go to?", "modmail archive", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('deleted_message_modlog_channel_id'),
+            },
         )
         await menu.start(ctx)
 

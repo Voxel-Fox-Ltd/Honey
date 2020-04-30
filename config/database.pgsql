@@ -20,7 +20,9 @@ CREATE TABLE guild_settings(
     kick_modlog_channel_id BIGINT,  -- The channel ID for mod actions to be posted to
     ban_modlog_channel_id BIGINT,
     mute_modlog_channel_id BIGINT,
-    warn_modlog_channel_id BIGINT
+    warn_modlog_channel_id BIGINT,
+    edited_message_modlog_channel_id BIGINT,
+    deleted_message_modlog_channel_id BIGINT
 );
 
 

@@ -63,6 +63,8 @@ class CustomBot(commands.AutoShardedBot):
             'ban_modlog_channel_id': None,
             'mute_modlog_channel_id': None,
             'warn_modlog_channel_id': None,
+            'edited_message_modlog_channel_id': None,
+            'deleted_message_modlog_channel_id': None,
             'role_interaction_cooldowns': dict(),
             'role_sona_count': dict(),
             'removed_on_mute_roles': list(),
