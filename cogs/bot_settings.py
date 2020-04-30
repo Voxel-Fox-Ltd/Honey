@@ -133,9 +133,40 @@ class BotSettings(utils.Cog):
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_moderator_role_id'),
             },
             {
-                'display': lambda c: "Set moderator action archive channel (currently {0})".format(settings_mention(c, 'modmail_channel_id')),
-                'converter_args': [("What channel do you want moderator actions (like kicks/mutes, etc) to go to?", "modmail archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('modmail_channel_id'),
+                'display': "Set moderator action archive channels",
+                'callback': self.bot.get_command("setup modlogs"),
+            },
+        )
+        await menu.start(ctx)
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def modlogs(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        menu = utils.SettingsMenu()
+        settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
+        menu.bulk_add_options(
+            ctx,
+            {
+                'display': lambda c: "Set kick archive channel (currently {0})".format(settings_mention(c, 'kick_modlog_channel_id')),
+                'converter_args': [("What channel do you want kicks to go to?", "modmail archive", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('kick_modlog_channel_id'),
+            },
+            {
+                'display': lambda c: "Set ban archive channel (currently {0})".format(settings_mention(c, 'ban_modlog_channel_id')),
+                'converter_args': [("What channel do you want bans to go to?", "modmail archive", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('ban_modlog_channel_id'),
+            },
+            {
+                'display': lambda c: "Set mute archive channel (currently {0})".format(settings_mention(c, 'mute_modlog_channel_id')),
+                'converter_args': [("What channel do you want mutes to go to?", "modmail archive", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('mute_modlog_channel_id'),
+            },
+            {
+                'display': lambda c: "Set warn archive channel (currently {0})".format(settings_mention(c, 'warn_modlog_channel_id')),
+                'converter_args': [("What channel do you want warns to go to?", "modmail archive", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('warn_modlog_channel_id'),
             },
         )
         await menu.start(ctx)
