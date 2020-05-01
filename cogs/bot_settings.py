@@ -25,7 +25,7 @@ class BotSettings(utils.Cog):
             await db("INSERT INTO guild_settings (guild_id, prefix) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET prefix=excluded.prefix", ctx.guild.id, new_prefix)
         await ctx.send(f"My prefix has been updated to `{new_prefix}`.")
 
-    @commands.command(cls=utils.Group)
+    @commands.group(cls=utils.Group)
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True, external_emojis=True)
     @commands.guild_only()
@@ -74,22 +74,22 @@ class BotSettings(utils.Cog):
             {
                 'display': lambda c: "Set fursona modmail channel (currently {0})".format(settings_mention(c, 'fursona_modmail_channel_id')),
                 'converter_args': [("What channel do you want to set fursona modmail to go to?", "fursona modmail", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('fursona_modmail_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'fursona_modmail_channel_id'),
             },
             {
                 'display': lambda c: "Set fursona decline archive channel (currently {0})".format(settings_mention(c, 'fursona_decline_archive_channel_id')),
                 'converter_args': [("What channel do you want declined fursonas to go to?", "fursona decline archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('fursona_decline_archive_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'fursona_decline_archive_channel_id'),
             },
             {
                 'display': lambda c: "Set fursona accept archive channel (currently {0})".format(settings_mention(c, 'fursona_accept_archive_channel_id')),
                 'converter_args': [("What channel do you want accepted fursonas to go to?", "fursona accept archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('fursona_accept_archive_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'fursona_accept_archive_channel_id'),
             },
             {
                 'display': lambda c: "Set NSFW fursona accept archive channel (currently {0})".format(settings_mention(c, 'fursona_accept_nsfw_archive_channel_id')),
                 'converter_args': [("What channel do you want accepted NSFW fursonas to go to?", "NSFW fursona accept archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('fursona_accept_nsfw_archive_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'fursona_accept_nsfw_archive_channel_id'),
             },
             {
                 'display': "Set max sona counts by role",
@@ -110,17 +110,17 @@ class BotSettings(utils.Cog):
             {
                 'display': lambda c: "Set custom role master (currently {0})".format(settings_mention(c, 'custom_role_id')),
                 'converter_args': [("What do you want to set this role to? Users with this role are able to make/manage their own custom role name and colour.", "verified role", commands.RoleConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('custom_role_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'custom_role_id'),
             },
             {
                 'display': lambda c: "Set custom role position (currently below {0})".format(settings_mention(c, 'custom_role_position_id')),
                 'converter_args': [("What do you want to set this role to? Give a role that newly created custom roles will be created _under_.", "custom role position", commands.RoleConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('custom_role_position_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'custom_role_position_id'),
             },
             {
                 'display': lambda c: "Set custom role name xfix (currently `{0}`)".format(c.bot.guild_settings[c.guild.id].get('custom_role_xfix', None) or ':(Custom)'),
                 'converter_args': [("What do you want your custom role suffix to be? If your name ends with a colon (eg `(Custom):`) then it'll be added to the role as a prefix rather than a suffix.", "custom role suffix", str)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('custom_role_xfix'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'custom_role_xfix'),
             },
         )
         await menu.start(ctx)
@@ -130,6 +130,11 @@ class BotSettings(utils.Cog):
     async def moderation(self, ctx:utils.Context):
         """Talks the bot through a setup"""
 
+        # Make sure it's only run as its own command, not a parent
+        if ctx.invoked_subcommand is not None:
+            return
+
+        # Create settings menu
         menu = utils.SettingsMenu()
         settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
         menu.bulk_add_options(
@@ -137,12 +142,12 @@ class BotSettings(utils.Cog):
             {
                 'display': lambda c: "Set verified role (currently {0})".format(settings_mention(c, 'verified_role_id')),
                 'converter_args': [("What do you want to set the verified role to?", "verified role", commands.RoleConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('verified_role_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'verified_role_id'),
             },
             {
                 'display': lambda c: "Set mute role (currently {0})".format(settings_mention(c, 'muted_role_id')),
                 'converter_args': [("What do you want to set the mute role to?", "mute role", commands.RoleConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('muted_role_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'muted_role_id'),
             },
             {
                 'display': lambda c: "Set roles which are removed on mute (currently {0})".format(len(c.bot.guild_settings[c.guild.id].get('removed_on_mute_roles', []))),
@@ -151,7 +156,7 @@ class BotSettings(utils.Cog):
             {
                 'display': lambda c: "Set moderator role (currently {0})".format(settings_mention(c, 'guild_moderator_role_id')),
                 'converter_args': [("What do you want to set the moderator role to?", "moderator role", commands.RoleConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_moderator_role_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'guild_moderator_role_id'),
             },
             {
                 'display': "Set moderator action archive channels",
@@ -172,32 +177,32 @@ class BotSettings(utils.Cog):
             {
                 'display': lambda c: "Set kick archive channel (currently {0})".format(settings_mention(c, 'kick_modlog_channel_id')),
                 'converter_args': [("What channel do you want kicks to go to?", "modmail archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('kick_modlog_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'kick_modlog_channel_id'),
             },
             {
                 'display': lambda c: "Set ban archive channel (currently {0})".format(settings_mention(c, 'ban_modlog_channel_id')),
                 'converter_args': [("What channel do you want bans to go to?", "modmail archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('ban_modlog_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'ban_modlog_channel_id'),
             },
             {
                 'display': lambda c: "Set mute archive channel (currently {0})".format(settings_mention(c, 'mute_modlog_channel_id')),
                 'converter_args': [("What channel do you want mutes to go to?", "modmail archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('mute_modlog_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'mute_modlog_channel_id'),
             },
             {
                 'display': lambda c: "Set warn archive channel (currently {0})".format(settings_mention(c, 'warn_modlog_channel_id')),
                 'converter_args': [("What channel do you want warns to go to?", "modmail archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('warn_modlog_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'warn_modlog_channel_id'),
             },
             {
                 'display': lambda c: "Set edited message archive channel (currently {0})".format(settings_mention(c, 'edited_message_modlog_channel_id')),
                 'converter_args': [("What channel do you want edited message logs to go to?", "modmail archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('edited_message_modlog_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'edited_message_modlog_channel_id'),
             },
             {
                 'display': lambda c: "Set deleted message archive channel (currently {0})".format(settings_mention(c, 'deleted_message_modlog_channel_id')),
                 'converter_args': [("What channel do you want deleted message logs to go to?", "modmail archive", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('deleted_message_modlog_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'deleted_message_modlog_channel_id'),
             },
         )
         await menu.start(ctx)
@@ -249,7 +254,7 @@ class BotSettings(utils.Cog):
             {
                 'display': lambda c: "Set coin emoji (currently {0})".format(c.bot.guild_settings[c.guild.id].get('coin_emoji', 'coins')),
                 'converter_args': [("What do you want to set the coin emoji to?", "coin emoji", str)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('coin_emoji'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'coin_emoji'),
             },
         )
         try:
@@ -258,13 +263,18 @@ class BotSettings(utils.Cog):
         except utils.errors.InvokedMetaCommand:
             pass
 
-    @commands.command(cls=utils.Command)
+    @commands.group(cls=utils.Group)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def usersettings(self, ctx:utils.Context):
         """Run the bot setup"""
 
+        # Make sure it's only run as its own command, not a parent
+        if ctx.invoked_subcommand is not None:
+            return
+
+        # Create settings menu
         menu = utils.SettingsMenu()
         # settings_mention = utils.SettingsMenuOption.get_user_settings_mention
         menu.bulk_add_options(
@@ -272,7 +282,7 @@ class BotSettings(utils.Cog):
             {
                 'display': lambda c: "Do you want to be DMd on paint removal (currently {0})".format(c.bot.user_settings[c.author.id].get('dm_on_paint_remove', True)),
                 'converter_args': [("Do you want to receive a DM when paint is removed from you?", "paint DM", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
-                'callback': utils.SettingsMenuOption.get_set_user_settings_callback('dm_on_paint_remove'),
+                'callback': utils.SettingsMenuOption.get_set_user_settings_callback('user_settings', 'dm_on_paint_remove'),
             },
         )
         try:
