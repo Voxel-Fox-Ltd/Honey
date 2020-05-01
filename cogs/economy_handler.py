@@ -109,14 +109,24 @@ class EconomyHandler(utils.Cog):
     async def user_message_money_handler(self, message:discord.Message):
         """Add some money to the user's account when they send a message"""
 
-        # Add some filters
+        # Make sure it's in a server
         if message.guild is None:
             return
+
+        # Make sure there's a shopping channel set
+        if self.bot.guild_settings[message.guild.id].get('shop_message_id') is None:
+            return
+
+        # Make sure they've actually said something
         clean_emojiless_content = self.EMOJI_REGEX.sub("x", message.clean_content)
         if len(clean_emojiless_content.replace(" ", "")) <= 3:
             return
+
+        # Make sure they're not a bot
         if message.author.bot:
             return
+
+        # Check time limit
         if self.last_message[(message.guild.id, message.author.id)] + timedelta(minutes=1) > dt.utcnow():
             return
 
