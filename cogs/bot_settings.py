@@ -216,7 +216,7 @@ class BotSettings(utils.Cog):
             'role_interaction_cooldowns', 'Interactions',
             commands.RoleConverter, "What role do you want to set the interaction for?",
             utils.TimeValue, "How long should this role's cooldown be (eg `5m`, `15s`, etc)?",
-            lambda x: x.duration
+            lambda x: int(x.duration)
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
