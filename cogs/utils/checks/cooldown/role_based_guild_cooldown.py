@@ -16,7 +16,10 @@ class RoleBasedGuildCooldown(Cooldown):
         cooldown_settings = ctx.bot.guild_settings[ctx.guild.id]['role_interaction_cooldowns']
 
         # Find the lowest number on the guild
-        rate_per = min(cooldown_settings.get(i, sys.maxsize) for i in ctx.author._roles)
+        try:
+            rate_per = min(cooldown_settings.get(i, sys.maxsize) for i in ctx.author._roles)
+        except ValueError:
+            rate_per = sys.maxsize
 
         # If it's maxsize now they don't have any cooldown info set
         if rate_per == sys.maxsize:
