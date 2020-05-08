@@ -21,6 +21,7 @@ CREATE TABLE guild_settings(
     ban_modlog_channel_id BIGINT,
     mute_modlog_channel_id BIGINT,
     warn_modlog_channel_id BIGINT,
+
     edited_message_modlog_channel_id BIGINT,
     deleted_message_modlog_channel_id BIGINT
 );

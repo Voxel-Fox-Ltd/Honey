@@ -22,7 +22,7 @@ class MessageHandler(utils.Cog):
             return
 
         # Create embed
-        with utils.Embed(use_random_colour=True) as embed:
+        with utils.Embed(colour=0x0000ff) as embed:
             embed.set_author_to_user(user=after.author)
             embed.description = f"[Message edited]({after.jump_url}) in {after.channel.mention}"
             before_content = before.content
@@ -61,7 +61,7 @@ class MessageHandler(utils.Cog):
             return
 
         # Create embed
-        with utils.Embed(use_random_colour=True) as embed:
+        with utils.Embed(colour=0xff0000) as embed:
             embed.set_author_to_user(user=message.author)
             embed.description = f"Message deleted in {message.channel.mention}"
             if len(message.content) > 1000:
@@ -71,7 +71,7 @@ class MessageHandler(utils.Cog):
             embed.timestamp = dt.utcnow()
 
         # Get channel
-        channel_id = self.bot.guild_settings[message.guild.id].get("deleted_message_modlog_channel_id")
+        channel_id = self.bot.guild_settings[message.guild.id].get("edited_message_modlog_channel_id")
         channel = self.bot.get_channel(channel_id)
         if channel is None:
             return
