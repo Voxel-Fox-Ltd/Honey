@@ -17,6 +17,10 @@ class ItemHandler(utils.Cog):
     async def coins(self, ctx:utils.Context, user:discord.Member=None):
         """Gives you the content of your inventory"""
 
+        # Make sure there's money set up
+        if self.bot.guild_settings[ctx.guild.id].get('shop_message_id') is None:
+            return await ctx.send("There's no shop set up for this server, so there's no point in you getting money. Sorry :/")
+
         # Grab the user
         user = user or ctx.author
         if user.id == ctx.guild.me.id:
@@ -27,6 +31,8 @@ class ItemHandler(utils.Cog):
         # Get the data
         async with self.bot.database() as db:
             coin_rows = await db("SELECT * FROM user_money WHERE guild_id=$1 AND user_id=$2", user.guild.id, user.id)
+            if not coin_rows:
+                coin_rows = [{'amount': 0}]
             inv_rows = await db("SELECT * FROM user_inventory WHERE guild_id=$1 AND user_id=$2", user.guild.id, user.id)
 
         # Throw it into an embed
