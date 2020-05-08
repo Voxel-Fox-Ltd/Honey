@@ -3,6 +3,7 @@ import collections
 import glob
 import logging
 import typing
+import copy
 from datetime import datetime as dt
 from urllib.parse import urlencode
 
@@ -84,8 +85,8 @@ class CustomBot(commands.AutoShardedBot):
         self.startup_method = None
 
         # Here's the storage for cached stuff
-        self.guild_settings = collections.defaultdict(self.DEFAULT_GUILD_SETTINGS.copy)
-        self.user_settings = collections.defaultdict(self.DEFAULT_USER_SETTINGS.copy)
+        self.guild_settings = collections.defaultdict(lambda: copy.deepcopy(self.DEFAULT_GUILD_SETTINGS))
+        self.user_settings = collections.defaultdict(lambda: copy.deepcopy(self.DEFAULT_USER_SETTINGS))
 
     async def startup(self):
         """Clears all the bot's caches and fills them from a DB read"""
@@ -108,11 +109,7 @@ class CustomBot(commands.AutoShardedBot):
                 self.guild_settings[row['guild_id']][key] = value
 
         # Get user settings
-        try:
-            data = await db("SELECT * FROM user_settings")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from user_settings - {e}")
-            exit(1)
+        data = await self.get_all_table_data(db, "user_settings")
         for row in data:
             for key, value in row.items():
                 self.user_settings[row['user_id']][key] = value
@@ -169,10 +166,15 @@ class CustomBot(commands.AutoShardedBot):
             self.logger.critical(f"Error selecting from table - {e}")
             exit(1)
 
-    async def get_table_data(self, db, table_name):
-        """"""
+    async def get_all_table_data(self, db, table_name):
+        """Get all data from a table"""
 
-        return await self.run_sql_exit_on_error(db "SELECT * FROM {0}".format(table_name))
+        return await self.run_sql_exit_on_error(db, "SELECT * FROM {0}".format(table_name))
+
+    async def get_list_table_data(self, db, table_name, key):
+        """Get all data from a table"""
+
+        return await self.run_sql_exit_on_error(db, "SELECT * FROM {0} WHERE key=$1".format(table_name), key)
 
     def get_invite_link(self, *, scope:str='bot', response_type:str=None, redirect_uri:str=None, guild_id:int=None, **kwargs):
         """Gets the invite link for the bot, with permissions all set properly"""
