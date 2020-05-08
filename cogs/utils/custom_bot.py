@@ -87,6 +87,92 @@ class CustomBot(commands.AutoShardedBot):
         self.guild_settings = collections.defaultdict(self.DEFAULT_GUILD_SETTINGS.copy)
         self.user_settings = collections.defaultdict(self.DEFAULT_USER_SETTINGS.copy)
 
+    async def startup(self):
+        """Clears all the bot's caches and fills them from a DB read"""
+
+        # Remove caches
+        self.logger.debug("Clearing caches")
+        self.guild_settings.clear()
+
+        # Get database connection
+        db = await self.database.get_connection()
+
+        # Get stored prefixes
+        try:
+            guild_data = await db("SELECT * FROM guild_settings")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from guild_settings - {e}")
+            exit(1)
+        for row in guild_data:
+            for key, value in row.items():
+                self.guild_settings[row['guild_id']][key] = value
+
+        # Get user settings
+        try:
+            data = await db("SELECT * FROM user_settings")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from user_settings - {e}")
+            exit(1)
+        for row in data:
+            for key, value in row.items():
+                self.user_settings[row['user_id']][key] = value
+
+        # Get stored interaction cooldowns
+        try:
+            interaction_data = await db("SELECT * FROM role_list WHERE key='Interactions'")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from role_list - {e}")
+            exit(1)
+        for row in interaction_data:
+            self.guild_settings[row['guild_id']]['role_interaction_cooldowns'][row['role_id']] = int(row['value'])
+
+        # Get max sona count
+        try:
+            interaction_data = await db("SELECT * FROM role_list WHERE key='SonaCount'")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from role_list - {e}")
+            exit(1)
+        for row in interaction_data:
+            self.guild_settings[row['guild_id']]['role_sona_count'][row['role_id']] = int(row['value'])
+
+        # Get roles to be removed on mute
+        try:
+            interaction_data = await db("SELECT * FROM role_list WHERE key='RemoveOnMute'")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from role_list - {e}")
+            exit(1)
+        for row in interaction_data:
+            self.guild_settings[row['guild_id']]['removed_on_mute_roles'].append(row['role_id'])
+
+        # Get shop message ID
+        try:
+            interaction_data = await db("SELECT * FROM shopping_channels")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from shopping_channels - {e}")
+            exit(1)
+        for row in interaction_data:
+            self.guild_settings[row['guild_id']]['shop_message_id'] = row['message_id']
+
+        # Wait for the bot to cache users before continuing
+        self.logger.debug("Waiting until ready before completing startup method.")
+        await self.wait_until_ready()
+
+        # Close database connection
+        await db.disconnect()
+
+    async def run_sql_exit_on_error(self, db, sql, *args):
+        """Get data form a table, exiting if it can't"""
+
+        try:
+            return await db(sql, *args)
+        except Exception as e:
+            self.logger.critical(f"Error selecting from table - {e}")
+            exit(1)
+
+    async def get_table_data(self, db, table_name):
+        """"""
+
+        return await self.run_sql_exit_on_error(db "SELECT * FROM {0}".format(table_name))
 
     def get_invite_link(self, *, scope:str='bot', response_type:str=None, redirect_uri:str=None, guild_id:int=None, **kwargs):
         """Gets the invite link for the bot, with permissions all set properly"""
@@ -169,79 +255,6 @@ class CustomBot(commands.AutoShardedBot):
         """A setter method so that the original bot object doesn't complain"""
 
         pass
-
-    async def startup(self):
-        """Clears all the bot's caches and fills them from a DB read"""
-
-        # Remove caches
-        self.logger.debug("Clearing caches")
-        self.guild_settings.clear()
-
-        # Get database connection
-        db = await self.database.get_connection()
-
-        # Get stored prefixes
-        try:
-            guild_data = await db("SELECT * FROM guild_settings")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from guild_settings - {e}")
-            exit(1)
-        for row in guild_data:
-            for key, value in row.items():
-                self.guild_settings[row['guild_id']][key] = value
-
-        # Get user settings
-        try:
-            data = await db("SELECT * FROM user_settings")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from user_settings - {e}")
-            exit(1)
-        for row in data:
-            for key, value in row.items():
-                self.user_settings[row['user_id']][key] = value
-
-        # Get stored interaction cooldowns
-        try:
-            interaction_data = await db("SELECT * FROM role_list WHERE key='Interactions'")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from role_list - {e}")
-            exit(1)
-        for row in interaction_data:
-            self.guild_settings[row['guild_id']]['role_interaction_cooldowns'][row['role_id']] = int(row['value'])
-
-        # Get max sona count
-        try:
-            interaction_data = await db("SELECT * FROM role_list WHERE key='SonaCount'")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from role_list - {e}")
-            exit(1)
-        for row in interaction_data:
-            self.guild_settings[row['guild_id']]['role_sona_count'][row['role_id']] = int(row['value'])
-
-        # Get roles to be removed on mute
-        try:
-            interaction_data = await db("SELECT * FROM role_list WHERE key='RemoveOnMute'")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from role_list - {e}")
-            exit(1)
-        for row in interaction_data:
-            self.guild_settings[row['guild_id']]['removed_on_mute_roles'].append(row['role_id'])
-
-        # Get shop message ID
-        try:
-            interaction_data = await db("SELECT * FROM shopping_channels")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from shopping_channels - {e}")
-            exit(1)
-        for row in interaction_data:
-            self.guild_settings[row['guild_id']]['shop_message_id'] = row['message_id']
-
-        # Wait for the bot to cache users before continuing
-        self.logger.debug("Waiting until ready before completing startup method.")
-        await self.wait_until_ready()
-
-        # Close database connection
-        await db.disconnect()
 
     def get_uptime(self) -> float:
         """Gets the uptime of the bot in seconds
