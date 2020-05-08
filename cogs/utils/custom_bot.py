@@ -3,6 +3,7 @@ import collections
 import glob
 import logging
 import typing
+import copy
 from datetime import datetime as dt
 from urllib.parse import urlencode
 
@@ -62,8 +63,8 @@ class CustomBot(commands.AutoShardedBot):
         self.startup_method = None
 
         # Here's the storage for cached stuff
-        self.guild_settings = collections.defaultdict(self.DEFAULT_GUILD_SETTINGS.copy)
-        self.user_settings = collections.defaultdict(self.DEFAULT_USER_SETTINGS.copy)
+        self.guild_settings = collections.defaultdict(lambda: copy.deepcopy(self.DEFAULT_GUILD_SETTINGS))
+        self.user_settings = collections.defaultdict(lambda: copy.deepcopy(self.DEFAULT_USER_SETTINGS))
 
     async def startup(self):
         """Clears all the bot's caches and fills them from a DB read"""
@@ -107,12 +108,12 @@ class CustomBot(commands.AutoShardedBot):
     async def get_all_table_data(self, db, table_name):
         """Get all data from a table"""
 
-        return await self.run_sql_exit_on_error(db "SELECT * FROM {0}".format(table_name))
+        return await self.run_sql_exit_on_error(db, "SELECT * FROM {0}".format(table_name))
 
     async def get_list_table_data(self, db, table_name, key):
         """Get all data from a table"""
 
-        return await self.run_sql_exit_on_error(db "SELECT * FROM {0} WHERE key=$1".format(table_name), key)
+        return await self.run_sql_exit_on_error(db, "SELECT * FROM {0} WHERE key=$1".format(table_name), key)
 
     def get_invite_link(self, *, scope:str='bot', response_type:str=None, redirect_uri:str=None, guild_id:int=None, **kwargs):
         """Gets the invite link for the bot, with permissions all set properly"""
