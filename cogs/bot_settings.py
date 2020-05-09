@@ -55,6 +55,10 @@ class BotSettings(utils.Cog):
                 'callback': self.bot.get_command("setup interactions"),
             },
             {
+                'display': "Shop settings",
+                'callback': self.bot.get_command("setup shop"),
+            },
+            {
                 'display': "Misc settings",
                 'callback': self.bot.get_command("setup misc"),
             },
@@ -94,6 +98,23 @@ class BotSettings(utils.Cog):
             {
                 'display': "Set max sona counts by role",
                 'callback': self.bot.get_command("setup sonacount"),
+            },
+        )
+        await menu.start(ctx)
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def shop(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        menu = utils.SettingsMenu()
+        settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
+        menu.bulk_add_options(
+            ctx,
+            {
+                'display': lambda c: "Set paint price (currently {0})".format(settings_mention(c, 'paint_price')),
+                'converter_args': [("How much do you want paint to cost? Set to 0 to disable paint being sold on the shop.", "paint price", int)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_shop_settings', 'paint_price'),
             },
         )
         await menu.start(ctx)

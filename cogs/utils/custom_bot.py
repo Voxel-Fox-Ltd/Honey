@@ -47,11 +47,8 @@ class CustomBot(commands.AutoShardedBot):
         # Set up our default guild settings
         self.DEFAULT_GUILD_SETTINGS = {
             'prefix': self.config['default_prefix'],
+
             'verified_role_id': None,
-            'fursona_modmail_channel_id': None,
-            'fursona_decline_archive_channel_id': None,
-            'fursona_accept_archive_channel_id': None,
-            'fursona_accept_nsfw_archive_channel_id': None,
             'muted_role_id': None,
             'guild_moderator_role_id': None,
             'custom_role_id': None,
@@ -59,12 +56,22 @@ class CustomBot(commands.AutoShardedBot):
             'coin_emoji': None,
             'shop_message_id': None,
             'custom_role_xfix': None,
+
+            'fursona_modmail_channel_id': None,
+            'fursona_decline_archive_channel_id': None,
+            'fursona_accept_archive_channel_id': None,
+            'fursona_accept_nsfw_archive_channel_id': None,
+
             'kick_modlog_channel_id': None,
             'ban_modlog_channel_id': None,
             'mute_modlog_channel_id': None,
             'warn_modlog_channel_id': None,
+
             'edited_message_modlog_channel_id': None,
             'deleted_message_modlog_channel_id': None,
+
+            'paint_price': 100,
+
             'role_interaction_cooldowns': dict(),
             'role_sona_count': dict(),
             'removed_on_mute_roles': list(),
@@ -99,56 +106,42 @@ class CustomBot(commands.AutoShardedBot):
         db = await self.database.get_connection()
 
         # Get stored prefixes
-        try:
-            guild_data = await db("SELECT * FROM guild_settings")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from guild_settings - {e}")
-            exit(1)
-        for row in guild_data:
+        data = await self.get_all_table_data(db, 'guild_settings')
+        for row in data:
             for key, value in row.items():
                 self.guild_settings[row['guild_id']][key] = value
 
         # Get user settings
-        data = await self.get_all_table_data(db, "user_settings")
+        data = await self.get_all_table_data(db, 'user_settings')
         for row in data:
             for key, value in row.items():
                 self.user_settings[row['user_id']][key] = value
 
         # Get stored interaction cooldowns
-        try:
-            interaction_data = await db("SELECT * FROM role_list WHERE key='Interactions'")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from role_list - {e}")
-            exit(1)
-        for row in interaction_data:
+        data = await self.get_list_table_data(db, 'role_list', 'Interactions')
+        for row in data:
             self.guild_settings[row['guild_id']]['role_interaction_cooldowns'][row['role_id']] = int(row['value'])
 
         # Get max sona count
-        try:
-            interaction_data = await db("SELECT * FROM role_list WHERE key='SonaCount'")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from role_list - {e}")
-            exit(1)
-        for row in interaction_data:
+        data = await self.get_list_table_data(db, 'role_list', 'SonaCount')
+        for row in data:
             self.guild_settings[row['guild_id']]['role_sona_count'][row['role_id']] = int(row['value'])
 
         # Get roles to be removed on mute
-        try:
-            interaction_data = await db("SELECT * FROM role_list WHERE key='RemoveOnMute'")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from role_list - {e}")
-            exit(1)
-        for row in interaction_data:
+        data = await self.get_list_table_data(db, 'role_list', 'RemoveOnMute')
+        for row in data:
             self.guild_settings[row['guild_id']]['removed_on_mute_roles'].append(row['role_id'])
 
         # Get shop message ID
-        try:
-            interaction_data = await db("SELECT * FROM shopping_channels")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from shopping_channels - {e}")
-            exit(1)
-        for row in interaction_data:
+        data = self.get_all_table_data(db, 'shopping_channels')
+        for row in data:
             self.guild_settings[row['guild_id']]['shop_message_id'] = row['message_id']
+
+        # Grab shop settings
+        data = self.get_all_table_data(db, 'guild_shop_settings')
+        for row in data:
+            for key, value in row.items():
+                self.guild_settings[row['guild_id']][key] = value
 
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")

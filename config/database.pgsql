@@ -27,6 +27,12 @@ CREATE TABLE guild_settings(
 );
 
 
+CREATE TABLE guild_shop_settings(
+    guild_id BIGINT PRIMARY KEY,
+    paint_price INTEGER DEFAULT 100
+);
+
+
 CREATE TABLE fursonas(
     guild_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
