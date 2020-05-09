@@ -157,7 +157,7 @@ class ShopHandler(utils.Cog):
         # Send them a DM
         try:
             guild_prefix = self.bot.guild_settings[payload.guild_id].get("prefix")
-            await user.send(f"You just bought 1x **{item_data['emoji']}** in **{guild.name}**! You can use it with the `{guild_prefix}use {item_data[1].lower()}` command.")
+            await user.send(f"You just bought 1x **{item_data['emoji']}** in **{guild.name}**! You can use it with the `{guild_prefix}use {item_data['name'].lower()}` command.")
         except (discord.Forbidden, AttributeError):
             pass
         self.logger.info(f"User successfully purchased item (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")

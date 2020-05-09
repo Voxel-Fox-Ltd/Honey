@@ -133,12 +133,12 @@ class CustomBot(commands.AutoShardedBot):
             self.guild_settings[row['guild_id']]['removed_on_mute_roles'].append(row['role_id'])
 
         # Get shop message ID
-        data = self.get_all_table_data(db, 'shopping_channels')
+        data = await self.get_all_table_data(db, 'shopping_channels')
         for row in data:
             self.guild_settings[row['guild_id']]['shop_message_id'] = row['message_id']
 
         # Grab shop settings
-        data = self.get_all_table_data(db, 'guild_shop_settings')
+        data = await self.get_all_table_data(db, 'guild_shop_settings')
         for row in data:
             for key, value in row.items():
                 self.guild_settings[row['guild_id']][key] = value

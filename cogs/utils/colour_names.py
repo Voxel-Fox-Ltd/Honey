@@ -137,6 +137,7 @@ COLOURS_BY_NAME = {
     "snow": 0xfffafa,
     "spring green": 0x00ff7f,
     "steel blue": 0x4682b4,
+    "stegosans": 0xf1e6a9,
     "tan": 0xd2b48c,
     "teal": 0x008080,
     "teddy purple": 0xb19cd9,
