@@ -7,7 +7,14 @@ from cogs import utils
 class ShopHandler(utils.Cog):
 
     SHOP_ITEMS = {
-        "\N{LOWER LEFT PAINTBRUSH}": ("\N{LOWER LEFT PAINTBRUSH}", "Paintbrush", 100, "Paint your friends, paint your enemies. Adds a custom paint colour role to you for an hour.", ['Paint'])
+        "\N{LOWER LEFT PAINTBRUSH}": {
+            "emoji": "\N{LOWER LEFT PAINTBRUSH}",
+            "name": "Paintbrush",
+            "amount": 100,
+            "description": "Paint your friends, paint your enemies. Adds a custom paint colour role to you for an hour.",
+            "aliases": ["Paint"],
+            "price_key": "paintbrush_price",
+        }
     }
 
     @commands.command(cls=utils.Command)
@@ -42,8 +49,11 @@ class ShopHandler(utils.Cog):
         coin_emoji = self.bot.guild_settings[ctx.guild.id].get("coin_emoji", None) or "coins"
         emojis = []
         with utils.Embed() as embed:
-            for emoji, (_, name, amount, description, aliases) in self.SHOP_ITEMS.items():
-                embed.add_field(f"{name} ({emoji}) - {amount} {coin_emoji}", description, inline=False)
+            for emoji, data in self.SHOP_ITEMS.items():
+                item_price = self.bot.guild_settings[ctx.guild.id][data['price_key']]
+                if item_price <= 0:
+                    continue
+                embed.add_field(f"{data['name']} ({data['emoji']}) - {item_price} {coin_emoji}", data['description'], inline=False)
                 emojis.append(emoji)
         shop_message = await shop_channel.send(embed=embed)
         for e in emojis:
@@ -106,7 +116,7 @@ class ShopHandler(utils.Cog):
             pass
 
         # Not a valid reaction
-        if item_data is None:
+        if item_data is None or self.bot.guild_settings[payload.guild_id].get(item_data['price_key'], 0) <= 0:
             try:
                 await user.send(f"The emoji you added to the shop channel in **{guild.name}** doesn't refer to a valid shop item.")
             except (discord.Forbidden, AttributeError):
@@ -114,13 +124,18 @@ class ShopHandler(utils.Cog):
             self.logger.info(f"Invalid reaction on shop message (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")
             return
 
+        # Get the item price
+        item_price = self.bot.guild_settings[payload.guild_id][item_data['price_key']]
+        if item_price <= 0:
+            return
+
         # Check their money
         db = await self.bot.database.get_connection()
         rows = await db("SELECT * FROM user_money WHERE guild_id=$1 AND user_id=$2", payload.guild_id, payload.user_id)
-        if not rows or rows[0]['amount'] < item_data[2]:
-            await db.disconnect()
+        if not rows or rows[0]['amount'] < item_price:
+            await db.disconnect()  # TODO get amount from guild settings
             try:
-                await user.send(f"You don't have enough to purchase a **{item_data[1]}** item in **{guild.name}**!")
+                await user.send(f"You don't have enough to purchase a **{item_data['name']}** item in **{guild.name}**!")
             except (discord.Forbidden, AttributeError):
                 pass
             self.logger.info(f"User unable to purchase item (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")
@@ -128,13 +143,13 @@ class ShopHandler(utils.Cog):
 
         # Alter their inventory
         await db.start_transaction()
-        await db("UPDATE user_money SET amount=user_money.amount-$3 WHERE guild_id=$1 AND user_id=$2", guild.id, user.id, item_data[2])
-        await db("UPDATE user_money SET amount=user_money.amount+$3 WHERE guild_id=$1 AND user_id=$2", guild.id, guild.me.id, item_data[2])
+        await db("UPDATE user_money SET amount=user_money.amount-$3 WHERE guild_id=$1 AND user_id=$2", guild.id, user.id, item_price)
+        await db("UPDATE user_money SET amount=user_money.amount+$3 WHERE guild_id=$1 AND user_id=$2", guild.id, guild.me.id, item_price)
         await db(
             """INSERT INTO user_inventory (guild_id, user_id, item_name, amount)
             VALUES ($1, $2, $3, $4) ON CONFLICT (guild_id, user_id, item_name) DO UPDATE SET
             amount=user_inventory.amount+excluded.amount""",
-            payload.guild_id, payload.user_id, item_data[1], 1
+            payload.guild_id, payload.user_id, item_data['name'], 1
         )
         await db.commit_transaction()
         await db.disconnect()
@@ -142,7 +157,7 @@ class ShopHandler(utils.Cog):
         # Send them a DM
         try:
             guild_prefix = self.bot.guild_settings[payload.guild_id].get("prefix")
-            await user.send(f"You just bought 1x **{item_data[0]}** in **{guild.name}**! You can use it with the `{guild_prefix}use {item_data[1].lower()}` command.")
+            await user.send(f"You just bought 1x **{item_data['emoji']}** in **{guild.name}**! You can use it with the `{guild_prefix}use {item_data[1].lower()}` command.")
         except (discord.Forbidden, AttributeError):
             pass
         self.logger.info(f"User successfully purchased item (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")

@@ -44,7 +44,7 @@ class ItemHandler(utils.Cog):
                 if row['amount'] == 0:
                     continue
                 item_data = [i for i in self.bot.get_cog("ShopHandler").SHOP_ITEMS.values() if i[1] == row['item_name']][0]
-                inventory_string_rows.append(f"{row['amount']}x {item_data[0] or item_data[1]}")
+                inventory_string_rows.append(f"{row['amount']}x {item_data['emoji'] or item_data['name']}")
             embed.description = f"**{coin_rows[0]['amount']:,} {coin_emoji}**\n" + "\n".join(inventory_string_rows)
         return await ctx.send(embed=embed)
 
@@ -56,13 +56,13 @@ class ItemHandler(utils.Cog):
 
         # Get the items they own
         try:
-            item_data = [i for i in self.bot.get_cog("ShopHandler").SHOP_ITEMS.values() if item_name.lower() == i[1].lower() or item_name.lower() in [o.lower() for o in i[4]]][0]
+            item_data = [i for i in self.bot.get_cog("ShopHandler").SHOP_ITEMS.values() if item_name.lower() == i['name'].lower() or item_name.lower() in [o.lower() for o in i['aliases']]][0]
         except IndexError:
             return await ctx.send("That isn't an item that exists.")
         db = await self.bot.database.get_connection()
         rows = await db(
             "SELECT * FROM user_inventory WHERE guild_id=$1 AND user_id=$2 AND LOWER(item_name)=LOWER($3)",
-            ctx.guild.id, ctx.author.id, item_data[1],
+            ctx.guild.id, ctx.author.id, item_data['name'],
         )
         if not rows or rows[0]['amount'] <= 0:
             await ctx.send(f"You don't have any **{item_name}** items in this server.")
@@ -74,7 +74,7 @@ class ItemHandler(utils.Cog):
         await ctx.trigger_typing()
 
         # Paint
-        if item_data[1] == "Paintbrush":
+        if item_data['name'] == "Paintbrush":
             success = await self.use_paintbrush(ctx, args, db=db, user=user)
             if success is False:
                 await db.disconnect()
@@ -88,9 +88,9 @@ class ItemHandler(utils.Cog):
         # Alter their inventory
         await db(
             "UPDATE user_inventory SET amount=user_inventory.amount-1 WHERE guild_id=$1 AND user_id=$2 AND item_name=$3",
-            ctx.guild.id, ctx.author.id, item_data[1],
+            ctx.guild.id, ctx.author.id, item_data['name'],
         )
-        self.logger.info(f"Remove item ({item_data[1]}) from user (G{ctx.guild.id}/U{ctx.author.id})")
+        self.logger.info(f"Remove item ({item_data['name']}) from user (G{ctx.guild.id}/U{ctx.author.id})")
         await db.disconnect()
 
     async def use_paintbrush(self, ctx:utils.Context, args:str, db:utils.DatabaseConnection, user:discord.Member):
