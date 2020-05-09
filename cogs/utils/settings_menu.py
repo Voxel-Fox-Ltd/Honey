@@ -237,13 +237,15 @@ class SettingsMenuOption(object):
     @staticmethod
     def get_set_role_list_add_callback(guild_settings_key:str, database_key:str, serialize_function:typing.Callable[[typing.Any], str]=lambda x: x):
         """Return an async method that takes the data retuend by convert_prompted_information and then
-        saves it into the database - should be used for the add_option stuff in the SettingsMenu init"""
+        saves it into the database - should be used for the add_option stuff in the SettingsMenu init
+
+        serialize_function - The function run on the value to make it database-safe"""
 
         async def callback(self, *data):
             # data will either be [role_id], or [role_id, value]
             try:
-                role, value = data
-                value = str(serialize_function(value))
+                role, original_value = data
+                value = str(serialize_function(original_value))
             except ValueError:
                 role, value = data[0], None
             async with self.context.bot.database() as db:
@@ -253,7 +255,7 @@ class SettingsMenuOption(object):
                     self.context.guild.id, role.id, database_key, value
                 )
             if value:
-                self.context.bot.guild_settings[self.context.guild.id][guild_settings_key][role.id] = value
+                self.context.bot.guild_settings[self.context.guild.id][guild_settings_key][role.id] = original_value
             else:
                 if role.id not in self.context.bot.guild_settings[self.context.guild.id][guild_settings_key]:
                     self.context.bot.guild_settings[self.context.guild.id][guild_settings_key].append(role.id)
