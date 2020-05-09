@@ -275,7 +275,6 @@ class FursonaCommands(utils.Cog):
             try:
                 modmail_message = await modmail_channel.send(f"New sona submission from {user.mention}", embed=sona_object.get_embed())
             except discord.Forbidden:
-                self.currently_setting_sonas.remove(user.id)
                 return await user.send(f"The moderators for the server **{ctx.guild.name}** have disallowed me from sending messages to their fursona modmail channel - please inform them of such and try again later.")
             try:
                 await modmail_message.add_reaction("\N{HEAVY CHECK MARK}")
@@ -404,7 +403,10 @@ class FursonaCommands(utils.Cog):
         self.logger.info(f"Dealing with sona modmail on guild {payload.guild_id} with message {payload.message_id}")
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
         fursona_embed = message.embeds[0]
-        fursona_user_id = int(fursona_embed.footer.text.split(' ')[2])
+        try:
+            fursona_user_id = int(fursona_embed.footer.text.split(' ')[2])
+        except (AttributeError, ValueError):
+            return  # TODO check the message was made by the bot
         fursona_name = fursona_embed.title
         fursona_member = self.bot.get_guild(payload.guild_id).get_member(fursona_user_id)
         if fursona_member is None:

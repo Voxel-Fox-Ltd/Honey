@@ -7,6 +7,10 @@ from discord.ext import commands
 from cogs import utils
 
 
+class SettingsMenuError(commands.CommandError):
+    pass
+
+
 class SettingsMenuOption(object):
     """An option that can be chosen for a settings menu's selectable item,
     eg an option that refers to a sub-menu, or a setting that refers to grabbing
@@ -96,6 +100,7 @@ class SettingsMenuOption(object):
             raise utils.errors.InvokedMetaCommand()
 
         # Run converter
+        conversion_failed = False
         if hasattr(converter, 'convert'):
             try:
                 converter = converter()
@@ -105,11 +110,13 @@ class SettingsMenuOption(object):
                 value = await converter.convert(self.context, content)
             except commands.CommandError:
                 value = None
+                conversion_failed = True
         else:
             try:
                 value = converter(content)
             except Exception:
                 value = None
+                conversion_failed = True
 
         # Delete prompt messages
         try:
@@ -120,6 +127,10 @@ class SettingsMenuOption(object):
             await user_message.delete()
         except (discord.Forbidden, discord.NotFound, AttributeError):
             pass
+
+        # Check conversion didn't fail
+        if conversion_failed:
+            raise SettingsMenuError()
 
         # Return converted value
         return value
@@ -309,7 +320,10 @@ class SettingsMenu(object):
             # Process the picked option
             if picked_option is None:
                 break
-            await picked_option.perform_action()
+            try:
+                await picked_option.perform_action()
+            except SettingsMenuError:
+                pass
 
             # Remove the emoji
             try:
@@ -373,7 +387,7 @@ class SettingsMenuIterable(SettingsMenu):
         self.value_converter = value_converter
         self.key_prompt = key_prompt
         self.value_prompt = value_prompt
-        self.value_serialize_function = value_serialize_function
+        self.value_serialize_function = value_serialize_function or (lambda x: x)
 
     def get_sendable_data(self, ctx:commands.Context):
         """Create a list of mentions from the given guild settings key, creating all relevant callbacks"""
