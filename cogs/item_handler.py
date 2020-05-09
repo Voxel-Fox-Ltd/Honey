@@ -43,7 +43,7 @@ class ItemHandler(utils.Cog):
             for row in inv_rows:
                 if row['amount'] == 0:
                     continue
-                item_data = [i for i in self.bot.get_cog("ShopHandler").SHOP_ITEMS.values() if i[1] == row['item_name']][0]
+                item_data = [i for i in self.bot.get_cog("ShopHandler").SHOP_ITEMS.values() if i['name'] == row['item_name']][0]
                 inventory_string_rows.append(f"{row['amount']}x {item_data['emoji'] or item_data['name']}")
             embed.description = f"**{coin_rows[0]['amount']:,} {coin_emoji}**\n" + "\n".join(inventory_string_rows)
         return await ctx.send(embed=embed)
