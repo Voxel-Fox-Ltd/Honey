@@ -117,6 +117,7 @@ class BotSettings(utils.Cog):
             },
         )
         await menu.start(ctx)
+        self.bot.dispatch("shop_message_update", ctx.guild)
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()

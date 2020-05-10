@@ -97,6 +97,10 @@ class ShopHandler(utils.Cog):
                 embed.add_field(f"{data['name']} ({data['emoji']}) - {item_price} {coin_emoji}", data['description'], inline=False)
                 emojis.append(emoji)
 
+        # See if we need to edit the message
+        if embed == shop_message.embeds[0]:
+            return
+
         # Edit message
         await shop_message.edit(embed=embed)
 
