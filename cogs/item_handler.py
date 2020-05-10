@@ -11,6 +11,10 @@ from cogs import utils
 
 class ItemHandler(utils.Cog):
 
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.paintbrush_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)  # guild_id: Lock
+
     @commands.command(cls=utils.Command, aliases=['inv', 'inventory', 'money'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
@@ -75,7 +79,8 @@ class ItemHandler(utils.Cog):
 
         # Paint
         if item_data['name'] == "Paintbrush":
-            success = await self.use_paintbrush(ctx, args, db=db, user=user)
+            async with self.paintbrush_locks[ctx.guild.id]:
+                success = await self.use_paintbrush(ctx, args, db=db, user=user)
             if success is False:
                 await db.disconnect()
                 return
@@ -201,7 +206,7 @@ class ItemHandler(utils.Cog):
                 ctx.guild.id, user.id, role.id, dt.utcnow() + timedelta(hours=1),
             )
         await ctx.send(
-            f"Painted {user.mention} with {role.mention}!",
+            f"Painted {user.mention} with **{' '.join(role.name.split(' ')[:-1])}**!",
             allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False)
         )
         return True
