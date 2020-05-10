@@ -73,6 +73,7 @@ class CustomBot(commands.AutoShardedBot):
             'deleted_message_modlog_channel_id': None,
 
             'paintbrush_price': 100,
+            'cooldown_token_price': 100,
 
             'role_interaction_cooldowns': dict(),
             'role_sona_count': dict(),

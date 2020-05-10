@@ -22,7 +22,7 @@ class ShopHandler(utils.Cog):
             "amount": 100,  # Changed in DB but oh well
             "description": "Gives you 100 cooldown tokens, which reset 1s of interaction timer each.",
             "aliases": ["Cooldown Reset", "Cooldown Tokens"],
-            "price_key": None,
+            "price_key": "cooldown_token_price",
             "quantity": 100,
         },
     }

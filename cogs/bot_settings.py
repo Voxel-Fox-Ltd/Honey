@@ -111,9 +111,14 @@ class BotSettings(utils.Cog):
         menu.bulk_add_options(
             ctx,
             {
-                'display': lambda c: "Set paint price (currently {0})".format(c.bot.guild_settings[c.guild.id].get('paintbrush_price')),
-                'converter_args': [("How much do you want paint to cost? Set to 0 to disable paint being sold on the shop.", "paint price", int)],
+                'display': lambda c: "Set paintbrush price (currently {0})".format(c.bot.guild_settings[c.guild.id].get('paintbrush_price')),
+                'converter_args': [("How much do you want a paintbrush to cost? Set to 0 to disable paint being sold on the shop.", "paint price", int)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_shop_settings', 'paintbrush_price'),
+            },
+            {
+                'display': lambda c: "Set cooldown token price (currently {0})".format(c.bot.guild_settings[c.guild.id].get('cooldown_token_price')),
+                'converter_args': [("How much do you want 100 cooldown tokens to cost? Set to 0 to disable cooldown tokens being sold on the shop.", "paint price", int)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_shop_settings', 'cooldown_token_price'),
             },
         )
         await menu.start(ctx)

@@ -29,7 +29,8 @@ CREATE TABLE guild_settings(
 
 CREATE TABLE guild_shop_settings(
     guild_id BIGINT PRIMARY KEY,
-    paintbrush_price INTEGER DEFAULT 100
+    paintbrush_price INTEGER DEFAULT 100,
+    cooldown_token_price INTEGER DEFAULT 100
 );
 
 
