@@ -2,6 +2,8 @@ import random
 import typing
 from datetime import datetime as dt, timedelta
 import asyncio
+import copy
+import collections
 
 import discord
 from discord.ext import commands
@@ -60,7 +62,7 @@ class ItemHandler(utils.Cog):
 
         # Get the items they own
         try:
-            item_data = [i for i in self.bot.get_cog("ShopHandler").SHOP_ITEMS.values() if item_name.lower() == i['name'].lower() or item_name.lower() in [o.lower() for o in i['aliases']]][0]
+            item_data = [i for i in self.bot.get_cog("ShopHandler").SHOP_ITEMS.values() if item_name.lower().replace(' ', '') == i['name'].lower().replace(' ', '') or item_name.lower().replace(' ', '') in [o.lower().replace(' ', '') for o in i['aliases']]][0]
         except IndexError:
             return await ctx.send("That isn't an item that exists.")
         db = await self.bot.database.get_connection()
@@ -69,7 +71,7 @@ class ItemHandler(utils.Cog):
             ctx.guild.id, ctx.author.id, item_data['name'],
         )
         if not rows or rows[0]['amount'] <= 0:
-            await ctx.send(f"You don't have any **{item_name}** items in this server.")
+            await ctx.send(f"You don't have any **{item_data['name']}** items in this server.")
             await db.disconnect()
             return
 
@@ -78,22 +80,38 @@ class ItemHandler(utils.Cog):
         await ctx.trigger_typing()
 
         # Paint
-        if item_data['name'] == "Paintbrush":
+        if item_data['name'] == 'Paintbrush':
+            self.logger.info("Using item")
             async with self.paintbrush_locks[ctx.guild.id]:
-                success = await self.use_paintbrush(ctx, args, db=db, user=user)
-            if success is False:
-                await db.disconnect()
-                return
+                data = await self.use_paintbrush(ctx, args, db=db, user=user)
+
+        # Cooldown tokens
+        elif item_data['name'] == 'Cooldown Token':
+            self.logger.info("Using item")
+            data = await self.use_cooldown_token(ctx, db=db, user=user)
+            self.logger.info("done ussing item")
 
         # It's nothing else
         else:
+            await ctx.send("No use method set in the code for that item.")
+            await db.disconnect()
+            return
+
+        # Unpack data
+        try:
+            success, amount = data
+        except TypeError:
+            success, amount = data, 1
+
+        # Disconnect from the DB if the item failed
+        if success is False:
             await db.disconnect()
             return
 
         # Alter their inventory
         await db(
-            "UPDATE user_inventory SET amount=user_inventory.amount-1 WHERE guild_id=$1 AND user_id=$2 AND item_name=$3",
-            ctx.guild.id, ctx.author.id, item_data['name'],
+            "UPDATE user_inventory SET amount=user_inventory.amount - $4 WHERE guild_id=$1 AND user_id=$2 AND item_name=$3",
+            ctx.guild.id, ctx.author.id, item_data['name'], amount
         )
         self.logger.info(f"Remove item ({item_data['name']}) from user (G{ctx.guild.id}/U{ctx.author.id})")
         await db.disconnect()
@@ -210,6 +228,44 @@ class ItemHandler(utils.Cog):
             allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False)
         )
         return True
+
+    async def use_cooldown_token(self, ctx:utils.Context, db:utils.DatabaseConnection, user:discord.Member):
+        """Use the cooldown token on a user in a given server"""
+
+        # Get cooldown for user
+        new_ctx = copy.copy(ctx)
+        new_ctx.message.author = user or ctx.author
+        interaction = self.bot.get_command("hug")
+        remaining_time = interaction.get_remaining_cooldown(ctx)
+
+        # See if they actually have a cooldown to use
+        if remaining_time is None or remaining_time <= 3:
+            await ctx.send("Your cooldown is already at 0.")
+            return False
+        remaining_time = int(remaining_time)
+
+        # See how many tokens they have
+        token_count_rows = await db(
+            "SELECT * FROM user_inventory WHERE user_id=$1 AND guild_id=$2 AND item_name='Cooldown Token'",
+            ctx.author.id, ctx.guild.id,
+        )
+        token_count = token_count_rows[0]['amount']
+
+        # See how many tokens they gonna use
+        used_tokens = min([token_count, remaining_time])
+
+        # Use the tokens
+        bucket: utils.cooldown.Cooldown = interaction._buckets.get_bucket(new_ctx.message)
+        bucket._last = bucket._last - used_tokens
+        bucket._window = bucket._last - used_tokens
+        interaction._buckets._cache[interaction._buckets._bucket_key(new_ctx.message)] = bucket
+
+        # Output to user
+        await ctx.send(
+            f"Reset {used_tokens} seconds of {user.mention}'s cooldown, leaving you with {token_count - used_tokens} cooldown tokens remaining.",
+            allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False)
+        )
+        return True, used_tokens
 
 
 def setup(bot:utils.Bot):
