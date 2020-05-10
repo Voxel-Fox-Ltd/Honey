@@ -56,18 +56,7 @@ class ShopHandler(utils.Cog):
         self.logger.info(f"Created shop channel (G{shop_channel.guild.id}/C{shop_channel.id})")
 
         # Make a shop message
-        coin_emoji = self.bot.guild_settings[ctx.guild.id].get("coin_emoji", None) or "coins"
-        emojis = []
-        with utils.Embed() as embed:
-            for emoji, data in self.SHOP_ITEMS.items():
-                item_price = self.bot.guild_settings[ctx.guild.id].get(data['price_key'], data['amount'])
-                if item_price <= 0:
-                    continue
-                embed.add_field(f"{data['name']} ({data['emoji']}) - {item_price} {coin_emoji}", data['description'], inline=False)
-                emojis.append(emoji)
-        shop_message = await shop_channel.send(embed=embed)
-        for e in emojis:
-            await shop_message.add_reaction(e)
+        shop_message = await shop_channel.send("Creating shop channel...", embed=embed)
         self.logger.info(f"Created shop channel shop message (G{shop_channel.guild.id}/C{shop_channel.id}/M{shop_message.id})")
 
         # Save it all to db
@@ -78,9 +67,43 @@ class ShopHandler(utils.Cog):
                 ctx.guild.id, shop_channel.id, shop_message.id
             )
         self.bot.guild_settings[ctx.guild.id]['shop_message_id'] = shop_message.id
+        self.bot.guild_settings[ctx.guild.id]['shop_channel_id'] = shop_channel.id
+        self.bot.dispatch("shop_message_udpate", ctx.guild)
 
         # And tell the mod it's done
         await ctx.send(f"Created new shop channel at {shop_channel.mention} - please verify the channel works before updating permissions for the everyone role.")
+
+    @utils.Cog.listener("on_shop_message_update")
+    async def update_shop_message(self, guild:discord.Guild):
+        """Edit the shop message to to be pretty good"""
+
+        # Get the shop message
+        try:
+            shop_channel = self.bot.get_channel(self.bot.guild_settings[guild.id]['shop_channel_id'])
+            shop_message = await shop_channel.fetch_message(self.bot.guild_settings[guild.id]['shop_message_id'])
+            if shop_message is None:
+                raise AttributeError()
+        except (discord.NotFound, AttributeError):
+            return
+
+        # Generate embed
+        coin_emoji = self.bot.guild_settings[guild.id].get("coin_emoji", None) or "coins"
+        emojis = []
+        with utils.Embed() as embed:
+            for emoji, data in self.SHOP_ITEMS.items():
+                item_price = self.bot.guild_settings[guild.id].get(data['price_key'], data['amount'])
+                if item_price <= 0:
+                    continue
+                embed.add_field(f"{data['name']} ({data['emoji']}) - {item_price} {coin_emoji}", data['description'], inline=False)
+                emojis.append(emoji)
+
+        # Edit message
+        await shop_message.edit(embed=embed)
+
+        # Add reactions
+        await shop_message.clear_reactions()
+        for e in emojis:
+            await shop_message.add_reaction(e)
 
     @utils.Cog.listener("on_raw_reaction_clear")
     async def shop_reaction_clear_listener(self, payload:discord.RawReactionClearEvent):

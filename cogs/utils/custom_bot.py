@@ -54,8 +54,10 @@ class CustomBot(commands.AutoShardedBot):
             'custom_role_id': None,
             'custom_role_position_id': None,
             'coin_emoji': None,
-            'shop_message_id': None,
             'custom_role_xfix': None,
+
+            'shop_message_id': None,
+            'shop_channel_id': None,
 
             'fursona_modmail_channel_id': None,
             'fursona_decline_archive_channel_id': None,
@@ -136,6 +138,7 @@ class CustomBot(commands.AutoShardedBot):
         data = await self.get_all_table_data(db, 'shopping_channels')
         for row in data:
             self.guild_settings[row['guild_id']]['shop_message_id'] = row['message_id']
+            self.guild_settings[row['guild_id']]['shop_channel_id'] = row['channel_id']
 
         # Grab shop settings
         data = await self.get_all_table_data(db, 'guild_shop_settings')
