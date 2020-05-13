@@ -20,6 +20,8 @@ Already made a sona through the bot and you want to import that into a new serve
 
 The classic `h.hug @User` is back. Many commands including hug, pat, kiss, and nuzzle are all available within the bot. Interactions can be run once every 30 minutes by default, but server mods can set certain roles to have a lower cooldown, allowing systems like Patreon perks to be in place, ie lower cooldowns for higher tiers of support.
 
+Interactions can also be shortened with the use of a cooldown token (see the relevant section).
+
 ![](/marketing/interaction_cooldown_settings.png)
 
 ## Shop System
@@ -30,15 +32,23 @@ As is the norm with a lot of furry bots, Honey tries to make use of user activit
 
 ### Paint
 
-Users with 100 coins are able to purchase and use _paint_. Paint allows users to change the colour of another user (or themselves) for an hour.
+Users are able to purchase and use _paint_. Paint allows users to change the colour of another user (or themselves) for an hour.
 
-Honey uses the custom role creation position (defined in the "custom role" section of the setup) to create a new paint role for the user, pulling from a list of 140+ distinct roles (using the CSS named colours). If a user is painted while they're already painted, then the role assinged to them will simply be edited. Once the paint's one-hour duration is up, the role will be deleted from your server.
+Honey uses the custom role creation position (defined in the "custom role" section of the setup) to create a new paint role for the user, pulling from a list of 140+ distinct roles (using the CSS named colours plus a couple more). If a user is painted while they're already painted, then the role assinged to them will simply be edited. Once the paint's one-hour duration is up, the role will be deleted from your server.
 
 ![](/marketing/paint_used.png)
+
+### Cooldown Tokens
+
+Users can purchase 100 coooldown tokens from the shop, each token being able to remove one second from their remaining interaction cooldown. This means that users don't need to worry about "wasting" a cooldown token if their cooldown is too low and they want to use another interaction - they'll only use as many tokens as they need.
 
 ## Moderation Commands
 
 All the classic moderation commands like kick, mute, tempmute, ban, warn, and infractions are all present. Also present is the `h.watch @User` command for when mods need to keep a closer eye on any given user. Logs of what commands mods are running can all be sent to a modlogs channel, set with the `h.setup` command.
+
+## Message Logging
+
+Like a few other bots, Honey is able to track messages that have been _edited_ and _deleted_, and log those into a channel.
 
 ## Custom Roles
 
