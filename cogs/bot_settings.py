@@ -63,8 +63,11 @@ class BotSettings(utils.Cog):
                 'callback': self.bot.get_command("setup misc"),
             },
         )
-        await menu.start(ctx)
-        await ctx.send("Done with setup!")
+        try:
+            await menu.start(ctx)
+            await ctx.send("Done setting up!")
+        except utils.errors.InvokedMetaCommand:
+            pass
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
@@ -283,11 +286,7 @@ class BotSettings(utils.Cog):
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'coin_emoji'),
             },
         )
-        try:
-            await menu.start(ctx)
-            await ctx.send("Done setting up!")
-        except utils.errors.InvokedMetaCommand:
-            pass
+        await menu.start(ctx)
 
     @commands.group(cls=utils.Group)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)

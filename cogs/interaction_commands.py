@@ -94,8 +94,8 @@ interaction_responses = {
         "*{author} decided that sitting idly by wasn't going to cut it, so they pulled {user} in for a dance.*",
     ],
     "poke": [
-        "*{author} sneaks up behind {user}, pokes them, and runs away giggling. What a cutie. *",
-        "*Hey {user}, {author} wanted your attention! *",
+        "*{author} sneaks up behind {user}, pokes them, and runs away giggling. What a cutie.*",
+        "*Hey {user}, {author} wanted your attention!*",
         "*Pssst... {user}... poke poke*",
     ],
     "punch": [
@@ -109,12 +109,12 @@ interaction_responses = {
         "*{author} lined up the perfect swing, to accurately and powerfully decimate {user}'s face with a hard slap.*",
     ],
     "tug": [
-        "*{author} grabbed {user}'s tail and tugged gently. *",
-        "*{author} snuck up behind {user}, grabbed their tail and tugged hard, giggling. *",
+        "*{author} grabbed {user}'s tail and tugged gently.*",
+        "*{author} snuck up behind {user}, grabbed their tail and tugged hard, giggling.*",
         "*{user} was minding their own business when {author} came over and tugged on their ear.*",
     ],
     "yeet": [
-        "*{author} picks up {user}, yeeting them as far as the eye can see. They won't be coming back anytime soon. *",
+        "*{author} picks up {user}, yeeting them as far as the eye can see. They won't be coming back anytime soon.*",
         "*{user} was being annoying, so {author} picked them up and yeeted them 30 miles; what a throw!*",
     ],
 }
@@ -129,7 +129,7 @@ def command_has_responses(ctx):
 class InteractionCommands(utils.Cog):
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=['cuddle', 'snuggle', 'snug'])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def hug(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -140,7 +140,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=['pet'])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def pat(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -151,7 +151,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def lick(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -162,7 +162,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=['smooch'])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def kiss(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -173,7 +173,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def bap(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -184,7 +184,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def boop(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -195,7 +195,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def hold(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -206,7 +206,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def nuzzle(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -217,7 +217,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def pounce(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -228,7 +228,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def dance(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -239,7 +239,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def poke(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -250,7 +250,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def punch(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -261,7 +261,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def slap(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -272,7 +272,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def tug(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
@@ -283,7 +283,7 @@ class InteractionCommands(utils.Cog):
         ).format(author=ctx.author.mention, user=user.mention))
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60* 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @commands.check(command_has_responses)
     @commands.bot_has_permissions(send_messages=True)
     async def yeet(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):

@@ -255,7 +255,7 @@ class SettingsMenuOption(object):
                     self.context.guild.id, role.id, database_key, value
                 )
             if value:
-                self.context.bot.guild_settings[self.context.guild.id][guild_settings_key][role.id] = original_value
+                self.context.bot.guild_settings[self.context.guild.id][guild_settings_key][role.id] = serialize_function(original_value)
             else:
                 if role.id not in self.context.bot.guild_settings[self.context.guild.id][guild_settings_key]:
                     self.context.bot.guild_settings[self.context.guild.id][guild_settings_key].append(role.id)
@@ -381,7 +381,8 @@ class SettingsMenuIterable(SettingsMenu):
     def __init__(
             self, guild_settings_key:str, guild_settings_database_key:str,
             key_converter:commands.Converter, key_prompt:str,
-            value_converter:commands.Converter=str, value_prompt:str=None, value_serialize_function:typing.Callable=None
+            value_converter:commands.Converter=str, value_prompt:str=None,
+            value_serialize_function:typing.Callable=None
             ):
         super().__init__()
         self.guild_settings_key = guild_settings_key
