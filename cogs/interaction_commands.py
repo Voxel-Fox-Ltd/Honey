@@ -19,6 +19,9 @@ interaction_responses = {
         "*{author} ran up to a friend, {user}, and gave them a firm hug.*",
         "*{user} wasn't suspecting anything at first, but then suddenly {author} appears and hugs them!*",
         "*{user} felt depressed until {author} came up and gave them a friendly hug.*",
+        "*{author} embraces {user} with a really warm loving cuddle.*",
+        "*{author} grabbed {user} from behind and pulled them into a cuddle with their arms wrapped around tightly.*",
+        "*{author} pulled {user} close and held them in a warm cuddle. How sweet.*",
     ],
     "pat": [
         "*{author} leans forward, now looking down on {user} and softly pats their head.*",
@@ -84,6 +87,35 @@ interaction_responses = {
         "*{author} pounces on {user}; \"tag, you're it!\"*",
         "*{author} locks onto {user} and does a well-aimed pounce onto the floor!*",
         "*{author} pounces on {user} in a happy playful mood.*",
+    ],
+    "dance": [
+        "*{author} put on their favorite song and took {user}'s hand, pulling them in for a quick dance.*",
+        "*With the music reaching their favorite part, {author} grabbed {user} and spun them into an exciting dance.*",
+        "*{author} decided that sitting idly by wasn't going to cut it, so they pulled {user} in for a dance.*",
+    ],
+    "poke": [
+        "*{author} sneaks up behind {user}, pokes them, and runs away giggling. What a cutie. *",
+        "*Hey {user}, {author} wanted your attention! *",
+        "*Pssst... {user}... poke poke*",
+    ],
+    "punch": [
+        "*{author} threw their hardest, strongest right hook right at {user}'s nose.. that one's gonna hurt in the morning..*",
+        "*Without a moments hesitation, {author} quickly landed a flawless jab into {user}'s eye.*",
+        "*{user} danced with the devil for far too long and caught a swift uppercut from {author}.*",
+    ],
+    "slap": [
+        "*{author} slipped on a fancy, white silk glove and elegantly slapped {user}'s face. That'll teach you to mess with them.*",
+        "*{author} got sick and tired of hearing {user}, so they 'calmly' slapped the attitude right out of them.*",
+        "*{author} lined up the perfect swing, to accurately and powerfully decimate {user}'s face with a hard slap.*",
+    ],
+    "tug": [
+        "*{author} grabbed {user}'s tail and tugged gently. *",
+        "*{author} snuck up behind {user}, grabbed their tail and tugged hard, giggling. *",
+        "*{user} was minding their own business when {author} came over and tugged on their ear.*",
+    ],
+    "yeet": [
+        "*{author} picks up {user}, yeeting them as far as the eye can see. They won't be coming back anytime soon. *",
+        "*{user} was being annoying, so {author} picked them up and yeeted them 30 miles; what a throw!*",
     ],
 }
 
@@ -190,6 +222,72 @@ class InteractionCommands(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     async def pounce(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
         """Allows you to pounce a user"""
+
+        return await ctx.send(random.choice(
+            interaction_responses.get(ctx.command.name)
+        ).format(author=ctx.author.mention, user=user.mention))
+
+    @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
+    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @commands.check(command_has_responses)
+    @commands.bot_has_permissions(send_messages=True)
+    async def dance(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
+        """Lets you dance with a user"""
+
+        return await ctx.send(random.choice(
+            interaction_responses.get(ctx.command.name)
+        ).format(author=ctx.author.mention, user=user.mention))
+
+    @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
+    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @commands.check(command_has_responses)
+    @commands.bot_has_permissions(send_messages=True)
+    async def poke(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
+        """Lets you poke a user"""
+
+        return await ctx.send(random.choice(
+            interaction_responses.get(ctx.command.name)
+        ).format(author=ctx.author.mention, user=user.mention))
+
+    @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
+    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @commands.check(command_has_responses)
+    @commands.bot_has_permissions(send_messages=True)
+    async def punch(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
+        """Allows you to punch a user >:c"""
+
+        return await ctx.send(random.choice(
+            interaction_responses.get(ctx.command.name)
+        ).format(author=ctx.author.mention, user=user.mention))
+
+    @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
+    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @commands.check(command_has_responses)
+    @commands.bot_has_permissions(send_messages=True)
+    async def slap(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
+        """Allows you to slap a user"""
+
+        return await ctx.send(random.choice(
+            interaction_responses.get(ctx.command.name)
+        ).format(author=ctx.author.mention, user=user.mention))
+
+    @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
+    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @commands.check(command_has_responses)
+    @commands.bot_has_permissions(send_messages=True)
+    async def tug(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
+        """Allows you to tug on a user"""
+
+        return await ctx.send(random.choice(
+            interaction_responses.get(ctx.command.name)
+        ).format(author=ctx.author.mention, user=user.mention))
+
+    @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=[])
+    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @commands.check(command_has_responses)
+    @commands.bot_has_permissions(send_messages=True)
+    async def yeet(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
+        """Lets you fumkin YEET someone"""
 
         return await ctx.send(random.choice(
             interaction_responses.get(ctx.command.name)
