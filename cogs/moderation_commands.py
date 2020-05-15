@@ -333,7 +333,7 @@ class ModerationCommands(utils.Cog):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.guild_only()
-    async def ban(self, ctx:utils.Context, user:typing.Union[discord.Member, int], *, reason:str='<No reason provided>'):
+    async def ban(self, ctx:utils.Context, user:utils.converters.UserID, *, reason:str='<No reason provided>'):
         """Bans a user from the server"""
 
         # Add mod check to target user
