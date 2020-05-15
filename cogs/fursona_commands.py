@@ -461,9 +461,9 @@ class FursonaCommands(utils.Cog):
                     text = f"Sona of {fursona_member.mention} approved by <@{payload.user_id}>"
                     archive_embed = fursona_embed
                 else:
-                    text = f"Sona of {fursona_member.mention} declined by <@{payload.user_id}>"
+                    text = f"Sona of {fursona_member.mention} declined by <@{payload.user_id}> with reason `{delete_reason}`."
                     archive_embed = None
-                await archive_channel.send(text, embed=archive_embed)
+                await archive_channel.send(text, embed=archive_embed, allowed_mentions=discord.AllowedMentions(users=False, everyone=False, roles=False))
             except (discord.Forbidden, AttributeError):
                 pass
 
