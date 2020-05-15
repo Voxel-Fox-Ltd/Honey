@@ -48,7 +48,7 @@ class MiscCommands(utils.Cog):
 
         await ctx.send(content, allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
-    @commands.command(aliases=['status'])
+    @commands.command(cls=utils.Command, aliases=['status'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def stats(self, ctx:utils.Context):
         """Gives you the stats for the bot"""
@@ -73,7 +73,7 @@ class MiscCommands(utils.Cog):
         # Send it out wew let's go
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def fakesona(self, ctx:utils.Context):
         """Grabs you a fake sona from ThisFursonaDoesNotExist.com"""
@@ -84,6 +84,25 @@ class MiscCommands(utils.Cog):
             embed.set_image(f"https://thisfursonadoesnotexist.com/v2/jpgs/seed{seed:0>5}.jpg")
             embed.set_footer(text="Provided by ThisFursonaDoesNotExist.com")
         await ctx.send(embed=embed)
+
+    @commands.command(cls=utils.Command)
+    @commands.bot_has_permissions(send_messages=True, add_reactions=True)
+    async def poll(self, ctx:utils.Context, *args):
+        """Make a poll for a bunch of items, seperated by 'or', eg 'this or that or thing'"""
+
+        if len(args) > 5:
+            return await ctx.send("You can only pick 5 choices max per poll.")
+        lines = [f"{index}\N{COMBINING ENCLOSING KEYCAP} {i}" for index, i in enumerate(args, start=1)]
+        m = await ctx.send('\n'.join(lines))
+        for line in lines:
+            await m.add_reaction(line.split(' ')[0])
+
+    @commands.command(cls=utils.Command, aliases=['choice', 'choices'])
+    @commands.bot_has_permissions(send_messages=True, add_reactions=True)
+    async def choose(self, ctx:utils.Context, *args):
+        """Make a poll for a bunch of items, seperated by 'or', eg 'this or that or thing'"""
+
+        return await ctx.send(f"I choose **{random.choice(args)}**.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
 
 def setup(bot:utils.Bot):
