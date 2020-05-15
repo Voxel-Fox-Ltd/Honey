@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 import discord
 from discord.ext import commands
@@ -70,6 +71,18 @@ class MiscCommands(utils.Cog):
             embed.add_field("Coroutines", f"{len([i for i in asyncio.Task.all_tasks() if not i.done()])} running, {len(asyncio.Task.all_tasks())} total.")
 
         # Send it out wew let's go
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def fakesona(self, ctx:utils.Context):
+        """Grabs you a fake sona from ThisFursonaDoesNotExist.com"""
+
+        seed = random.randint(1, 99999)
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author(name="Click here to it larger", url=f"https://thisfursonadoesnotexist.com/v2/jpgs-2x/seed{seed:0>5}.jpg")
+            embed.set_image(f"https://thisfursonadoesnotexist.com/v2/jpgs/seed{seed:0>5}.jpg")
+            embed.set_footer(text="Provided by ThisFursonaDoesNotExist.com")
         await ctx.send(embed=embed)
 
 
