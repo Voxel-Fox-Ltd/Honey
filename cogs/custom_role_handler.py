@@ -104,7 +104,7 @@ class CustomRoleHandler(utils.Cog):
             await user.add_roles(role, reason="Custom role setting")
         except discord.Forbidden:
             pass
-        return await ctx.send(f"Set the custom role for {user.mention} to {role.mention}. They can manage it with the `{ctx.prefix}{ctx.command.parent.name} name` and `{ctx.prefix}{ctx.command.parent.name} colour` commands.", discord.AllowedMentions(roles=False))
+        return await ctx.send(f"Set the custom role for {user.mention} to {role.mention}. They can manage it with the `{ctx.prefix}{ctx.command.parent.name} name` and `{ctx.prefix}{ctx.command.parent.name} colour` commands.", allowed_mentions=discord.AllowedMentions(roles=False))
 
     @customrole.command(cls=utils.Command, aliases=['make'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)

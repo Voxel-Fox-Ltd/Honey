@@ -148,7 +148,7 @@ class ShopHandler(utils.Cog):
 
         # Edit message
         self.logger.info(f"Updating shop message (G{guild.id})")
-        await shop_message.edit(embed=embed)
+        await shop_message.edit(content=None, embed=embed)
 
         # Add reactions
         await shop_message.clear_reactions()
