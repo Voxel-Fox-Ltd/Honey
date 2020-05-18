@@ -28,7 +28,7 @@ class ShopHandler(utils.Cog):
     }
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_guild_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True, external_emojis=True)
     @commands.guild_only()
     async def createshopchannel(self, ctx:utils.Context):

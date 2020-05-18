@@ -9,7 +9,7 @@ class BotSettings(utils.Cog):
     CROSS_EMOJI = "<:crossNo:596096897769275402>"
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def prefix(self, ctx:utils.Context, *, new_prefix:str):
@@ -26,7 +26,7 @@ class BotSettings(utils.Cog):
         await ctx.send(f"My prefix has been updated to `{new_prefix}`.")
 
     @commands.group(cls=utils.Group)
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True, external_emojis=True)
     @commands.guild_only()
     async def setup(self, ctx:utils.Context):

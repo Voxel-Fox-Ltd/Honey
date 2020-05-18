@@ -297,7 +297,7 @@ class ModerationCommands(utils.Cog):
                 pass
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(kick_members=True)
+    @commands.has_guild_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     @commands.guild_only()
     async def kick(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
@@ -330,7 +330,7 @@ class ModerationCommands(utils.Cog):
         return await ctx.send(f"{user.mention} has been kicked by {ctx.author.mention} with reason `{reason}`.")
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(ban_members=True)
+    @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.guild_only()
     async def ban(self, ctx:utils.Context, user:utils.converters.UserID, *, reason:str='<No reason provided>'):

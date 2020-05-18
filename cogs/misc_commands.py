@@ -41,7 +41,7 @@ class MiscCommands(utils.Cog):
         await ctx.send(f"<{self.bot.get_invite_link(embed_links=True, attach_files=True, manage_roles=True, kick_members=True, ban_members=True)}>")
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def echo(self, ctx:utils.Context, *, content:str):
         """Echos the given content into the channel"""
