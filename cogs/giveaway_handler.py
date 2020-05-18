@@ -55,10 +55,8 @@ class GiveawayHandler(utils.Cog):
 
         # Grab expired stuff from the database
         db = await self.bot.database.get_connection()
-        self.logger.info("Grabbing giveaway data from the database")
         rows = await db("SELECT * FROM giveaways WHERE ending_time < TIMEZONE('UTC', NOW())")
         if not rows:
-            self.logger.info("No expiring giveaways to deal with")
             await db.disconnect()
             return
 
