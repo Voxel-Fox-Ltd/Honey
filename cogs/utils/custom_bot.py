@@ -78,6 +78,7 @@ class CustomBot(commands.AutoShardedBot):
             'role_interaction_cooldowns': dict(),
             'role_sona_count': dict(),
             'removed_on_mute_roles': list(),
+            'buyable_roles': dict(),
         }
         self.DEFAULT_USER_SETTINGS = {
             'dm_on_paint_remove': True,
@@ -129,6 +130,11 @@ class CustomBot(commands.AutoShardedBot):
         data = await self.get_list_table_data(db, 'role_list', 'SonaCount')
         for row in data:
             self.guild_settings[row['guild_id']]['role_sona_count'][row['role_id']] = int(row['value'])
+
+        # Get buyable roles
+        data = await self.get_list_table_data(db, 'role_list', 'BuyableRoles')
+        for row in data:
+            self.guild_settings[row['guild_id']]['buyable_roles'][row['role_id']] = int(row['value'])
 
         # Get roles to be removed on mute
         data = await self.get_list_table_data(db, 'role_list', 'RemoveOnMute')

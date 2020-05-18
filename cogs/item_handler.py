@@ -1,4 +1,5 @@
 import random
+import re
 import typing
 from datetime import datetime as dt, timedelta
 import asyncio
@@ -49,7 +50,10 @@ class ItemHandler(utils.Cog):
             for row in inv_rows:
                 if row['amount'] == 0:
                     continue
-                item_data = [i for i in self.bot.get_cog("ShopHandler").SHOP_ITEMS.values() if i['name'] == row['item_name']][0]
+                try:
+                    item_data = [i for i in self.bot.get_cog("ShopHandler").get_shop_items(ctx.guild).values() if i['name'] == row['item_name']][0]
+                except IndexError:
+                    continue
                 inventory_string_rows.append(f"{row['amount']}x {item_data['emoji'] or item_data['name']}")
             embed.description = f"**{coin_rows[0]['amount']:,} {coin_emoji}**\n" + "\n".join(inventory_string_rows)
         return await ctx.send(embed=embed)
@@ -62,7 +66,7 @@ class ItemHandler(utils.Cog):
 
         # Get the items they own
         try:
-            item_data = [i for i in self.bot.get_cog("ShopHandler").SHOP_ITEMS.values() if item_name.lower().replace(' ', '') == i['name'].lower().replace(' ', '') or item_name.lower().replace(' ', '') in [o.lower().replace(' ', '') for o in i['aliases']]][0]
+            item_data = [i for i in self.bot.get_cog("ShopHandler").get_shop_items(ctx.guild).values() if item_name.lower().replace(' ', '') == i['name'].lower().replace(' ', '') or item_name.lower().replace(' ', '') in [o.lower().replace(' ', '') for o in i['aliases']]][0]
         except IndexError:
             return await ctx.send("That isn't an item that exists.")
         db = await self.bot.database.get_connection()
@@ -81,15 +85,26 @@ class ItemHandler(utils.Cog):
 
         # Paint
         if item_data['name'] == 'Paintbrush':
-            self.logger.info("Using item")
             async with self.paintbrush_locks[ctx.guild.id]:
                 data = await self.use_paintbrush(ctx, args, db=db, user=user)
 
         # Cooldown tokens
         elif item_data['name'] == 'Cooldown Token':
-            self.logger.info("Using item")
             data = await self.use_cooldown_token(ctx, db=db, user=user)
-            self.logger.info("done ussing item")
+
+        # Cooldown tokens
+        elif item_data['name'].startswith('Buyable Role'):
+            role_search = re.search(r"<@&(?P<roleid>[0-9]{13,23})", item_data['description'])
+            role_id = role_search.group("roleid")
+            self.logger.info(role_id)
+            try:
+                await ctx.author.add_roles(ctx.guild.get_role(int(role_id)), reason="Role purchased")
+            except Exception as e:
+                await ctx.send(f"I couldn't add the role - {e}")
+                data = False
+            else:
+                await ctx.send("Added role.")
+                data = True
 
         # It's nothing else
         else:

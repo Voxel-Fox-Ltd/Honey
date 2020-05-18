@@ -1,3 +1,5 @@
+import copy
+
 import discord
 from discord.ext import commands
 
@@ -6,7 +8,7 @@ from cogs import utils
 
 class ShopHandler(utils.Cog):
 
-    SHOP_ITEMS = {
+    ORIGINAL_SHOP_ITEMS = {
         "\N{LOWER LEFT PAINTBRUSH}": {
             "emoji": "\N{LOWER LEFT PAINTBRUSH}",
             "name": "Paintbrush",
@@ -26,6 +28,41 @@ class ShopHandler(utils.Cog):
             "quantity": 100,
         },
     }
+
+    def get_shop_items(self, guild:discord.Guild):
+        """Get a dict of shop items"""
+
+        # See if there's a specified guild
+        new_data = copy.deepcopy(self.ORIGINAL_SHOP_ITEMS)
+        if guild is None:
+            return new_data
+        guild_settings = self.bot.guild_settings[guild.id]
+
+        # Update original prices from cache
+        for i, o in new_data.items():
+            o['amount'] = guild_settings.get(o['price_key'], o['amount'])
+
+        # Add the buyable roles
+        buyable_roles = guild_settings['buyable_roles']
+        ordered_roles = sorted(buyable_roles.keys())
+        index = 0
+        for role_id in ordered_roles:
+            role = guild.get_role(role_id)
+            if role is None:
+                continue
+            new_data[f"{index}\N{COMBINING ENCLOSING KEYCAP}"] = {
+                "emoji": None,
+                "name": "Buyable Role - " + role.name,
+                "amount": buyable_roles[role_id],
+                "description": f"Purchase the {role.mention} role.",
+                "aliases": [],
+                "price_key": None,
+                "quantity": 1,
+            }
+            index += 1
+
+        # Return data
+        return new_data
 
     @commands.command(cls=utils.Command)
     @commands.has_guild_permissions(manage_channels=True)
@@ -93,11 +130,11 @@ class ShopHandler(utils.Cog):
         coin_emoji = self.bot.guild_settings[guild.id].get("coin_emoji", None) or "coins"
         emojis = []
         with utils.Embed() as embed:
-            for emoji, data in self.SHOP_ITEMS.items():
+            for emoji, data in self.get_shop_items(guild).items():
                 item_price = self.bot.guild_settings[guild.id].get(data['price_key'], data['amount'])
                 if item_price <= 0:
                     continue
-                embed.add_field(f"{data['name']} ({data['emoji']}) - {item_price} {coin_emoji}", data['description'], inline=False)
+                embed.add_field(f"{data['name']} ({emoji}) - {item_price} {coin_emoji}", data['description'], inline=False)
                 emojis.append(emoji)
 
         # See if we need to edit the message
@@ -130,7 +167,7 @@ class ShopHandler(utils.Cog):
             message = await channel.fetch_message(payload.message_id)
         except (discord.Forbidden, discord.NotFound, discord.HTTPException):
             return
-        for emoji in self.SHOP_ITEMS.keys():
+        for emoji in self.get_shop_items(self.bot.get_guild(payload.guild_id)).keys():
             await message.add_reaction(emoji)
 
     @utils.Cog.listener("on_raw_reaction_add")
@@ -149,7 +186,7 @@ class ShopHandler(utils.Cog):
 
         # Check the reaction they're giving
         emoji = str(payload.emoji)
-        item_data = self.SHOP_ITEMS.get(emoji)
+        item_data = self.get_shop_items(self.bot.get_guild(payload.guild_id)).get(emoji)
 
         # Try and remove the reaction
         try:

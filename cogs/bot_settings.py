@@ -123,9 +123,26 @@ class BotSettings(utils.Cog):
                 'converter_args': [("How much do you want 100 cooldown tokens to cost? Set to 0 to disable cooldown tokens being sold on the shop.", "paint price", int)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_shop_settings', 'cooldown_token_price'),
             },
+            {
+                'display': lambda c: "Set up buyable roles (currently {0} set up)".format(len(c.bot.guild_settings[c.guild.id].get('buyable_roles', list()))),
+                'callback': self.bot.get_command("setup buyableroles"),
+            },
         )
         await menu.start(ctx)
         self.bot.dispatch("shop_message_update", ctx.guild)
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def buyableroles(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        menu = utils.SettingsMenuIterable(
+            'buyable_roles', 'BuyableRoles',
+            commands.RoleConverter, "What role would you like to add to the shop?",
+            int, "How much should the role cost?",
+        )
+        await menu.start(ctx, clear_reactions_on_loop=True)
+        # self.bot.dispatch("shop_message_update", ctx.guild)
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
