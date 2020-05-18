@@ -91,7 +91,7 @@ class GiveawayHandler(utils.Cog):
                 expired_giveaways.append(message.id)
                 continue
             all_users = await reaction.users().flatten()
-            reacted_users = [i for i in all_users if not i.bot]
+            reacted_users = [i for i in all_users if not i.bot and channel.guild.get_member(i.id) is not None]
 
             # See who should have won
             winners = []
