@@ -336,8 +336,10 @@ class ModerationCommands(utils.Cog):
         """Bans a user from the server"""
 
         # Add mod check to target user
-        if utils.checks.is_guild_moderator_predicate(self.bot, user):
-            return await ctx.send("You can't moderate users set as moderators.")
+        member_user = ctx.guild.get_member(user)
+        if member_user is not None:
+            if utils.checks.is_guild_moderator_predicate(self.bot, user):
+                return await ctx.send("You can't moderate users set as moderators.")
 
         # Do some setup here for users not in the server
         if isinstance(user, int):
