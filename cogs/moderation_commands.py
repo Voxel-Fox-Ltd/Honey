@@ -369,7 +369,7 @@ class ModerationCommands(utils.Cog):
         self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Ban")
 
         # Output to chat
-        await ctx.send(f"{user.mention} has been banned by {ctx.author.mention} with reason `{reason}`.")
+        await ctx.send(f"<@{user.id}> has been banned by {ctx.author.mention} with reason `{reason}`.")
 
 
 def setup(bot:utils.Bot):
