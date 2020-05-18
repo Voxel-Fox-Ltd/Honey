@@ -105,6 +105,8 @@ class TemporaryRoleHandler(utils.Cog):
                     await db("DELETE FROM temporary_removed_roles WHERE guild_id=$1 AND role_id=$2 AND user_id=$3", guild_id, role_id, user_id)
 
         # Disconnect from db
+        if len(removed_roles) + len(readded_roles) == 0:
+            return
         self.logger.info(f"Removed/deleted {len(removed_roles)} expired temporary roles, added back {len(readded_roles)} expired temporary roles")
 
     @role_handler.before_loop
