@@ -143,6 +143,12 @@ class ItemHandler(utils.Cog):
             await ctx.send(f"This item can't be used unless the custom role position is set (`{ctx.prefix}setup`).")
             return False
 
+        # See if they have paint disabled
+        if self.bot.user_settings[user.id]['allow_paint'] is False:
+            if user.id != ctx.author.id:
+                await ctx.send(f"{user.mention} has paint disabled.")
+                return False
+
         # See if there's any point
         upper_roles = [i for i in user._roles if guild_roles[i] >= role_position_role and guild_roles[i].colour.value > 0]
         if upper_roles:

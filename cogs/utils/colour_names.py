@@ -105,6 +105,7 @@ COLOURS_BY_NAME = {
     "old lace": 0xfdf5e6,
     "olive": 0x808000,
     "olive drab": 0x6b8e23,
+    "ollie yellow": 0xf5e59d,
     "orange": 0xffa500,
     "orange red": 0xff4500,
     "orchid": 0xda70d6,

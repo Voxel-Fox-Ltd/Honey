@@ -5,8 +5,8 @@ from cogs import utils
 
 class BotSettings(utils.Cog):
 
-    TICK_EMOJI = "<:tickYes:596096897995899097>"
-    CROSS_EMOJI = "<:crossNo:596096897769275402>"
+    TICK_EMOJI = "\N{HEAVY CHECK MARK}"
+    CROSS_EMOJI = "\N{HEAVY MULTIPLICATION X}"
 
     @commands.command(cls=utils.Command)
     @commands.has_guild_permissions(manage_guild=True)
@@ -27,7 +27,7 @@ class BotSettings(utils.Cog):
 
     @commands.group(cls=utils.Group)
     @commands.has_guild_permissions(manage_guild=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True, external_emojis=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
     async def setup(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -306,7 +306,7 @@ class BotSettings(utils.Cog):
         await menu.start(ctx)
 
     @commands.group(cls=utils.Group)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def usersettings(self, ctx:utils.Context):
@@ -322,9 +322,14 @@ class BotSettings(utils.Cog):
         menu.bulk_add_options(
             ctx,
             {
-                'display': lambda c: "Do you want to be DMd on paint removal (currently {0})".format(c.bot.user_settings[c.author.id].get('dm_on_paint_remove', True)),
+                'display': lambda c: "Receive DM on paint removal (currently {0})".format(c.bot.user_settings[c.author.id].get('dm_on_paint_remove', True)),
                 'converter_args': [("Do you want to receive a DM when paint is removed from you?", "paint DM", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
                 'callback': utils.SettingsMenuOption.get_set_user_settings_callback('user_settings', 'dm_on_paint_remove'),
+            },
+            {
+                'display': lambda c: "Allow paint from other users (currently {0})".format(c.bot.user_settings[c.author.id].get('allow_paint', True)),
+                'converter_args': [("Do you want to allow other users to paint you?", "paint DM", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
+                'callback': utils.SettingsMenuOption.get_set_user_settings_callback('user_settings', 'allow_paint'),
             },
         )
         try:

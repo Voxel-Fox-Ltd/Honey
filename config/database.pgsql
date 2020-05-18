@@ -100,7 +100,8 @@ CREATE TABLE custom_roles(
 
 CREATE TABLE user_settings(
     user_id BIGINT PRIMARY KEY,
-    dm_on_paint_remove BOOLEAN DEFAULT TRUE
+    dm_on_paint_remove BOOLEAN DEFAULT TRUE,
+    allow_paint BOOLEAN DEFAULT TRUE
 );
 
 
