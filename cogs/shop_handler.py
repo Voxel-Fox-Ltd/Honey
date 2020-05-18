@@ -56,7 +56,7 @@ class ShopHandler(utils.Cog):
         self.logger.info(f"Created shop channel (G{shop_channel.guild.id}/C{shop_channel.id})")
 
         # Make a shop message
-        shop_message = await shop_channel.send("Creating shop channel...", embed=embed)
+        shop_message = await shop_channel.send("Creating shop channel...")
         self.logger.info(f"Created shop channel shop message (G{shop_channel.guild.id}/C{shop_channel.id}/M{shop_message.id})")
 
         # Save it all to db
@@ -68,7 +68,7 @@ class ShopHandler(utils.Cog):
             )
         self.bot.guild_settings[ctx.guild.id]['shop_message_id'] = shop_message.id
         self.bot.guild_settings[ctx.guild.id]['shop_channel_id'] = shop_channel.id
-        self.bot.dispatch("shop_message_udpate", ctx.guild)
+        self.bot.dispatch("shop_message_update", ctx.guild)
 
         # And tell the mod it's done
         await ctx.send(f"Created new shop channel at {shop_channel.mention} - please verify the channel works before updating permissions for the everyone role.")
@@ -78,12 +78,15 @@ class ShopHandler(utils.Cog):
         """Edit the shop message to to be pretty good"""
 
         # Get the shop message
+        self.logger.info(f"Shop message update dispatched (G{guild.id})")
         try:
             shop_channel = self.bot.get_channel(self.bot.guild_settings[guild.id]['shop_channel_id'])
             shop_message = await shop_channel.fetch_message(self.bot.guild_settings[guild.id]['shop_message_id'])
             if shop_message is None:
+                self.logger.info(f"Can't update shop message - no message found (G{guild.id})")
                 raise AttributeError()
         except (discord.NotFound, AttributeError):
+            self.logger.info(f"Can't update shop message - no message/channel found (G{guild.id})")
             return
 
         # Generate embed
@@ -98,10 +101,16 @@ class ShopHandler(utils.Cog):
                 emojis.append(emoji)
 
         # See if we need to edit the message
-        if embed == shop_message.embeds[0]:
+        try:
+            current_embed = shop_message.embeds[0]
+        except IndexError:
+            current_embed = None
+        if embed == current_embed:
+            self.logger.info(f"Not updating shop message - no changes presented (G{guild.id})")
             return
 
         # Edit message
+        self.logger.info(f"Updating shop message (G{guild.id})")
         await shop_message.edit(embed=embed)
 
         # Add reactions
