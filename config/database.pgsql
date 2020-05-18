@@ -135,3 +135,12 @@ CREATE TABLE shopping_channels(
     channel_id BIGINT,
     message_id BIGINT
 );
+
+
+CREATE TABLE giveaways(
+    channel_id BIGINT,
+    message_id BIGINT PRIMARY KEY,
+    winner_count INTEGER,
+    ending_time TIMESTAMP,
+    description VARCHAR(2000)
+);
