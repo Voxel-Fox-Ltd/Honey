@@ -22,7 +22,7 @@ class ShopHandler(utils.Cog):
             "emoji": "\N{CLOCK FACE ONE OCLOCK}",
             "name": "Cooldown Token",
             "amount": 100,  # Changed in DB but oh well
-            "description": "Gives you 100 cooldown tokens, which reset 1s of interaction timer each.",
+            "description": "Gives you 100 cooldown tokens, each of which resets 1 second of your cooldown for interactions (like `hug`, `kiss`, etc).",
             "aliases": ["Cooldown Reset", "Cooldown Tokens"],
             "price_key": "cooldown_token_price",
             "quantity": 100,
