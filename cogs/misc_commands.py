@@ -90,6 +90,8 @@ class MiscCommands(utils.Cog):
     async def poll(self, ctx:utils.Context, *args):
         """Make a poll for a bunch of items, seperated by 'or', eg 'this or that or thing'"""
 
+        if not args:
+            raise utils.errors.MissingRequiredArgumentString("args")
         if len(args) > 5:
             return await ctx.send("You can only pick 5 choices max per poll.")
         lines = [f"{index}\N{COMBINING ENCLOSING KEYCAP} {i}" for index, i in enumerate(args, start=1)]
@@ -102,6 +104,8 @@ class MiscCommands(utils.Cog):
     async def choose(self, ctx:utils.Context, *args):
         """Make a poll for a bunch of items, seperated by 'or', eg 'this or that or thing'"""
 
+        if not args:
+            raise utils.errors.MissingRequiredArgumentString("args")
         return await ctx.send(f"I choose **{random.choice(args)}**.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
 

@@ -162,7 +162,7 @@ class ItemHandler(utils.Cog):
             try:
                 colour_name, colour_value = args, utils.colour_names.COLOURS_BY_NAME[args.lower().strip()]
             except KeyError:
-                await ctx.send(f"`{args.title()}` isn't a valid CSS colour name.", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
+                await ctx.send(f"`{args.title()}` isn't a valid colour name.", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
                 return False
         if colour_name is None:
             colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
