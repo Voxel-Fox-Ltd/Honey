@@ -146,7 +146,7 @@ class ItemHandler(utils.Cog):
         # See if they have paint disabled
         if self.bot.user_settings[user.id]['allow_paint'] is False:
             if user.id != ctx.author.id:
-                await ctx.send(f"{user.mention} has paint disabled.")
+                await ctx.send(f"{user.mention} has paint disabled.", allowed_mentions=discord.AllowedMentions(users=False))
                 return False
 
         # See if there's any point
