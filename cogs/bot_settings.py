@@ -136,13 +136,13 @@ class BotSettings(utils.Cog):
     async def buyableroles(self, ctx:utils.Context):
         """Talks the bot through a setup"""
 
+        key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'buyable_roles', 'BuyableRoles',
-            commands.RoleConverter, "What role would you like to add to the shop?",
+            'role_list', 'buyable_roles', 'BuyableRoles',
+            commands.RoleConverter, "What role would you like to add to the shop?", key_display_function,
             int, "How much should the role cost?",
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
-        # self.bot.dispatch("shop_message_update", ctx.guild)
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
@@ -258,11 +258,11 @@ class BotSettings(utils.Cog):
     async def interactions(self, ctx:utils.Context):
         """Talks the bot through a setup"""
 
+        key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'role_interaction_cooldowns', 'Interactions',
-            commands.RoleConverter, "What role do you want to set the interaction for?",
-            utils.TimeValue, "How long should this role's cooldown be (eg `5m`, `15s`, etc)?",
-            lambda x: int(x.duration)
+            'role_list', 'role_interaction_cooldowns', 'Interactions',
+            commands.RoleConverter, "What role do you want to set the interaction for?", key_display_function,
+            utils.TimeValue, "How long should this role's cooldown be (eg `5m`, `15s`, etc)?", lambda x: int(x.duration)
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
@@ -271,9 +271,10 @@ class BotSettings(utils.Cog):
     async def removerolesonmute(self, ctx:utils.Context):
         """Talks the bot through a setup"""
 
+        key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'removed_on_mute_roles', 'RemoveOnMute',
-            commands.RoleConverter, "What role do you want to be removed on mute?",
+            'role_list', 'removed_on_mute_roles', 'RemoveOnMute',
+            commands.RoleConverter, "What role do you want to be removed on mute?", key_display_function
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
@@ -282,9 +283,10 @@ class BotSettings(utils.Cog):
     async def sonacount(self, ctx:utils.Context):
         """Talks the bot through a setup"""
 
+        key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'role_sona_count', 'SonaCount',
-            commands.RoleConverter, "What role do you want to set the sona count for?",
+            'role_list', 'role_sona_count', 'SonaCount',
+            commands.RoleConverter, "What role do you want to set the sona count for?", key_display_function,
             int, "How many sonas should people with this role be able to create?",
         )
         await menu.start(ctx, clear_reactions_on_loop=True)

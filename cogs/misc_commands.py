@@ -35,6 +35,7 @@ class MiscCommands(utils.Cog):
 
     @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
+    @utils.checks.is_config_set('command_data', 'invite_command_enabled')
     async def invite(self, ctx:utils.Context):
         """Gives you the bot's invite link"""
 
@@ -43,6 +44,7 @@ class MiscCommands(utils.Cog):
     @commands.command(cls=utils.Command)
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
+    @utils.checks.is_config_set('command_data', 'echo_command_enabled')
     async def echo(self, ctx:utils.Context, *, content:str):
         """Echos the given content into the channel"""
 
@@ -50,6 +52,7 @@ class MiscCommands(utils.Cog):
 
     @commands.command(cls=utils.Command, aliases=['status'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @utils.checks.is_config_set('command_data', 'stats_command_enabled')
     async def stats(self, ctx:utils.Context):
         """Gives you the stats for the bot"""
 
