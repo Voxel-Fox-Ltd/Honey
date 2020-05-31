@@ -338,7 +338,7 @@ class ModerationCommands(utils.Cog):
         # Add mod check to target user
         member_user = ctx.guild.get_member(user)
         if member_user is not None:
-            if utils.checks.is_guild_moderator_predicate(self.bot, user):
+            if utils.checks.is_guild_moderator_predicate(self.bot, member_user):
                 return await ctx.send("You can't moderate users set as moderators.")
 
         # Do some setup here for users not in the server
@@ -350,7 +350,7 @@ class ModerationCommands(utils.Cog):
 
         # DM the user
         if user_in_guild:
-            dm_reason = f"You have been kicked from **{ctx.guild.name}** with the reason `{reason}`."
+            dm_reason = f"You have been banned from **{ctx.guild.name}** with the reason `{reason}`."
             try:
                 await user.send(dm_reason)
             except discord.Forbidden:
