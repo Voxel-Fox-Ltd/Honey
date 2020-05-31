@@ -14,6 +14,7 @@ from discord.ext import commands
 
 from cogs.utils.custom_context import CustomContext
 from cogs.utils.database import DatabaseConnection
+from cogs.utils.redis import RedisConnection
 
 
 def get_prefix(bot, message:discord.Message):
@@ -94,9 +95,9 @@ class CustomBot(commands.AutoShardedBot):
         self.database.logger = self.logger.getChild('database')
 
         # Allow redis connections like this
-        # # if self.config['redis'].get('enabled'):
-        # self.redis = RedisConnection
-        # self.redis.logger = self.logger.getChild('redis')
+        # if self.config['redis'].get('enabled'):
+        self.redis = RedisConnection
+        self.redis.logger = self.logger.getChild('redis')
 
         # Store the startup method so I can see if it completed successfully
         self.startup_time = dt.now()
