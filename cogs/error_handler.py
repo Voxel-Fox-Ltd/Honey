@@ -41,7 +41,7 @@ class ErrorHandler(utils.Cog):
         owner_reinvoke_errors = (
             commands.MissingAnyRole, commands.MissingPermissions,
             commands.MissingRole, commands.CommandOnCooldown, commands.DisabledCommand,
-            utils.errors.NotGuildModerator,
+            utils.errors.NotGuildModerator, utils.errors.DisabledInChannel
         )
         if ctx.original_author_id in self.bot.owner_ids and isinstance(error, owner_reinvoke_errors):
             return await ctx.reinvoke()
@@ -69,6 +69,10 @@ class ErrorHandler(utils.Cog):
         # NSFW channel
         elif isinstance(error, commands.NSFWChannelRequired):
             return await ctx.send("This command can't be run in a non-NSFW channel.")
+
+        # Disabled in channel
+        elif isinstance(error, utils.errors.DisabledInChannel):
+            return await ctx.send("That command can't be run in this channel.")
 
         # Disabled command
         elif isinstance(error, commands.DisabledCommand):

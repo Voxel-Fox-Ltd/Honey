@@ -483,6 +483,7 @@ class FursonaCommands(utils.Cog):
             pass
 
     @commands.command(cls=utils.Command, aliases=['getsona'])
+    @utils.checks.is_enabled_in_channel('disabled_sona_channels')
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def sona(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, name:str=None):
