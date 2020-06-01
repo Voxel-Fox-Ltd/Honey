@@ -114,6 +114,15 @@ CREATE TABLE role_list(
 );
 
 
+CREATE TABLE channel_list(
+    guild_id BIGINT,
+    channel_id BIGINT,
+    key VARCHAR(50),
+    value VARCHAR(50),
+    PRIMARY KEY (guild_id, channel_id, key)
+);
+
+
 CREATE TABLE user_money(
     guild_id BIGINT,
     user_id BIGINT,
