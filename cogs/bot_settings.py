@@ -142,7 +142,7 @@ class BotSettings(utils.Cog):
 
         key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'role_list', 'buyable_roles', 'BuyableRoles',
+            'role_list', 'role_id', 'buyable_roles', 'BuyableRoles',
             commands.RoleConverter, "What role would you like to add to the shop?", key_display_function,
             int, "How much should the role cost?",
         )
@@ -264,7 +264,7 @@ class BotSettings(utils.Cog):
 
         key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'role_list', 'role_interaction_cooldowns', 'Interactions',
+            'role_list', 'role_id', 'role_interaction_cooldowns', 'Interactions',
             commands.RoleConverter, "What role do you want to set the interaction for?", key_display_function,
             utils.TimeValue, "How long should this role's cooldown be (eg `5m`, `15s`, etc)?", lambda x: int(x.duration)
         )
@@ -296,7 +296,7 @@ class BotSettings(utils.Cog):
 
         key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'channel_list', 'disabled_sona_channels', 'DisabledSonaChannel',
+            'channel_list', 'channel_id', 'disabled_sona_channels', 'DisabledSonaChannel',
             commands.TextChannelConverter, "What channel you want the sona command to be disabled in?", key_display_function
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
@@ -308,7 +308,7 @@ class BotSettings(utils.Cog):
 
         key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'channel_list', 'disabled_interaction_channels', 'DisabledInteractionChannel',
+            'channel_list', 'channel_id', 'disabled_interaction_channels', 'DisabledInteractionChannel',
             commands.TextChannelConverter, "What channel you want the interaction commands to be disabled in?", key_display_function
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
@@ -320,7 +320,7 @@ class BotSettings(utils.Cog):
 
         key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'role_list', 'removed_on_mute_roles', 'RemoveOnMute',
+            'role_list', 'role_id', 'removed_on_mute_roles', 'RemoveOnMute',
             commands.RoleConverter, "What role do you want to be removed on mute?", key_display_function
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
@@ -332,7 +332,7 @@ class BotSettings(utils.Cog):
 
         key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'role_list', 'role_sona_count', 'SonaCount',
+            'role_list', 'role_id', 'role_sona_count', 'SonaCount',
             commands.RoleConverter, "What role do you want to set the sona count for?", key_display_function,
             int, "How many sonas should people with this role be able to create?",
         )
