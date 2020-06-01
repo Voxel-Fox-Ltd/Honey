@@ -287,7 +287,7 @@ class BotSettings(utils.Cog):
                 'callback': self.bot.get_command('setup disableinteractions')
             },
         )
-        await menu.start(ctx, clear_reactions_on_loop=True)
+        await menu.start(ctx)
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
