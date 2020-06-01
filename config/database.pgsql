@@ -154,3 +154,13 @@ CREATE TABLE giveaways(
     ending_time TIMESTAMP,
     description VARCHAR(2000)
 );
+
+
+CREATE TABLE interaction_counter(
+    guild_id BIGINT,
+    user_id BIGINT,
+    target_id BIGINT,
+    interaction VARCHAR(50),
+    amount INTEGER,
+    PRIMARY KEY (guild_id, user_id, target_id, interaction)
+);

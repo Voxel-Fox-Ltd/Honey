@@ -1,5 +1,7 @@
 import random
+import collections
 
+import discord
 from discord.ext import commands
 
 from cogs import utils
@@ -127,6 +129,55 @@ def command_has_responses(ctx):
 
 
 class InteractionCommands(utils.Cog):
+
+    async def cog_after_invoke(self, ctx):
+        """Saves an interaction value into the database"""
+
+        if ctx.guild is None:
+            return
+        if ctx.command.name == "interactions":
+            return
+        async with self.bot.database() as db:
+            await db(
+                """INSERT INTO interaction_counter (guild_id, user_id, target_id, interaction, amount)
+                VALUES ($1, $2, $3, $4, 1) ON CONFLICT (guild_id, user_id, target_id, interaction) DO UPDATE SET
+                amount=interaction_counter.amount+excluded.amount""", ctx.guild.id, ctx.author.id, ctx.args[-1].id, ctx.command.name
+            )
+
+    @commands.command(cls=utils.Command)
+    @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.guild_only()
+    async def interactions(self, ctx:utils.Context, user:discord.Member=None):
+        """Shows you your interaction statistics"""
+
+        # Get the interaction numbers
+        user = user or ctx.author
+        valid_interactions = sorted(list(interaction_responses.keys()))
+        async with self.bot.database() as db:
+            given_rows = await db(
+                "SELECT interaction, SUM(amount) AS amount FROM interaction_counter WHERE user_id=$1 AND guild_id=$2 GROUP BY guild_id, user_id, interaction",
+                user.id, ctx.guild.id
+            )
+            received_rows = await db(
+                "SELECT interaction, SUM(amount) AS amount FROM interaction_counter WHERE target_id=$1 AND guild_id=$2 GROUP BY guild_id, target_id, interaction",
+                user.id, ctx.guild.id
+            )
+
+        # Sort them into useful dicts
+        given_interactions = collections.defaultdict(int)
+        for row in given_rows:
+            given_interactions[row['interaction']] = row['amount']
+        received_interactions = collections.defaultdict(int)
+        for row in received_rows:
+            received_interactions[row['interaction']] = row['amount']
+
+        # And now into an embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author_to_user(user=user)
+            for i in valid_interactions:
+                embed.add_field(i.title(), f"Given {given_interactions[i]} || Received {received_interactions[i]}")
+        await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command, cooldown_after_parsing=True, aliases=['cuddle', 'snuggle', 'snug'])
     @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
