@@ -80,6 +80,9 @@ class CustomBot(commands.AutoShardedBot):
             'role_sona_count': dict(),
             'removed_on_mute_roles': list(),
             'buyable_roles': dict(),
+
+            'disabled_sona_channels': list(),
+            'disabled_interaction_channels': list(),
         }
         self.DEFAULT_USER_SETTINGS = {
             'dm_on_paint_remove': True,
@@ -148,6 +151,16 @@ class CustomBot(commands.AutoShardedBot):
         data = await self.get_list_table_data(db, 'role_list', 'RemoveOnMute')
         for row in data:
             self.guild_settings[row['guild_id']]['removed_on_mute_roles'].append(row['role_id'])
+
+        # Get disabled sona channels
+        data = await self.get_list_table_data(db, 'channel_list', 'DisabledSonaChannel')
+        for row in data:
+            self.guild_settings[row['guild_id']]['disabled_sona_channels'].append(row['channel_id'])
+
+        # Get disabled interaction channels
+        data = await self.get_list_table_data(db, 'channel_list', 'DisabledInteractionChannel')
+        for row in data:
+            self.guild_settings[row['guild_id']]['disabled_interaction_channels'].append(row['channel_id'])
 
         # Get shop message ID
         data = await self.get_all_table_data(db, 'shopping_channels')

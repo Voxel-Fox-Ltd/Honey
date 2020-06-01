@@ -59,6 +59,10 @@ class BotSettings(utils.Cog):
                 'callback': self.bot.get_command("setup shop"),
             },
             {
+                'display': "Command disabling",
+                'callback': self.bot.get_command("setup botcommands"),
+            },
+            {
                 'display': "Misc settings",
                 'callback': self.bot.get_command("setup misc"),
             },
@@ -263,6 +267,49 @@ class BotSettings(utils.Cog):
             'role_list', 'role_interaction_cooldowns', 'Interactions',
             commands.RoleConverter, "What role do you want to set the interaction for?", key_display_function,
             utils.TimeValue, "How long should this role's cooldown be (eg `5m`, `15s`, etc)?", lambda x: int(x.duration)
+        )
+        await menu.start(ctx, clear_reactions_on_loop=True)
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def botcommands(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        menu = utils.SettingsMenu()
+        menu.bulk_add_options(
+            ctx,
+            {
+                'display': 'Disable sona commands for channels',
+                'callback': self.bot.get_command('setup disablesona')
+            },
+            {
+                'display': 'Disable interaction commands for channels',
+                'callback': self.bot.get_command('setup disableinteractions')
+            },
+        )
+        await menu.start(ctx, clear_reactions_on_loop=True)
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def disablesona(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none')
+        menu = utils.SettingsMenuIterable(
+            'channel_list', 'disabled_sona_channels', 'DisabledSonaChannel',
+            commands.TextChannelConverter, "What channel you want the sona command to be disabled in?", key_display_function
+        )
+        await menu.start(ctx, clear_reactions_on_loop=True)
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def disableinteractions(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none')
+        menu = utils.SettingsMenuIterable(
+            'channel_list', 'disabled_interaction_channels', 'DisabledInteractionChannel',
+            commands.TextChannelConverter, "What channel you want the interaction commands to be disabled in?", key_display_function
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
