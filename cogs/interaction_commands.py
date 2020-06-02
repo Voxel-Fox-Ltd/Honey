@@ -28,12 +28,15 @@ class InteractionCommands(utils.Cog):
                 amount=interaction_counter.amount+excluded.amount""", ctx.guild.id, ctx.author.id, ctx.args[-1].id, ctx.command.name
             )
 
-    @commands.command(cls=utils.Command)
+    @commands.group(cls=utils.Group, aliases=['interaction'], invoke_without_command=True)
     @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def interactions(self, ctx:utils.Context, user:discord.Member=None):
         """Shows you your interaction statistics"""
+
+        if ctx.invoked_subcommand is not None:
+            return
 
         # Get the interaction numbers
         user = user or ctx.author
@@ -104,6 +107,27 @@ class InteractionCommands(utils.Cog):
 
         # And now invoke that
         await self.bot.invoke(ctx)
+
+    @interactions.command(cls=utils.Command)
+    @commands.has_guild_permissions(manage_messages=True)
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def add(self, ctx:utils.Context, interaction_name:str, *, response:str):
+        """Adds a custom interaction
+        Use `{author}` and `{user}` as placeholders for where users should receive a ping
+        All interactions must ping one user that isn't the author
+        """
+
+        if len(interaction_name) > 50:
+            return await ctx.send("That interaction name is too long.")
+        if not response:
+            raise utils.errors.MissingRequiredArgumentString("response")
+        async with self.bot.database() as db:
+            await db(
+                "INSERT INTO interaction_text (guild_id, interaction_name, response) VALUES ($1, $2, $3)",
+                ctx.guild.id, interaction_name, response
+            )
+        return await ctx.send("Added your custom interaction response to the pool.")
 
 
 def setup(bot:utils.Bot):
