@@ -25,7 +25,7 @@ class InteractionCommands(utils.Cog):
             await db(
                 """INSERT INTO interaction_counter (guild_id, user_id, target_id, interaction, amount)
                 VALUES ($1, $2, $3, $4, 1) ON CONFLICT (guild_id, user_id, target_id, interaction) DO UPDATE SET
-                amount=interaction_counter.amount+excluded.amount""", ctx.guild.id, ctx.author.id, ctx.args[-1].id, ctx.command.name
+                amount=interaction_counter.amount+excluded.amount""", ctx.guild.id, ctx.author.id, ctx.args[-1].id, ctx.interaction_name
             )
 
     @commands.group(cls=utils.Group, aliases=['interaction'], invoke_without_command=True)
@@ -71,7 +71,7 @@ class InteractionCommands(utils.Cog):
         await ctx.send(embed=embed)
 
     @utils.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx:utils.Context, error:commands.CommandError):
         """Listens for command not found errors and tries to run them as interactions"""
 
         if not isinstance(error, commands.CommandNotFound):
@@ -95,18 +95,22 @@ class InteractionCommands(utils.Cog):
             return  # No responses found
 
         # Create a command we can invoke
-        @commands.command(cls=utils.Command, cooldown_after_parsing=True, name=command_name)
-        @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
-        @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
-        @commands.bot_has_permissions(send_messages=True)
-        async def interaction_command_meta(cog, ctx:utils.Context, user:utils.converters.NotAuthorMember):
-            await ctx.send(rows[0]['response'].replace("{author}", ctx.author.mention).replace("{user}", user.mention))
-            self.bot.dispatch("interaction_run", ctx)
-        interaction_command_meta.cog = self
-        ctx.command = interaction_command_meta
-
-        # And now invoke that
+        ctx.interaction_response = rows[0]['response']
+        ctx.interaction_name = command_name
+        ctx.invoke_meta = True
+        ctx.command = self.bot.get_command("interaction_command_meta")
         await self.bot.invoke(ctx)
+
+    @commands.command(cls=utils.Command, cooldown_after_parsing=True)
+    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
+    @commands.bot_has_permissions(send_messages=True)
+    @utils.checks.meta_command()
+    async def interaction_command_meta(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
+        """The interaction command invoker"""
+
+        await ctx.send(ctx.interaction_response.replace("{author}", ctx.author.mention).replace("{user}", user.mention))
+        self.bot.dispatch("interaction_run", ctx)
 
     @interactions.command(cls=utils.Command)
     @commands.has_guild_permissions(manage_messages=True)

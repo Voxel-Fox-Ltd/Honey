@@ -257,7 +257,7 @@ class ItemHandler(utils.Cog):
         # Get cooldown for user
         new_ctx = copy.copy(ctx)
         new_ctx.message.author = user or ctx.author
-        interaction = self.bot.get_command("hug")
+        interaction = self.bot.get_command("interaction_command_meta")
         remaining_time = interaction.get_remaining_cooldown(ctx)
 
         # See if they actually have a cooldown to use
