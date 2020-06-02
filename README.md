@@ -24,6 +24,20 @@ Interactions can also be shortened with the use of a cooldown token (see the rel
 
 ![](/marketing/interaction_cooldown_settings.png)
 
+### Adding Interactions
+
+The default interactions that come with the bot are hug, pat, lick, kiss, bap, boop, hold, nuzzle, pounce, dance, poke, punch, slap, tug, and yeet, but if that's not enough for you, then you can add some with the `h.interaction add name response` command.
+
+By using this you're able to add your own responses to existing interactions, as well as make your own entirely _new_ interactions to the bot!
+
+![](/marketing/add_interaction.png)
+
+### Interaction Stats
+
+If you're the kind of person who likes numbers, then Honey can hook you up with that as well - all interactions are stored in the bot, and you can see how many times you've hugged or been kissed by someone right inside the bot itself - this is done with the `h.interactions` command.
+
+![](/marketing/interaction_stats.png)
+
 ## Shop System
 
 As is the norm with a lot of furry bots, Honey tries to make use of user activity by adding a shopping system into your server. Users gain money as they talk, and they can spend that money in your server's item shop (created with `h.createshopchannel`). Included with the shop system are commands like `h.givecoins @User amount`, for if a user wants to pass their coins along to someone else.
@@ -41,6 +55,16 @@ Honey uses the custom role creation position (defined in the "custom role" secti
 ### Cooldown Tokens
 
 Users can purchase 100 coooldown tokens from the shop, each token being able to remove one second from their remaining interaction cooldown. This means that users don't need to worry about "wasting" a cooldown token if their cooldown is too low and they want to use another interaction - they'll only use as many tokens as they need.
+
+### Buyable Roles
+
+If you wanted your economy to keep going on through Honey, then you can also add buyable roles to your shop page - with this users are able to purchase a role using their Honey money.
+
+## Giveaways
+
+Honey is able to handle giveaways, letting users add an interaction to a message and roll for a chance to win an item.
+
+![](/marketing/giveaway.png)
 
 ## Moderation Commands
 
