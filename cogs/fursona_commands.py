@@ -400,9 +400,19 @@ class FursonaCommands(utils.Cog):
             return
 
         # Get the message
-        self.logger.info(f"Dealing with sona modmail on guild {payload.guild_id} with message {payload.message_id}")
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
         fursona_embed = message.embeds[0]
+
+        # Make sure it's a sona
+        if "new sona submission" not in message.content.lower():
+            return
+        if not fursona_embed.footer:
+            return
+        if not fursona_embed.footer.text.startswith("Fursona of"):
+            return
+        self.logger.info(f"Dealing with sona modmail on guild {payload.guild_id} with message {payload.message_id}")
+
+        # Get the user ID
         try:
             fursona_user_id = int(fursona_embed.footer.text.split(' ')[2])
         except (AttributeError, ValueError):
