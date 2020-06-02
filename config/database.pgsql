@@ -164,3 +164,10 @@ CREATE TABLE interaction_counter(
     amount INTEGER,
     PRIMARY KEY (guild_id, user_id, target_id, interaction)
 );
+
+
+CREATE TABLE interaction_text(
+    guild_id BIGINT,
+    interaction_name VARCHAR(50),
+    response VARCHAR(2000)
+);
