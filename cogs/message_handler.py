@@ -33,6 +33,7 @@ class MessageHandler(utils.Cog):
                 after_content = after.content[:1000] + '...'
             embed.add_field(name="Old Message", value=before_content, inline=False)
             embed.add_field(name="New Message", value=after_content, inline=False)
+            embed.set_footer(f"User ID {after.author.id}")
             embed.timestamp = after.edited_at
 
         # Get channel
@@ -68,6 +69,7 @@ class MessageHandler(utils.Cog):
                 embed.add_field(name="Message", value=message.content[:1000] + '...', inline=False)
             else:
                 embed.add_field(name="Message", value=message.content, inline=False)
+            embed.set_footer(f"User ID {message.author.id}")
             embed.timestamp = dt.utcnow()
 
         # Get channel
