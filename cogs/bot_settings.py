@@ -344,12 +344,18 @@ class BotSettings(utils.Cog):
         """Talks the bot through a setup"""
 
         menu = utils.SettingsMenu()
+        settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
         menu.bulk_add_options(
             ctx,
             {
                 'display': lambda c: "Set coin emoji (currently {0})".format(c.bot.guild_settings[c.guild.id].get('coin_emoji', 'coins')),
                 'converter_args': [("What do you want to set the coin emoji to?", "coin emoji", str)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'coin_emoji'),
+            },
+            {
+                'display': lambda c: "Set suggestions channel (currently {0})".format(settings_mention(ctx, 'suggestion_channel_id')),
+                'converter_args': [("What do you want to set the suggestion channel to?", "suggestion channel", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'suggestion_channel_id'),
             },
         )
         await menu.start(ctx)

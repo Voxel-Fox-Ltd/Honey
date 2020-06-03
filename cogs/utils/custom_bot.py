@@ -83,6 +83,8 @@ class CustomBot(commands.AutoShardedBot):
 
             'disabled_sona_channels': list(),
             'disabled_interaction_channels': list(),
+
+            'suggestion_channel_id': None,
         }
         self.DEFAULT_USER_SETTINGS = {
             'dm_on_paint_remove': True,

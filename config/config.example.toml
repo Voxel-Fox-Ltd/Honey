@@ -13,6 +13,9 @@ dm_uncaught_errors = false
     echo_command_enabled = true
     stats_command_enabled = true
 
+[channels]
+    suggestion_channel = 0
+
 # This data is passed directly over to asyncpg
 [database]
     user = "database_username"
@@ -20,6 +23,13 @@ dm_uncaught_errors = false
     database = "database_name"
     host = "127.0.0.1"
     port = 5432
+    enabled = false
+
+# This data is passed directly over to aioredis
+[redis]
+    host = "127.0.0.1"
+    port = 6379
+    db = 0
     enabled = false
 
 # What the bot is playing
