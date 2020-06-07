@@ -32,21 +32,11 @@ class EconomyHandler(utils.Cog):
                     if member.bot:
                         continue
 
-                    # See if they already got money
-                    rows = await db("SELECT * FROM user_money WHERE guild_id=$1 AND user_id=$2", guild.id, member.id)
-                    if rows:
-                        continue
-
                     # Add some money to the bot user
-                    await db.start_transaction()
                     await db(
-                        """INSERT INTO user_money (guild_id, user_id, amount) VALUES
-                        ($1, $2, 10000) ON CONFLICT (guild_id, user_id)
-                        DO UPDATE SET amount=user_money.amount+excluded.amount""",
-                        guild.id, guild.me.id
+                        "INSERT INTO user_money (guild_id, user_id, amount) VALUES ($1, $2, 0) ON CONFLICT (guild_id, user_id) DO NOTHING",
+                        guild.id, member.id
                     )
-                    await db("INSERT INTO user_money (guild_id, user_id, amount) VALUES ($1, $2, 0)", guild.id, member.id)
-                    await db.commit_transaction()
 
     @utils.Cog.listener("on_member_join")
     async def member_join_free_money_handler(self, member:discord.Member):
@@ -58,21 +48,28 @@ class EconomyHandler(utils.Cog):
             if member.bot:
                 return
 
-            # See if they already got money
-            rows = await db("SELECT * FROM user_money WHERE guild_id=$1 AND user_id=$2", member.guild.id, member.id)
-            if rows:
-                return
-
             # Add some money to the bot user
-            await db.start_transaction()
             await db(
-                """INSERT INTO user_money (guild_id, user_id, amount) VALUES
-                ($1, $2, 10000) ON CONFLICT (guild_id, user_id)
-                DO UPDATE SET amount=user_money.amount+excluded.amount""",
-                member.guild.id, member.guild.me.id
+                "INSERT INTO user_money (guild_id, user_id, amount) VALUES ($1, $2, 0) ON CONFLICT (guild_id, user_id) DO NOTHING",
+                member.guild.id, member.id
             )
-            await db("INSERT INTO user_money (guild_id, user_id, amount) VALUES ($1, $2, 0)", member.guild.id, member.id)
-            await db.commit_transaction()
+
+    @utils.Cog.listener("on_guild_join")
+    async def bot_join_free_money_handler(self, guild:discord.Guild):
+        """Pinged when a member joins the guild - add 10k to the bot in this case"""
+
+        async with self.bot.database() as db:
+            for member in guild.members:
+
+                # Filter out bots
+                if member.bot:
+                    continue
+
+                # Add some money to the bot user
+                await db(
+                    "INSERT INTO user_money (guild_id, user_id, amount) VALUES ($1, $2, 0) ON CONFLICT (guild_id, user_id) DO NOTHING",
+                    guild.id, member.id
+                )
 
     @commands.command(cls=utils.Command, enabled=False)
     @utils.cooldown.cooldown(1, 60 * 60, commands.BucketType.member)
