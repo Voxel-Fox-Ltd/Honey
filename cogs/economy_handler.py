@@ -55,7 +55,7 @@ class EconomyHandler(utils.Cog):
             )
 
     @utils.Cog.listener("on_guild_join")
-    async def bot_join_free_money_handler(self, guild:discord.Guild):
+    async def guild_join_free_money_handler(self, guild:discord.Guild):
         """Pinged when a member joins the guild - add 10k to the bot in this case"""
 
         async with self.bot.database() as db:
