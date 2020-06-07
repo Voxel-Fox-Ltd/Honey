@@ -35,6 +35,8 @@ class MessageHandler(utils.Cog):
             embed.add_field(name="New Message", value=after_content, inline=False)
             embed.set_footer(f"User ID {after.author.id}")
             embed.timestamp = after.edited_at
+            if after.attachments:
+                embed.add_field("Attachments", '\n'.join([i.url for i in after.attachments]))
 
         # Get channel
         channel_id = self.bot.guild_settings[after.guild.id].get("edited_message_modlog_channel_id")
@@ -56,8 +58,6 @@ class MessageHandler(utils.Cog):
         # Filter
         if message.guild is None:
             return
-        if not message.content:
-            return
         if message.author.bot:
             return
 
@@ -65,12 +65,15 @@ class MessageHandler(utils.Cog):
         with utils.Embed(colour=0xff0000) as embed:
             embed.set_author_to_user(user=message.author)
             embed.description = f"Message deleted in {message.channel.mention}"
-            if len(message.content) > 1000:
-                embed.add_field(name="Message", value=message.content[:1000] + '...', inline=False)
-            else:
-                embed.add_field(name="Message", value=message.content, inline=False)
+            if message.content:
+                if len(message.content) > 1000:
+                    embed.add_field(name="Message", value=message.content[:1000] + '...', inline=False)
+                else:
+                    embed.add_field(name="Message", value=message.content, inline=False)
             embed.set_footer(f"User ID {message.author.id}")
             embed.timestamp = dt.utcnow()
+            if message.attachments:
+                embed.add_field("Attachments", '\n'.join([f"[Attachment {index}]({i.url}) ([attachment {index} proxy]({i.proxy_url}))" for index, i in enumerate(message.attachments, start=1)]))
 
         # Get channel
         channel_id = self.bot.guild_settings[message.guild.id].get("edited_message_modlog_channel_id")
