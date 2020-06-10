@@ -70,9 +70,9 @@ Honey is able to handle giveaways, letting users add an interaction to a message
 
 All the classic moderation commands like kick, mute, tempmute, ban, warn, and infractions are all present. Also present is the `h.watch @User` command for when mods need to keep a closer eye on any given user. Logs of what commands mods are running can all be sent to a modlogs channel, set with the `h.setup` command.
 
-## Message Logging
+## Logging
 
-Like a few other bots, Honey is able to track messages that have been _edited_ and _deleted_, and log those into a channel.
+Like a few other bots, Honey is able to track messages that have been _edited_ and _deleted_, and log those into a channel, as well as logging users joining and leaving VCs.
 
 ## Custom Roles
 
