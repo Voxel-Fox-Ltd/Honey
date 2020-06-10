@@ -72,6 +72,7 @@ class CustomBot(commands.AutoShardedBot):
 
             'edited_message_modlog_channel_id': None,
             'deleted_message_modlog_channel_id': None,
+            'voice_update_modlog_channel_id': None,
 
             'paintbrush_price': 100,
             'cooldown_token_price': 100,

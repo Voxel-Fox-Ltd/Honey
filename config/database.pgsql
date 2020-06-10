@@ -24,6 +24,7 @@ CREATE TABLE guild_settings(
 
     edited_message_modlog_channel_id BIGINT,
     deleted_message_modlog_channel_id BIGINT,
+    voice_update_modlog_channel_id BIGINT,
 
     suggestion_channel_id BIGINT
 );

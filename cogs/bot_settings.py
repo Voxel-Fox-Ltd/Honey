@@ -254,6 +254,11 @@ class BotSettings(utils.Cog):
                 'converter_args': [("What channel do you want deleted message logs to go to?", "modmail archive", commands.TextChannelConverter)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'deleted_message_modlog_channel_id'),
             },
+            {
+                'display': lambda c: "Set voice update log channel (currently {0})".format(settings_mention(c, 'voice_update_modlog_channel_id')),
+                'converter_args': [("What channel do you want deleted message logs to go to?", "VC update archive", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'voice_update_modlog_channel_id'),
+            },
         )
         await menu.start(ctx)
 
