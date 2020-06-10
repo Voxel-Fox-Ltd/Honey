@@ -131,6 +131,14 @@ class ItemHandler(utils.Cog):
         self.logger.info(f"Remove item ({item_data['name']}) from user (G{ctx.guild.id}/U{ctx.author.id})")
         await db.disconnect()
 
+    @commands.command(cls=utils.Command, aliases=['paintbrush'])
+    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
+    @commands.guild_only()
+    async def paint(self, ctx:utils.Context, user:discord.Member, *, args:str=None):
+        """Use the paintbrush on a user in a given server"""
+
+        await ctx.invoke(self.bot.get_command("use"), item_name="paintbrush", user=user, args=args)
+
     async def use_paintbrush(self, ctx:utils.Context, args:str, db:utils.DatabaseConnection, user:discord.Member):
         """Use the paintbrush on a user in a given server"""
 
