@@ -21,7 +21,7 @@ class VCLogs(utils.Cog):
             if before.channel is None:
                 text = f"{member.mention} joined the **{after.channel.name}** VC."
             elif after.channel is None:
-                text = f"{member.mention} left the **{after.channel.name}** VC."
+                text = f"{member.mention} left the **{before.channel.name}** VC."
             else:
                 text = f"{member.mention} moved from the **{before.channel.name}** VC to the **{after.channel.name}** VC."
             await channel.send(text, allowed_mentions=discord.AllowedMentions(users=False))
