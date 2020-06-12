@@ -501,11 +501,14 @@ class FursonaCommands(utils.Cog):
 
         # Get the sonas
         user = user or ctx.author
+        guild_id = ctx.guild.id
+        if user.id == self.bot.user.id:
+            guild_id = 0
         async with self.bot.database() as db:
             if name is None:
-                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, user.id)
+                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", guild_id, user.id)
             else:
-                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", ctx.guild.id, user.id, name)
+                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", guild_id, user.id, name)
 
         # Check if they have a valid sona
         if not rows:
