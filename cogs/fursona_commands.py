@@ -55,8 +55,8 @@ class FursonaCommands(utils.Cog):
         },
     ]
 
-    CHECK_MARK_EMOJI = "<:tickYes:596096897995899097>"
-    CROSS_MARK_EMOJI = "<:crossNo:596096897769275402>"
+    CHECK_MARK_EMOJI = "<:tick_yes:596096897995899097>"
+    CROSS_MARK_EMOJI = "<:cross_no:596096897769275402>"
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
