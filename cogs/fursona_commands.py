@@ -133,11 +133,11 @@ class FursonaCommands(utils.Cog):
 
         # Try and send them an initial DM
         user = ctx.author
-        start_message = f"Now taking you through setting up your sona on **{ctx.guild.name}**!"
+        start_message = f"Now taking you through setting up your sona on **{ctx.guild.name}**!\n"
         if not self.bot.guild_settings[ctx.guild.id]["nsfw_is_allowed"]:
-            start_message += f"\n NSFW fursonas are not allowed for **{ctx.guild.name}** and will be automatically declined."
+            start_message += f"NSFW fursonas are not allowed for **{ctx.guild.name}** and will be automatically declined.\n"
         try:
-            await user.send(start_message)
+            await user.send(start_message.strip())
         except discord.Forbidden:
             return await ctx.send("I couldn't send you a DM! Please open your DMs for this server and try again.")
         self.currently_setting_sonas.add(user.id)
@@ -201,10 +201,15 @@ class FursonaCommands(utils.Cog):
             return self.currently_setting_sonas.remove(user.id)
 
         # Ask about NSFW
-        check = lambda m: isinstance(m.channel, discord.DMChannel) and m.author.id == user.id and m.content.lower() in ["yes", "no"]
-        nsfw_message = await self.send_verification_message(user, "Is your sona NSFW? Please either say `yes` or `no`.", check=check)
-        if nsfw_message is None:
-            return self.currently_setting_sonas.remove(user.id)
+        if self.bot.guild_settings[ctx.guild.id]["nsfw_is_allowed"]:
+            check = lambda m: isinstance(m.channel, discord.DMChannel) and m.author.id == user.id and m.content.lower() in ["yes", "no"]
+            nsfw_message = await self.send_verification_message(user, "Is your sona NSFW? Please either say `yes` or `no`.", check=check)
+            if nsfw_message is None:
+                return self.currently_setting_sonas.remove(user.id)
+            else:
+                nsfw_content = nsfw_message.content.lower()
+        else:
+            nsfw_content = "no"
 
         # Format that into data
         image_content = None if image_message.content.lower() == "no" else self.get_image_from_message(image_message)
@@ -218,7 +223,7 @@ class FursonaCommands(utils.Cog):
             'weight': weight_message.content,
             'bio': bio_message.content,
             'image': image_content,
-            'nsfw': nsfw_message.content.lower() == "yes",
+            'nsfw': nsfw_content == "yes",
         }
         self.currently_setting_sonas.remove(user.id)
         ctx.information = information
@@ -284,7 +289,8 @@ class FursonaCommands(utils.Cog):
             try:
                 await modmail_message.add_reaction("\N{HEAVY CHECK MARK}")
                 await modmail_message.add_reaction("\N{HEAVY MULTIPLICATION X}")
-                await modmail_message.add_reaction("\N{SMILING FACE WITH HORNS}")
+                if self.bot.guild_settings[ctx.guild.id]["nsfw_is_allowed"]:
+                    await modmail_message.add_reaction("\N{SMILING FACE WITH HORNS}")
             except discord.Forbidden:
                 await modmail_message.delete()
                 return await user.send(f"The moderators for the server **{ctx.guild.name}** have disallowed me from adding reactions in their fursona modmail channel - please inform them of such and try again later.")
@@ -361,6 +367,8 @@ class FursonaCommands(utils.Cog):
 
         # Filter the list
         all_user_sonas = [i for i in all_user_sonas if i['guild_id'] != ctx.guild.id]
+        if not self.bot.guild_settings[ctx.guild.id]["nsfw_is_allowed"]:
+            all_user_sonas = [i for i in all_user_sonas if i['nsfw'] is False]
         if not all_user_sonas:
             self.currently_setting_sonas.remove(ctx.author.id)
             return await ctx.send("You have no sonas available to import from other servers.")
