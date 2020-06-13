@@ -52,6 +52,7 @@ class CustomBot(commands.AutoShardedBot):
             'verified_role_id': None,
             'muted_role_id': None,
             'guild_moderator_role_id': None,
+            'nsfw_is_allowed': True,
             'custom_role_id': None,
             'custom_role_position_id': None,
             'coin_emoji': None,
