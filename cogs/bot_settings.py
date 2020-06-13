@@ -83,6 +83,11 @@ class BotSettings(utils.Cog):
         menu.bulk_add_options(
             ctx,
             {
+                'display': lambda c: "Allow NSFW fursonas (currently {0})".format(c.bot.guild_settings[c.guild.id].get('nsfw_is_allowed', True)),
+                'converter_args': [("Do you want to allow NSFW fursonas?", "allow NSFW", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'nsfw_is_allowed'),
+            },
+            {
                 'display': lambda c: "Set fursona modmail channel (currently {0})".format(settings_mention(c, 'fursona_modmail_channel_id')),
                 'converter_args': [("What channel do you want to set fursona modmail to go to?", "fursona modmail", commands.TextChannelConverter)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'fursona_modmail_channel_id'),
@@ -193,11 +198,6 @@ class BotSettings(utils.Cog):
                 'display': lambda c: "Set verified role (currently {0})".format(settings_mention(c, 'verified_role_id')),
                 'converter_args': [("What do you want to set the verified role to?", "verified role", commands.RoleConverter)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'verified_role_id'),
-            },
-            {
-                'display': lambda c: "Allow NSFW fursonas (currently {0})".format(c.bot.guild_settings[c.guild.id].get('nsfw_is_allowed', True)),
-                'converter_args': [("Do you want to allow NSFW fursonas?", "allow NSFW", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'nsfw_is_allowed'),
             },
             {
                 'display': lambda c: "Set mute role (currently {0})".format(settings_mention(c, 'muted_role_id')),
