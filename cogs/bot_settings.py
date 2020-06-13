@@ -195,6 +195,11 @@ class BotSettings(utils.Cog):
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'verified_role_id'),
             },
             {
+                'display': lambda c: "Allow NSFW fursonas (currently {0})".format(settings_mention(c, 'nsfw_is_allowed')),
+                'converter_args': [("Do you want to allow NSFW fursonas?", "allow NSFW", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'nsfw_is_allowed'),
+            },
+            {
                 'display': lambda c: "Set mute role (currently {0})".format(settings_mention(c, 'muted_role_id')),
                 'converter_args': [("What do you want to set the mute role to?", "mute role", commands.RoleConverter)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'muted_role_id'),
