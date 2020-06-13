@@ -83,7 +83,7 @@ class BotSettings(utils.Cog):
         menu.bulk_add_options(
             ctx,
             {
-                'display': lambda c: "Allow NSFW fursonas (currently {0})".format(c.bot.guild_settings[c.guild.id].get('nsfw_is_allowed', True)),
+                'display': lambda c: "Allow NSFW fursonas (currently {0})".format(settings_mention(c, 'nsfw_is_allowed')),
                 'converter_args': [("Do you want to allow NSFW fursonas?", "allow NSFW", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'nsfw_is_allowed'),
             },
@@ -120,15 +120,16 @@ class BotSettings(utils.Cog):
         """Talks the bot through a setup"""
 
         menu = utils.SettingsMenu()
+        settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
         menu.bulk_add_options(
             ctx,
             {
-                'display': lambda c: "Set paintbrush price (currently {0})".format(c.bot.guild_settings[c.guild.id].get('paintbrush_price')),
+                'display': lambda c: "Set paintbrush price (currently {0})".format(settings_mention(c, 'paintbrush_price')),
                 'converter_args': [("How much do you want a paintbrush to cost? Set to 0 to disable paint being sold on the shop.", "paint price", int)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_shop_settings', 'paintbrush_price'),
             },
             {
-                'display': lambda c: "Set cooldown token price (currently {0})".format(c.bot.guild_settings[c.guild.id].get('cooldown_token_price')),
+                'display': lambda c: "Set cooldown token price (currently {0})".format(settings_mention(c, 'cooldown_token_price')),
                 'converter_args': [("How much do you want 100 cooldown tokens to cost? Set to 0 to disable cooldown tokens being sold on the shop.", "paint price", int)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_shop_settings', 'cooldown_token_price'),
             },
@@ -358,7 +359,7 @@ class BotSettings(utils.Cog):
         menu.bulk_add_options(
             ctx,
             {
-                'display': lambda c: "Set coin emoji (currently {0})".format(c.bot.guild_settings[c.guild.id].get('coin_emoji', 'coins')),
+                'display': lambda c: "Set coin emoji (currently {0})".format(settings_mention(c, 'coin_emoji', 'coins')),
                 'converter_args': [("What do you want to set the coin emoji to?", "coin emoji", str)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'coin_emoji'),
             },
@@ -383,16 +384,16 @@ class BotSettings(utils.Cog):
 
         # Create settings menu
         menu = utils.SettingsMenu()
-        # settings_mention = utils.SettingsMenuOption.get_user_settings_mention
+        settings_mention = utils.SettingsMenuOption.get_user_settings_mention
         menu.bulk_add_options(
             ctx,
             {
-                'display': lambda c: "Receive DM on paint removal (currently {0})".format(c.bot.user_settings[c.author.id].get('dm_on_paint_remove', True)),
+                'display': lambda c: "Receive DM on paint removal (currently {0})".format(settings_mention(c, 'dm_on_paint_remove')),
                 'converter_args': [("Do you want to receive a DM when paint is removed from you?", "paint DM", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
                 'callback': utils.SettingsMenuOption.get_set_user_settings_callback('user_settings', 'dm_on_paint_remove'),
             },
             {
-                'display': lambda c: "Allow paint from other users (currently {0})".format(c.bot.user_settings[c.author.id].get('allow_paint', True)),
+                'display': lambda c: "Allow paint from other users (currently {0})".format(settings_mention(c, 'allow_paint')),
                 'converter_args': [("Do you want to allow other users to paint you?", "paint DM", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
                 'callback': utils.SettingsMenuOption.get_set_user_settings_callback('user_settings', 'allow_paint'),
             },

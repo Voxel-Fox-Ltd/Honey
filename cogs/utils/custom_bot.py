@@ -56,7 +56,7 @@ class CustomBot(commands.AutoShardedBot):
             'custom_role_id': None,
             'custom_role_position_id': None,
             'coin_emoji': None,
-            'custom_role_xfix': None,
+            'custom_role_xfix': ':(Custom)',
 
             'shop_message_id': None,
             'shop_channel_id': None,
