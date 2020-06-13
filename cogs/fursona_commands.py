@@ -133,8 +133,11 @@ class FursonaCommands(utils.Cog):
 
         # Try and send them an initial DM
         user = ctx.author
+        start_message = f"Now taking you through setting up your sona on **{ctx.guild.name}**!"
+        if not self.bot.guild_settings[ctx.guild.id]["nsfw_is_allowed"]:
+            start_message + f"\n NSFW fursonas are not allowed for **{ctx.guild.name}** and will be automatically declined."
         try:
-            await user.send(f"Now taking you through setting up your sona on **{ctx.guild.name}**!")
+            await user.send(start_message)
         except discord.Forbidden:
             return await ctx.send("I couldn't send you a DM! Please open your DMs for this server and try again.")
         self.currently_setting_sonas.add(user.id)
@@ -219,6 +222,8 @@ class FursonaCommands(utils.Cog):
         }
         self.currently_setting_sonas.remove(user.id)
         ctx.information = information
+        if information['nsfw'] and not self.bot.guild_settings[ctx.guild.id]["nsfw_is_allowed"]:
+            return await user.send("Your fursona has been automatically declined as it is NSFW")
         await self.bot.get_command("setsonabyjson").invoke(ctx)
 
     @commands.command(cls=utils.Command, hidden=True)
