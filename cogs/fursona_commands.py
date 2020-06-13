@@ -135,7 +135,7 @@ class FursonaCommands(utils.Cog):
         user = ctx.author
         start_message = f"Now taking you through setting up your sona on **{ctx.guild.name}**!"
         if not self.bot.guild_settings[ctx.guild.id]["nsfw_is_allowed"]:
-            start_message + f"\n NSFW fursonas are not allowed for **{ctx.guild.name}** and will be automatically declined."
+            start_message += f"\n NSFW fursonas are not allowed for **{ctx.guild.name}** and will be automatically declined."
         try:
             await user.send(start_message)
         except discord.Forbidden:
