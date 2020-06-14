@@ -361,7 +361,7 @@ class ModerationCommands(utils.Cog):
         try:
             await ctx.guild.ban(user, reason=manage_reason)
         except discord.Forbidden:
-            return await ctx.send(f"I was unable to ban {user.mention}.")
+            return await ctx.send(f"I was unable to ban <@{user.id}> - they're probably ranked higher than I am.")
         except discord.NotFound:
             return await ctx.send("To me it looks like that user doesn't exist :/")
 
