@@ -134,6 +134,8 @@ class ModerationCommands(utils.Cog):
             role = ctx.guild.get_role(id_to_remove)
             if role is None:
                 continue
+            if role not in user.roles:
+                continue
             try:
                 await user.remove_roles(role, reason="User muted")
                 removed_roles.append(role)
