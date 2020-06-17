@@ -91,6 +91,7 @@ class CustomBot(commands.AutoShardedBot):
         self.DEFAULT_USER_SETTINGS = {
             'dm_on_paint_remove': True,
             'allow_paint': True,
+            'receive_interaction_ping': True,
         }
 
         # Aiohttp session

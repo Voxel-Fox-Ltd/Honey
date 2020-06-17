@@ -109,7 +109,18 @@ class InteractionCommands(utils.Cog):
     async def interaction_command_meta(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
         """The interaction command invoker"""
 
-        await ctx.send(ctx.interaction_response.replace("{author}", ctx.author.mention).replace("{user}", user.mention))
+        # Set up who we're pinging
+        pings = []
+        ping_author = self.bot.user_settings[ctx.author.id]['receive_interaction_ping']
+        if ping_author:
+            pings.append(ctx.author)
+        ping_user = self.bot.user_settings[user.id]['receive_interaction_ping']
+        if ping_user:
+            pings.append(user)
+        await ctx.send(
+            ctx.interaction_response.replace("{author}", ctx.author.mention).replace("{user}", user.mention),
+            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=pings)
+        )
         self.bot.dispatch("interaction_run", ctx)
 
     @interactions.command(cls=utils.Command)

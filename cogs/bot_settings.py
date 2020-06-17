@@ -394,8 +394,13 @@ class BotSettings(utils.Cog):
             },
             {
                 'display': lambda c: "Allow paint from other users (currently {0})".format(settings_mention(c, 'allow_paint')),
-                'converter_args': [("Do you want to allow other users to paint you?", "paint DM", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
+                'converter_args': [("Do you want to allow other users to paint you?", "paint enable", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
                 'callback': utils.SettingsMenuOption.get_set_user_settings_callback('user_settings', 'allow_paint'),
+            },
+            {
+                'display': lambda c: "Allow interaction pings (currently {0})".format(settings_mention(c, 'receive_interaction_ping')),
+                'converter_args': [("Do you want to be pinged when users run interactions on you?", "interaction ping", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
+                'callback': utils.SettingsMenuOption.get_set_user_settings_callback('user_settings', 'receive_interaction_ping'),
             },
         )
         try:

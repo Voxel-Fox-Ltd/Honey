@@ -31,6 +31,14 @@ CREATE TABLE guild_settings(
 );
 
 
+CREATE TABLE user_settings(
+    user_id BIGINT PRIMARY KEY,
+    dm_on_paint_remove BOOLEAN DEFAULT TRUE,
+    allow_paint BOOLEAN DEFAULT TRUE,
+    receive_interaction_ping BOOLEAN DEFAULT TRUE
+);
+
+
 CREATE TABLE guild_shop_settings(
     guild_id BIGINT PRIMARY KEY,
     paintbrush_price INTEGER DEFAULT 100,
@@ -99,13 +107,6 @@ CREATE TABLE custom_roles(
     role_id BIGINT,
     user_id BIGINT,
     PRIMARY KEY (guild_id, user_id)
-);
-
-
-CREATE TABLE user_settings(
-    user_id BIGINT PRIMARY KEY,
-    dm_on_paint_remove BOOLEAN DEFAULT TRUE,
-    allow_paint BOOLEAN DEFAULT TRUE
 );
 
 
