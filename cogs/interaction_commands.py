@@ -123,6 +123,17 @@ class InteractionCommands(utils.Cog):
         )
         self.bot.dispatch("interaction_run", ctx)
 
+    @commands.command(cls=utils.Command)
+    @commands.bot_has_permissions(send_messages=True)
+    async def cooldown(self, ctx:utils.Context):
+        """Tells you how long your remaining interaction cooldown is"""
+
+        interaction = self.bot.get_command("interaction_command_meta")
+        remaining_time = interaction.get_remaining_cooldown(ctx)
+        if not remaining_time or remaining_time < 1:
+            return await ctx.send("Your interaction cooldown has expired - you're able to run interactions again.")
+        return await ctx.send(f"Your remaining cooldown is {utils.TimeValue(remaining_time).clean}.")
+
     @interactions.command(cls=utils.Command)
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
