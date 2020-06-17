@@ -98,7 +98,7 @@ class MiscCommands(utils.Cog):
         if len(args) > 5:
             return await ctx.send("You can only pick 5 choices max per poll.")
         lines = [f"{index}\N{COMBINING ENCLOSING KEYCAP} {i}" for index, i in enumerate(args, start=1)]
-        m = await ctx.send('\n'.join(lines))
+        m = await ctx.send('\n'.join(lines), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
         for line in lines:
             await m.add_reaction(line.split(' ')[0])
 
