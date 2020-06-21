@@ -152,6 +152,11 @@ class CustomBot(commands.AutoShardedBot):
         for row in data:
             self.guild_settings[row['guild_id']]['buyable_roles'][row['role_id']] = int(row['value'])
 
+        # Get buyable temp roles
+        data = await self.get_list_table_data(db, 'buyable_temp_roles')
+        for row in data:
+            self.guild_settings[row['guild_id']]['buyable_temp_roles'][row['role_id']] = {"amount": int(row['amount']), "time": int(row['lenght'])}
+
         # Get roles to be removed on mute
         data = await self.get_list_table_data(db, 'role_list', 'RemoveOnMute')
         for row in data:
