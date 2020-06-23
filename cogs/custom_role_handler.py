@@ -65,8 +65,15 @@ class CustomRoleHandler(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
-    async def colour(self, ctx:utils.Context, *, colour:discord.Colour):
+    async def colour(self, ctx:utils.Context, *, colour:typing.Union[discord.Colour, str]):
         """Change the colour of your custom role"""
+
+        # Validate the colour
+        if isinstance(colour, str):
+            colour_value = utils.colour_names.COLOURS_BY_NAME.get(colour)
+            if colour_value is None:
+                return await ctx.send("That isn't a valid colour hex code or name.")
+            colour = discord.Colour(colour_value)
 
         # Get their role
         role = await self.check_for_custom_role(ctx)
