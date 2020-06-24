@@ -137,6 +137,10 @@ class BotSettings(utils.Cog):
                 'display': lambda c: "Set up buyable roles (currently {0} set up)".format(len(c.bot.guild_settings[c.guild.id].get('buyable_roles', list()))),
                 'callback': self.bot.get_command("setup buyableroles"),
             },
+            {
+                'display': lambda c: "Set up buyable temporary roles (currently {0} set up)".format(len(c.bot.guild_settings[c.guild.id].get('buyable_temp_roles', list()))),
+                'callback': self.bot.get_command("setup buyabletemproles"),
+            },
         )
         await menu.start(ctx)
         self.bot.dispatch("shop_message_update", ctx.guild)
@@ -151,6 +155,20 @@ class BotSettings(utils.Cog):
             'role_list', 'role_id', 'buyable_roles', 'BuyableRoles',
             commands.RoleConverter, "What role would you like to add to the shop?", key_display_function,
             int, "How much should the role cost?",
+        )
+        await menu.start(ctx, clear_reactions_on_loop=True)
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def buyabletemproles(self, ctx:utils.Context):
+        """Talks the bot through a setup"""
+
+        key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
+        menu = utils.SettingsMenuIterable(
+            'buyable_temp_roles', 'role_id', 'buyable_temp_roles', 'BuyableTempRoles',
+            commands.RoleConverter, "What role would you like to add to the shop?", key_display_function,
+            int, "How much should the role cost?",
+            utils.TimeValue, "How long should this role's cooldown be (eg `5m`, `15s`, etc)?", lambda x: int(x.duration)
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
