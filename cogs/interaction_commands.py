@@ -28,6 +28,24 @@ class InteractionCommands(utils.Cog):
                 amount=interaction_counter.amount+excluded.amount""", ctx.guild.id, ctx.author.id, ctx.args[-1].id, ctx.interaction_name
             )
 
+    @staticmethod
+    def simplify(numer, denom):
+        """Simplify a fraction by its numerator and denominator"""
+
+        if numer == 0 or denom == 0:
+            return numer, denom
+
+        def x(n, d, divisor):
+            if n % divisor == 0 and d % divisor == 0:
+                return n / divisor, d / divisor
+            return n, d
+        for _ in range(4):
+            for i in range(11):
+                if i == 0:
+                    continue
+                numer, denom = x(numer, denom, i)
+        return numer, denom
+
     @commands.group(cls=utils.Group, aliases=['interaction'], invoke_without_command=True)
     @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
@@ -67,7 +85,13 @@ class InteractionCommands(utils.Cog):
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user=user)
             for i in valid_interactions:
-                embed.add_field(i.title(), f"Given {given_interactions[i]} || Received {received_interactions[i]}")
+                given = given_interactions[i]
+                received = received_interactions[i]
+                if given > 0 and received > 0:
+                    fraction = self.simplify(given, received)
+                    embed.add_field(i.title(), f"Given {given}, received {received} ({fraction[0]:.0f}:{fraction[1]:.0f})")
+                else:
+                    embed.add_field(i.title(), f"Given {given}, received {received}")
         await ctx.send(embed=embed)
 
     @utils.Cog.listener()
