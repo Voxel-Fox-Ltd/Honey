@@ -1,4 +1,4 @@
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 
 import discord
 
@@ -6,6 +6,10 @@ from cogs import utils
 
 
 class MessageHandler(utils.Cog):
+
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.last_audit_delete_entry_id = {}  # guild_id: (entry_id, count)
 
     @utils.Cog.listener()
     async def on_message_edit(self, before:discord.Message, after:discord.Message):
@@ -74,6 +78,29 @@ class MessageHandler(utils.Cog):
             embed.timestamp = dt.utcnow()
             if message.attachments:
                 embed.add_field("Attachments", '\n'.join([f"[Attachment {index}]({i.url}) ([attachment {index} proxy]({i.proxy_url}))" for index, i in enumerate(message.attachments, start=1)]))
+
+        # See if we can get who it was deleted by
+        delete_time = dt.utcnow()
+        if message.guild.me.guild_permissions.view_audit_log:
+            changed = False
+            async for entry in message.guild.audit_logs(action=discord.AuditLogAction.message_delete, limit=1):
+                if entry.extra.channel.id != message.channel.id:
+                    break
+                if entry.target.id != message.author.id:
+                    break
+                if entry.extra.count == 1 and delete_time > entry.created_at + timedelta(seconds=0.1):
+                    break  # I want the entry to be within 0.1 seconds of the message deletion
+                elif entry.extra.count > 1:
+                    last_delete_entry = self.last_audit_delete_entry_id.get(message.guild.id, (0, -1,))
+                    if last_delete_entry[0] != entry.id:
+                        break  # Last cached entry is DIFFERENT to this entry
+                    if last_delete_entry[1] == entry.extra.count:
+                        break  # Unchanged from last cached log
+                self.last_audit_delete_entry_id[message.guild.id] = (entry.id, entry.extra.count)
+                changed = True
+                embed.description = f"Message deleted in {message.channel.mention} by {entry.user.mention}"
+            if changed is False:
+                embed.description = f"Message deleted in {message.channel.mention} by {message.author.mention}"
 
         # Get channel
         channel_id = self.bot.guild_settings[message.guild.id].get("edited_message_modlog_channel_id")
