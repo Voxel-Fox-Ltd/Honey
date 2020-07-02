@@ -34,7 +34,7 @@ class GiveawayHandler(utils.Cog):
         with utils.Embed(colour=0x00ff00) as embed:
             embed.title = giveaway_name
             embed.description = "Click the reaction below to enter!"
-            embed.set_footer(text=f"{winner_count} winners | Ends at")
+            embed.set_footer(text=f"{winner_count} winner{'s' if winner_count > 1 else ''} | Ends at")
             embed.timestamp = dt.utcnow() + duration.delta
         giveaway_message = await ctx.send(embed=embed)
 
@@ -99,7 +99,7 @@ class GiveawayHandler(utils.Cog):
                 reacted_users.remove(new_winner)
 
             # Send winner message
-            text, old_text = f"Winners of the giveaway **{giveaway['description']}**: ", ""
+            text, old_text = f"Winner{'s' if len(winners) > 1 else ''} of the giveaway **{giveaway['description']}**: ", ""
             last_winner = None
             while len(winners) > 0:
                 last_winner = winners[0]
