@@ -98,9 +98,9 @@ class MessageHandler(utils.Cog):
                         break  # Unchanged from last cached log
                 self.last_audit_delete_entry_id[message.guild.id] = (entry.id, entry.extra.count)
                 changed = True
-                embed.description = f"Message deleted in {message.channel.mention} by {entry.user.mention}"
+                embed.description = f"Message deleted in {message.channel.mention} (deleted by {entry.user.mention})"
             if changed is False:
-                embed.description = f"Message deleted in {message.channel.mention} by {message.author.mention}"
+                embed.description = f"Message deleted in {message.channel.mention} (deleted by user or a bot)"
 
         # Get channel
         channel_id = self.bot.guild_settings[message.guild.id].get("edited_message_modlog_channel_id")
