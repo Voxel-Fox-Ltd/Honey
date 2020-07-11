@@ -6,6 +6,7 @@ import json
 import discord
 from discord.ext import commands
 from discord.ext import menus
+import asyncpg
 
 from cogs import utils
 
@@ -62,7 +63,7 @@ class FursonaCommands(utils.Cog):
         super().__init__(bot)
         self.currently_setting_sonas = set()
 
-    async def send_verification_message(self, user:discord.User, message:str, timeout:float=600, check:callable=None) -> discord.Message:
+    async def send_verification_message(self, user:discord.User, message:str, *, timeout:float=600, check:callable=None, max_length:int=200) -> discord.Message:
         """Sends a verification message to a user, waits for a response, and returns that message"""
 
         # Send message
@@ -77,18 +78,21 @@ class FursonaCommands(utils.Cog):
             check = lambda m: isinstance(m.channel, discord.DMChannel) and m.author.id == user.id and m.content
 
         # Wait for response
-        try:
-            return await self.bot.wait_for(
-                "message",
-                check=check,
-                timeout=timeout
-            )
-        except asyncio.TimeoutError:
+        while True:
             try:
-                await user.send("You waited too long to respond to this message - try again later.")
-            except discord.Forbidden:
-                pass
-            return None
+                v = await self.bot.wait_for(
+                    "message",
+                    check=check,
+                    timeout=timeout
+                )
+            except asyncio.TimeoutError:
+                try:
+                    await user.send("You waited too long to respond to this message - try again later.")
+                except discord.Forbidden:
+                    pass
+                return None
+            if len(v.content) > max_length:
+                await user.send(f"The maximum length for this field is {max_length} (yours is at {len(v.content)}) - please send a shorter message.")
 
     @classmethod
     def get_image_from_message(cls, message:discord.Message) -> typing.Optional[str]:
@@ -182,7 +186,7 @@ class FursonaCommands(utils.Cog):
             return self.currently_setting_sonas.remove(user.id)
 
         # Ask about bio
-        bio_message = await self.send_verification_message(user, "What's the bio of your sona?")
+        bio_message = await self.send_verification_message(user, "What's the bio of your sona?", max_length=1000)
         if bio_message is None:
             return self.currently_setting_sonas.remove(user.id)
 
@@ -278,6 +282,7 @@ class FursonaCommands(utils.Cog):
         # Send it to the verification channel
         guild_settings = self.bot.guild_settings[ctx.guild.id]
         modmail_channel_id = guild_settings.get("fursona_modmail_channel_id")
+        modmail_message = None
         if modmail_channel_id:
             modmail_channel = self.bot.get_channel(modmail_channel_id)
             if modmail_channel is None:
@@ -299,7 +304,14 @@ class FursonaCommands(utils.Cog):
 
         # Save sona to database now it's sent properly
         async with self.bot.database() as db:
-            await sona_object.save(db)
+            try:
+                await sona_object.save(db)
+            except asyncpg.StringDataRightTruncationError:
+                try:
+                    await modmail_message.delete()
+                except (AttributeError, discord.HTTPException):
+                    pass
+                return await user.send("I couldn't save your sona into the database - one of your provided values was too long to save.")
 
         # Tell them everything was done properly
         if modmail_channel_id:
