@@ -265,6 +265,20 @@ class ItemHandler(utils.Cog):
         )
         return True
 
+    @commands.command(hidden=True)
+    async def coloursearch(self, ctx:utils.Context, *, search:str):
+        """Searches for a colour by a given name"""
+
+        valid_colours = []
+        for name, value in utils.colour_names.COLOURS_BY_NAME.items():
+            if search.lower() in name.lower():
+                valid_colours.append((name, value))
+        valid_colours = sorted(valid_colours)
+        if not valid_colours:
+            return await ctx.send(f"No colours matching `{search}` could be found.", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
+        valid_string = [f"{i.title()}: `#{hex(o)[2:]}`" for i, o in valid_colours[:10]]
+        return await ctx.send(f"Showing {len(valid_string)} of {len(valid_colours)} matching colours:\n" + '\n'.join(valid_string))
+
     async def use_cooldown_token(self, ctx:utils.Context, db:utils.DatabaseConnection, user:discord.Member):
         """Use the cooldown token on a user in a given server"""
 

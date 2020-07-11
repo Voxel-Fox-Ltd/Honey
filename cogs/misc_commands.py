@@ -95,7 +95,7 @@ class MiscCommands(utils.Cog):
 
         if not args:
             raise utils.errors.MissingRequiredArgumentString("args")
-        if len(args) > 5:
+        if len(args) > 10:
             return await ctx.send("You can only pick 5 choices max per poll.")
         lines = [f"{index}\N{COMBINING ENCLOSING KEYCAP} {i}" for index, i in enumerate(args, start=1)]
         m = await ctx.send('\n'.join(lines), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
