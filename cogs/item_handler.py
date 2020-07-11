@@ -139,6 +139,20 @@ class ItemHandler(utils.Cog):
 
         await ctx.invoke(self.bot.get_command("use"), item_name="paintbrush", user=user or ctx.author, args=args)
 
+    @commands.command(cls=utils.Command)
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
+    @commands.guild_only()
+    async def multipaint(self, ctx:utils.Context, users:commands.Greedy[discord.Member], *, args:str=None):
+        """Use the paintbrush on a user in a given server"""
+
+        if not users:
+            raise utils.errors.MissingRequiredArgumentString("users")
+        if len(users) > 5:
+            return await ctx.send("You can only multipaint 5 users at once.")
+        for u in users:
+            await ctx.invoke(self.bot.get_command("use"), item_name="paintbrush", user=u, args=args)
+
     async def use_paintbrush(self, ctx:utils.Context, args:str, db:utils.DatabaseConnection, user:discord.Member):
         """Use the paintbrush on a user in a given server"""
 
