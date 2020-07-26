@@ -293,6 +293,19 @@ class ItemHandler(utils.Cog):
         valid_string = [f"{i.title()}: `#{hex(o)[2:]}`" for i, o in valid_colours[:10]]
         return await ctx.send(f"Showing {len(valid_string)} of {len(valid_colours)} matching colours:\n" + '\n'.join(valid_string))
 
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def setpainttimeout(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue):
+        """Set the paint timeout for a given user to an abritrary value"""
+
+        async with self.bot.database() as db:
+            await db(
+                """UPDATE temporary_roles SET remove_timestamp=$3 WHERE
+                guild_id=$1 AND user_id=$2 AND key='Paint'""",
+                ctx.guild.id, user.id, dt.utcnow() + duration.delta,
+            )
+        return await ctx.send("Updated.")
+
     async def use_cooldown_token(self, ctx:utils.Context, db:utils.DatabaseConnection, user:discord.Member):
         """Use the cooldown token on a user in a given server"""
 
