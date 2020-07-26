@@ -37,7 +37,7 @@ class FursonaCommands(utils.Cog):
         {
             "name": "The Furry Kingdom",
             "guild_id": 587434387079954502,
-            "url": "http://furrykingdom.voxelfox.co.uk/api/v1/sona",
+            "url": "http://51.15.228.168:8080/api/v1/sona",
             "params": {
                 "user_id": "{user.id}"
             },
@@ -93,6 +93,8 @@ class FursonaCommands(utils.Cog):
                 return None
             if len(v.content) > max_length:
                 await user.send(f"The maximum length for this field is {max_length} (yours is at {len(v.content)}) - please send a shorter message.")
+            else:
+                return v
 
     @classmethod
     def get_image_from_message(cls, message:discord.Message) -> typing.Optional[str]:
