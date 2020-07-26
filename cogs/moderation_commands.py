@@ -373,6 +373,29 @@ class ModerationCommands(utils.Cog):
         # Output to chat
         await ctx.send(f"<@{user.id}> has been banned by {ctx.author.mention} with reason `{reason}`.")
 
+    @commands.command(cls=utils.Command)
+    @commands.has_guild_permissions(ban_members=True)
+    @commands.bot_has_permissions(ban_members=True)
+    @commands.guild_only()
+    async def unban(self, ctx:utils.Context, user:utils.converters.UserID, *, reason:str='<No reason provided>'):
+        """Unbans a user from the server"""
+
+        # Unban the user
+        user = discord.Object(user)
+        manage_reason = f"{ctx.author!s}: {reason}"
+        try:
+            await ctx.guild.unban(user, reason=manage_reason)
+        except discord.Forbidden:
+            return await ctx.send(f"I was unable to unban <@{user.id}>.")
+        except discord.NotFound:
+            return await ctx.send("To me it looks like that user doesn't exist :/")
+
+        # Throw the reason into the database
+        self.bot.dispatch("moderation_action", moderator=ctx.author, user=user, reason=reason, action="Unban")
+
+        # Output to chat
+        await ctx.send(f"<@{user.id}> has been unbanned by {ctx.author.mention} with reason `{reason}`.")
+
 
 def setup(bot:utils.Bot):
     x = ModerationCommands(bot)

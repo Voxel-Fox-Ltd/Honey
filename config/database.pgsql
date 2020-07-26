@@ -64,7 +64,7 @@ CREATE TABLE fursonas(
 );
 
 
-CREATE TYPE moderation_action AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute', 'Verify', 'Tempmute');
+CREATE TYPE moderation_action AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute', 'Verify', 'Tempmute', 'Unban');
 
 
 CREATE TABLE infractions(
