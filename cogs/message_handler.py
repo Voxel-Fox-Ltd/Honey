@@ -103,7 +103,7 @@ class MessageHandler(utils.Cog):
                 embed.description = f"Message deleted in {message.channel.mention} (deleted by user or a bot)"
 
         # Get channel
-        channel_id = self.bot.guild_settings[message.guild.id].get("edited_message_modlog_channel_id")
+        channel_id = self.bot.guild_settings[message.guild.id].get("deleted_message_modlog_channel_id")
         channel = self.bot.get_channel(channel_id)
         if channel is None:
             return
