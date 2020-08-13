@@ -84,7 +84,7 @@ class CustomBot(commands.AutoShardedBot):
             'role_sona_count': dict(),
             'removed_on_mute_roles': list(),
             'buyable_roles': dict(),
-            'buyable_temp_roles': dict(),
+            'buyable_temporary_roles': dict(),
 
             'disabled_sona_channels': list(),
             'disabled_interaction_channels': list(),

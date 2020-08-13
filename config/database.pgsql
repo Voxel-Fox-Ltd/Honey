@@ -178,11 +178,11 @@ CREATE TABLE interaction_text(
 );
 
 
-CREATE TABLE buyable_temp_roles(
+CREATE TABLE buyable_temporary_roles(
     guild_id BIGINT,
     role_id BIGINT,
-    amount VARCHAR(50),
-    lenght BIGINT,
-    PRIMARY KEY(guild_id, role_id)
+    price INTEGER,
+    duration INTEGER,
+    PRIMARY KEY (guild_id, role_id)
 );
 
