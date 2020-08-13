@@ -61,9 +61,8 @@ class ShopHandler(utils.Cog):
             }
             index += 1
 
-        buyable_temp_roles = guild_settings['buyable_temp_roles']
-        ordered_roles = sorted(buyable_temp_roles.keys())
-        index += 1 
+        buyable_temporary_roles = guild_settings['buyable_temporary_roles']
+        ordered_roles = sorted(buyable_temporary_roles.keys())
         for role_id in ordered_roles:
             role = guild.get_role(role_id)
             if role is None:
@@ -71,16 +70,13 @@ class ShopHandler(utils.Cog):
             new_data[f"{index}\N{COMBINING ENCLOSING KEYCAP}"] = {
                 "emoji": None,
                 "name": "Buyable Temporary Role - " + role.name,
-                "amount": buyable_temp_roles[role_id]['amount'],
-                "description": f"Purchase the {role.mention} role for {int(buyable_temp_roles[role_id]['time']) * 60}m.",
+                "amount": buyable_temporary_roles[role_id]['price'],
+                "description": f"Purchase the {role.mention} role for {utils.TimeValue(buyable_temporary_roles[role_id]['duration']).clean}.",
                 "aliases": [],
                 "price_key": None,
                 "quantity": 1,
-                "time": int(ordered_roles["time"]),
             }
             index += 1
-
-
 
         # Return data
         return new_data

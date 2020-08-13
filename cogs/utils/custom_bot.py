@@ -156,7 +156,7 @@ class CustomBot(commands.AutoShardedBot):
             self.guild_settings[row['guild_id']]['buyable_roles'][row['role_id']] = int(row['value'])
 
         # Get buyable temp roles
-        data = await self.get_list_table_data(db, 'buyable_temporary_roles')
+        data = await self.get_all_table_data(db, 'buyable_temporary_roles')
         for row in data:
             self.guild_settings[row['guild_id']]['buyable_temporary_roles'][row['role_id']] = {"price": row['price'], "duration": row['duration']}
 

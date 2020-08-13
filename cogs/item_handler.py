@@ -107,7 +107,7 @@ class ItemHandler(utils.Cog):
                 data = True
 
         # Cooldown tokens
-        elif item_data['name'].startswith('Buyable Temp Role'):
+        elif item_data['name'].startswith('Buyable Temporary Role'):
             role_search = re.search(r"<@&(?P<roleid>[0-9]{13,23})", item_data['description'])
             role_id = role_search.group("roleid")
             self.logger.info(role_id)
@@ -118,14 +118,14 @@ class ItemHandler(utils.Cog):
                 data = False
             else:
                 await ctx.send("Added role.")
+                duration_rows = await db("SELECT * FROM buyable_temporary_roles WHERE guild_id=$1 AND role_id=$2", ctx.guild.id, int(role_id))
+                await db(
+                    """INSERT INTO temporary_roles (guild_id, role_id, user_id, remove_timestamp, key, dm_user)
+                    VALUES ($1, $2, $3, $4, 'Buyable Temp Role', true) ON CONFLICT (guild_id, role_id, user_id) DO UPDATE
+                    SET remove_timestamp=excluded.remove_timestamp, key=excluded.key, dm_user=excluded.dm_user""",
+                    ctx.guild.id, int(role_id), ctx.author.id, dt.utcnow() + utils.TimeValue(duration_rows[0]['duration']).delta
+                )
                 data = True
-                async with self.bot.database() as db:
-                    await db(
-                        """INSERT INTO temporary_roles (guild_id, role_id, user_id, remove_timestamp, key, dm_user)
-                        VALUES ($1, $2, $3, $4, 'Buyable Temp Role', true) ON CONFLICT (guild_id, role_id, user_id) DO UPDATE
-                        SET remove_timestamp=excluded.remove_timestamp, key=excluded.key, dm_user=excluded.dm_user""",
-                        ctx.guild.id, int(role_id), ctx.author.id, dt.utcnow() + timedelta(seconds=item_data['time'])
-                    )
 
         # It's nothing else
         else:
