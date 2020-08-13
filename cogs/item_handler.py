@@ -106,6 +106,27 @@ class ItemHandler(utils.Cog):
                 await ctx.send("Added role.")
                 data = True
 
+        # Cooldown tokens
+        elif item_data['name'].startswith('Buyable Temp Role'):
+            role_search = re.search(r"<@&(?P<roleid>[0-9]{13,23})", item_data['description'])
+            role_id = role_search.group("roleid")
+            self.logger.info(role_id)
+            try:
+                await ctx.author.add_roles(ctx.guild.get_role(int(role_id)), reason="Role purchased")
+            except Exception as e:
+                await ctx.send(f"I couldn't add the role - {e}")
+                data = False
+            else:
+                await ctx.send("Added role.")
+                data = True
+                async with self.bot.database() as db:
+                    await db(
+                        """INSERT INTO temporary_roles (guild_id, role_id, user_id, remove_timestamp, key, dm_user)
+                        VALUES ($1, $2, $3, $4, 'Buyable Temp Role', true) ON CONFLICT (guild_id, role_id, user_id) DO UPDATE
+                        SET remove_timestamp=excluded.remove_timestamp, key=excluded.key, dm_user=excluded.dm_user""",
+                        ctx.guild.id, int(role_id), ctx.author.id, dt.utcnow() + timedelta(seconds=item_data['time'])
+                    )
+
         # It's nothing else
         else:
             await ctx.send("No use method set in the code for that item.")
