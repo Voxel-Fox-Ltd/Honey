@@ -24,7 +24,11 @@ class VCLogs(utils.Cog):
                 text = f"{member.mention} left the **{before.channel.name}** VC."
             else:
                 text = f"{member.mention} moved from the **{before.channel.name}** VC to the **{after.channel.name}** VC."
-            await channel.send(text, allowed_mentions=discord.AllowedMentions(users=False))
+            if channel.permissions_for(channel.guild.me).embed_links:
+                data = {"embed": utils.Embed(use_random_colour=True, description=text)}
+            else:
+                data = {"content": text, "allowed_mentions": discord.AllowedMentions(users=False)}
+            await channel.send(**data)
             self.logger.info(f"Logging updated VC user (G{member.guild.id}/U{member.id})")
         except discord.Forbidden:
             pass
