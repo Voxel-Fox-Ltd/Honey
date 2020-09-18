@@ -22,15 +22,56 @@ class CustomRoleHandler(utils.Cog):
         # Throw em some help
         return await ctx.send(f"This command is used so you can manage your custom role on this server, should you have one. See `{ctx.prefix}help {ctx.invoked_with}` to learn more.")
 
-    async def check_for_custom_role(self, ctx:utils.Context) -> typing.Optional[discord.Role]:
+    async def check_for_custom_role(self, member:discord.Member) -> typing.Optional[discord.Role]:
         """Returns the user's custom role object for the server, or None if they
         don't have one. This does NOT check for whether they can/cannot have one"""
 
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM custom_roles WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
+            rows = await db("SELECT * FROM custom_roles WHERE guild_id=$1 AND user_id=$2", member.guild.id, member.id)
         if not rows:
             return None
-        return ctx.guild.get_role(rows[0]['role_id'])
+        return member.guild.get_role(rows[0]['role_id'])
+
+    @utils.Cog.listener()
+    async def on_member_remove(self, member:discord.Member):
+        """Delete a custom role when the user leaves the guild"""
+
+        role = await self.check_for_custom_role(member)
+        if role is None:
+            return
+        try:
+            await role.delete(reason="Member left server")
+        except discord.HTTPException:
+            pass
+
+    @utils.Cog.listener()
+    async def on_member_update(self, before:discord.Member, member:discord.Member):
+        """Listens for members losing the required custom role master, and thus deletes the custom role"""
+
+        # Check the custom role
+        master_role_id = self.bot.guild_settings[member.guild.id].get('custom_role_id')
+        if master_role_id is None:
+            return  # No set custom role
+        master_role = member.guild.get_role(master_role_id)
+        if master_role is None:
+            return  # Custom role master was deleted
+
+        # See if they HAD the custom role master
+        if master_role not in before.roles:
+            return
+
+        # See if they still HAVE the custom role master
+        if master_role in member.roles:
+            return
+
+        # They lost the custom role master - delete their custom role
+        role = await self.check_for_custom_role(member)
+        if role is None:
+            return
+        try:
+            await role.delete(reason="Member no longer has the custom role master")
+        except discord.HTTPException:
+            pass
 
     @customrole.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
@@ -40,7 +81,7 @@ class CustomRoleHandler(utils.Cog):
         """Change the name of your custom role"""
 
         # Get their role
-        role = await self.check_for_custom_role(ctx)
+        role = await self.check_for_custom_role(ctx.author)
         if role is None:
             return await ctx.send(f"You don't have a custom role on this server - set one with `{ctx.prefix}{ctx.command.parent.name} create`.")
 
@@ -76,7 +117,7 @@ class CustomRoleHandler(utils.Cog):
             colour = discord.Colour(colour_value)
 
         # Get their role
-        role = await self.check_for_custom_role(ctx)
+        role = await self.check_for_custom_role(ctx.author)
         if role is None:
             return await ctx.send(f"You don't have a custom role on this server - set one with `{ctx.prefix}{ctx.command.parent.name} create`.")
 
@@ -134,7 +175,7 @@ class CustomRoleHandler(utils.Cog):
         await ctx.trigger_typing()
 
         # Check they don't already have a role
-        current_role = await self.check_for_custom_role(ctx)
+        current_role = await self.check_for_custom_role(ctx.author)
         if current_role:
             try:
                 await current_role.delete()
@@ -161,11 +202,12 @@ class CustomRoleHandler(utils.Cog):
         self.logger.info(f"Sleeping before updating role position... (G{ctx.guild.id})")
         await asyncio.sleep(1)
         position_role_id = self.bot.guild_settings[ctx.guild.id].get('custom_role_position_id')
+        position_role = None
         if position_role_id:
             try:
                 position_role = [i for i in ctx.guild.roles if i.id == position_role_id][0]
             except IndexError:
-                position_role = None
+                pass
 
         # Edit the role position
         if position_role:
