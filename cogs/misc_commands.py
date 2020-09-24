@@ -129,6 +129,8 @@ class MiscCommands(utils.Cog):
             "Most likely not.",
             "I mean, I guess..?",
         ])
+        if not question:
+            raise utils.errors.MissingRequiredArgumentString("question")
         return await ctx.send(responce if question.endswith("?") else "You need to ask a question using a question mark (?).")
 
 def setup(bot:utils.Bot):
