@@ -345,12 +345,17 @@ class FursonaCommands(utils.Cog):
         # Format that into a list
         all_user_sonas = []
         for row in database_rows:
-            guild = self.bot.get_guild(row['guild_id']) or await self.bot.fetch_guild(row['guild_id'])
-            # user_sona_information[guild].append(row)
+            try:
+                guild = self.bot.get_guild(row['guild_id']) or await self.bot.fetch_guild(row['guild_id'])
+            except discord.Forbidden:
+                guild = None
 
             # Add to the all sona list
             menu_data = dict(row)
-            menu_data.update({"guild_name": guild.name})
+            if guild:
+                menu_data.update({"guild_name": guild.name})
+            else:
+                menu_data.update({"guild_name": "Unknown Guild Name"})
             all_user_sonas.append(menu_data)
 
         # Let's add our other servers via their APIs

@@ -300,7 +300,7 @@ class ItemHandler(utils.Cog):
         )
         return True
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, aliases=['colorsearch'])
     async def coloursearch(self, ctx:utils.Context, *, search:str):
         """Searches for a colour by a given name"""
 

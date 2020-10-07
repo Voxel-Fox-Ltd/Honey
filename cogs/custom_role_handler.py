@@ -156,7 +156,7 @@ class CustomRoleHandler(utils.Cog):
 
     @customrole.command(cls=utils.Command, aliases=['make'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
-    @utils.cooldown.cooldown(1, 60 * 10, commands.BucketType.member)
+    @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def create(self, ctx:utils.Context):
         """Create a custom role for the server"""
