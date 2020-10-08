@@ -158,7 +158,7 @@ class InteractionCommands(utils.Cog):
         async with self.bot.database() as db:
             await db(
                 "INSERT INTO interaction_text (guild_id, interaction_name, response) VALUES ($1, $2, $3)",
-                ctx.guild.id, interaction_name, f"*{response.strip('* ')}*"
+                ctx.guild.id, interaction_name.lower(), f"*{response.strip('* ')}*"
             )
         return await ctx.send("Added your custom interaction response to the pool.")
 
