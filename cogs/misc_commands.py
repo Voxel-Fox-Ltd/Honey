@@ -110,7 +110,37 @@ class MiscCommands(utils.Cog):
         if not args:
             raise utils.errors.MissingRequiredArgumentString("args")
         return await ctx.send(f"I choose **{random.choice(args)}**.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
-
+    
+    @commands.command(cls=utils.Command, aliases=["8ball"])
+    @commands.bot_has_permissions(send_messages=True)
+    async def eightball(self, ctx:utils.Context, *, question:str):
+        """Ask a question, get a slighty passive-aggressive response"""
+        
+        responce = random.choice([
+            "It is certain.",
+            "It is decidedly so.",
+            "Without a doubt.",
+            "Yes – definitely.",
+            "You may rely on it.",
+            "As I see it, yes.",
+            "Most likely.",
+            "Outlook good.",
+            "Yes.",
+            "Signs point to yes.",
+            "Reply hazy, try again.",
+            "Ask again later.",
+            "Better not tell you now.",
+            "Cannot predict now.",
+            "Concentrate and ask again.",
+            "Don't count on it.",
+            "My reply is no.",
+            "My sources say no.",
+            "Outlook not so good.",
+            "Very doubtful.",
+        ])
+        if not question:
+            raise utils.errors.MissingRequiredArgumentString("question")
+        return await ctx.send(responce if question.endswith("?") else "You need to ask a question using a question mark (?).")
 
 def setup(bot:utils.Bot):
     x = MiscCommands(bot)
