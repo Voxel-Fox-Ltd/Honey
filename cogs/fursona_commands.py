@@ -367,11 +367,11 @@ class FursonaCommands(utils.Cog):
             headers = {i:o.format(user=ctx.author, guild=ctx.guild, bot=self.bot) for i, o in api_data.get('headers', dict()).copy().items()}
 
             # Run request
-            async with self.bot.session.get(url, params=params, headers=headers) as r:
-                try:
+            try:
+                async with self.bot.session.get(url, params=params, headers=headers) as r:
                     grabbed_sona_data = await r.json()
-                except Exception:
-                    grabbed_sona_data = {'data': []}
+            except Exception:
+                grabbed_sona_data = {'data': []}
 
             # Add to lists
             if grabbed_sona_data['data']:
