@@ -5,6 +5,8 @@ import discord
 from discord.ext import commands
 import voxelbotutils as utils
 
+from cogs import utils as localutils
+
 
 class CustomRoleHandler(utils.Cog):
 
@@ -142,7 +144,7 @@ class CustomRoleHandler(utils.Cog):
         return await ctx.send("Successfully updated your role's colour.")
 
     @customrole.command(cls=utils.Command)
-    @utils.checks.is_guild_moderator()
+    @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
     async def set(self, ctx:utils.Context, user:discord.Member, *, role:discord.Role):

@@ -18,7 +18,7 @@ def is_enabled_in_channel(guild_settings_key:str):
         if ctx.guild is None:
             raise commands.NoPrivateMessage()
         guild_settings = ctx.bot.guild_settings[ctx.guild.id]
-        channel_blacklist = guild_settings[guild_settings_key]
+        channel_blacklist = guild_settings.setdefault(guild_settings_key, list())
         if ctx.channel.id in channel_blacklist:
             raise DisabledInChannel("You can't run that command in this channel.")
         return True

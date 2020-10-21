@@ -116,7 +116,7 @@ class InteractionCommands(utils.Cog):
         await self.bot.invoke(ctx)
 
     @utils.command(cooldown_after_parsing=True)
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=localutils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
     @localutils.checks.is_enabled_in_channel('disabled_interaction_channels')
     @commands.bot_has_permissions(send_messages=True)
     @utils.checks.meta_command()

@@ -8,7 +8,7 @@ class BotSettings(utils.Cog):
     TICK_EMOJI = "\N{HEAVY CHECK MARK}"
     CROSS_EMOJI = "\N{HEAVY MULTIPLICATION X}"
 
-    @utils.command()
+    @utils.group()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
@@ -134,14 +134,14 @@ class BotSettings(utils.Cog):
         """Talks the bot through a setup"""
 
         key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
-        menu = utils.SettingsMenuIterableBase(cache_key='buyable_roles', key_display_function=key_display_function, value_display_function=str)
+        menu = utils.SettingsMenuIterableBase(cache_key='buyable_roles', key_display_function=key_display_function, value_display_function=str, default_type=dict)
         menu.add_convertable_value("What role would you like to add to the shop?", commands.RoleConverter)
         menu.add_convertable_value("How much should the role cost?", int)
         menu.iterable_add_callback = utils.SettingsMenuOption.get_set_iterable_add_callback(
-            database_name="role_list", column_name="role_id", cache_key="buyable_roles", database_key="BuyableRoles"
+            table_name="role_list", column_name="role_id", cache_key="buyable_roles", database_key="BuyableRoles"
         )
         menu.iterable_delete_callback = utils.SettingsMenuOption.get_set_iterable_delete_callback(
-            database_name="role_list", column_name="role_id", cache_key="buyable_roles", database_key="BuyableRoles"
+            table_name="role_list", column_name="role_id", cache_key="buyable_roles", database_key="BuyableRoles"
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
@@ -151,10 +151,7 @@ class BotSettings(utils.Cog):
         """Talks the bot through a setup"""
 
         key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
-        menu = utils.SettingsMenuIterableBase(
-            cache_key='buyable_temporary_roles', key_display_function=key_display_function,
-            value_display_function=lambda v: f"{v['price']} for {utils.TimeValue(v['duration']).clean}"
-        )
+        menu = utils.SettingsMenuIterableBase(cache_key='buyable_temporary_roles', key_display_function=key_display_function, value_display_function=lambda v: f"{v['price']} for {utils.TimeValue(v['duration']).clean}", default_type=dict)
         menu.add_convertable_value("What role would you like to add to the shop?", commands.RoleConverter)
         menu.add_convertable_value("How much should the role cost?", int)
         menu.add_convertable_value("How long should this role's cooldown be (eg `5m`, `15s`, etc)?", utils.TimeValue)
@@ -305,14 +302,14 @@ class BotSettings(utils.Cog):
         """Talks the bot through a setup"""
 
         key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
-        menu = utils.SettingsMenuIterableBase(cache_key='role_interaction_cooldowns', key_display_function=key_display_function, value_display_function=lambda v: utils.TimeValue(v).clean)
+        menu = utils.SettingsMenuIterableBase(cache_key='role_interaction_cooldowns', key_display_function=key_display_function, value_display_function=lambda v: utils.TimeValue(v).clean, default_type=dict)
         menu.add_convertable_value("What role do you want to set the interaction for?", commands.RoleConverter)
         menu.add_convertable_value("How long should this role's cooldown be (eg `5m`, `15s`, etc)?", utils.TimeValue)
         menu.iterable_add_callback = utils.SettingsMenuOption.get_set_iterable_add_callback(
-            database_name="role_list", column_name="role_id", cache_key="role_interaction_cooldowns", database_key="Interactions", serialize_function=lambda x: int(x.duration)
+            table_name="role_list", column_name="role_id", cache_key="role_interaction_cooldowns", database_key="Interactions", serialize_function=lambda x: int(x.duration)
         )
         menu.iterable_delete_callback = utils.SettingsMenuOption.get_set_iterable_delete_callback(
-            database_name="role_list", column_name="role_id", cache_key="role_interaction_cooldowns", database_key="Interactions"
+            table_name="role_list", column_name="role_id", cache_key="role_interaction_cooldowns", database_key="Interactions"
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
@@ -341,13 +338,13 @@ class BotSettings(utils.Cog):
         """Talks the bot through a setup"""
 
         key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none')
-        menu = utils.SettingsMenuIterableBase(cache_key='disabled_sona_channels', key_display_function=key_display_function, value_display_function=str)
+        menu = utils.SettingsMenuIterableBase(cache_key='disabled_sona_channels', key_display_function=key_display_function, value_display_function=str, default_type=list)
         menu.add_convertable_value("What channel you want the sona command to be disabled in?", commands.TextChannelConverter)
         menu.iterable_add_callback = utils.SettingsMenuOption.get_set_iterable_add_callback(
-            database_name="channel_list", column_name="channel_id", cache_key="disabled_sona_channels", database_key="DisabledSonaChannel"
+            table_name="channel_list", column_name="channel_id", cache_key="disabled_sona_channels", database_key="DisabledSonaChannel"
         )
         menu.iterable_delete_callback = utils.SettingsMenuOption.get_set_iterable_delete_callback(
-            database_name="channel_list", column_name="channel_id", cache_key="disabled_sona_channels", database_key="DisabledSonaChannel"
+            table_name="channel_list", column_name="channel_id", cache_key="disabled_sona_channels", database_key="DisabledSonaChannel"
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
@@ -357,13 +354,13 @@ class BotSettings(utils.Cog):
         """Talks the bot through a setup"""
 
         key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none')
-        menu = utils.SettingsMenuIterableBase(cache_key='disabled_interaction_channels', key_display_function=key_display_function, value_display_function=str)
+        menu = utils.SettingsMenuIterableBase(cache_key='disabled_interaction_channels', key_display_function=key_display_function, value_display_function=str, default_type=list)
         menu.add_convertable_value("What channel you want the interaction commands to be disabled in?", commands.TextChannelConverter)
         menu.iterable_add_callback = utils.SettingsMenuOption.get_set_iterable_add_callback(
-            database_name="channel_list", column_name="channel_id", cache_key="disabled_interaction_channels", database_key="DisabledInteractionChannel"
+            table_name="channel_list", column_name="channel_id", cache_key="disabled_interaction_channels", database_key="DisabledInteractionChannel"
         )
         menu.iterable_delete_callback = utils.SettingsMenuOption.get_set_iterable_delete_callback(
-            database_name="channel_list", column_name="channel_id", cache_key="disabled_interaction_channels", database_key="DisabledInteractionChannel"
+            table_name="channel_list", column_name="channel_id", cache_key="disabled_interaction_channels", database_key="DisabledInteractionChannel"
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
@@ -373,13 +370,13 @@ class BotSettings(utils.Cog):
         """Talks the bot through a setup"""
 
         key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
-        menu = utils.SettingsMenuIterableBase(cache_key='removed_on_mute_roles', key_display_function=key_display_function, value_display_function=str)
+        menu = utils.SettingsMenuIterableBase(cache_key='removed_on_mute_roles', key_display_function=key_display_function, value_display_function=str, default_type=list)
         menu.add_convertable_value("What role do you want to be removed on mute?", commands.RoleConverter)
         menu.iterable_add_callback = utils.SettingsMenuOption.get_set_iterable_add_callback(
-            database_name="role_list", column_name="role_id", cache_key="removed_on_mute_roles", database_key="RemoveOnMute"
+            table_name="role_list", column_name="role_id", cache_key="removed_on_mute_roles", database_key="RemoveOnMute"
         )
         menu.iterable_delete_callback = utils.SettingsMenuOption.get_set_iterable_delete_callback(
-            database_name="role_list", column_name="role_id", cache_key="removed_on_mute_roles", database_key="RemoveOnMute"
+            table_name="role_list", column_name="role_id", cache_key="removed_on_mute_roles", database_key="RemoveOnMute"
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
@@ -389,14 +386,14 @@ class BotSettings(utils.Cog):
         """Talks the bot through a setup"""
 
         key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
-        menu = utils.SettingsMenuIterableBase(cache_key='role_sona_count', key_display_function=key_display_function, value_display_function=str)
+        menu = utils.SettingsMenuIterableBase(cache_key='role_sona_count', key_display_function=key_display_function, value_display_function=str, default_type=dict)
         menu.add_convertable_value("What role do you want to set the sona count for?", commands.RoleConverter)
         menu.add_convertable_value("How many sonas should people with this role be able to create?", int)
         menu.iterable_add_callback = utils.SettingsMenuOption.get_set_iterable_add_callback(
-            database_name="role_list", column_name="role_id", cache_key="role_sona_count", database_key="SonaCount"
+            table_name="role_list", column_name="role_id", cache_key="role_sona_count", database_key="SonaCount"
         )
         menu.iterable_delete_callback = utils.SettingsMenuOption.get_set_iterable_delete_callback(
-            database_name="role_list", column_name="role_id", cache_key="role_sona_count", database_key="SonaCount"
+            table_name="role_list", column_name="role_id", cache_key="role_sona_count", database_key="SonaCount"
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 

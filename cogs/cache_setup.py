@@ -46,22 +46,6 @@ class CacheSetup(utils.Cog):
         for row in data:
             self.bot.guild_settings[row['guild_id']].setdefault('disabled_interaction_channels', list()).append(row['channel_id'])
 
-        # # Get shop message ID
-        # data = await self.bot._get_all_table_data(db, 'shopping_channels')
-        # for row in data:
-        #     self.bot.guild_settings[row['guild_id']].setdefault('shop_message_id', dict()) = row['message_id']
-        #     self.bot.guild_settings[row['guild_id']].setdefault('shop_channel_id', dict()) = row['channel_id']
-
-        # AND DO THE UH THE THING
-        # PAINTBRUSH AND COOLDOWN TOKEN PRICE
-        # WAIT NO THEY SHOUDL JUST GO INTO THE GUYILD BULLSHIT
-
-        # # Grab shop settings
-        # data = await self.bot._get_all_table_data(db, 'guild_shop_settings')
-        # for row in data:
-        #     for key, value in row.items():
-        #         self.bot.guild_settings[row['guild_id']][key] = value
-
 
 def setup(bot:utils.Bot):
     x = CacheSetup(bot)

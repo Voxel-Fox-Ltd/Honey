@@ -5,8 +5,9 @@ from datetime import datetime as dt
 import discord
 from discord.ext import commands
 from discord.ext import menus
+import voxelbotutils as utils
 
-from cogs import utils
+from cogs import utils as localutils
 
 
 class InfractionSource(menus.ListPageSource):
@@ -85,7 +86,7 @@ class InfractionHandler(utils.Cog):
             pass
 
     @utils.group(invoke_without_command=True)
-    @utils.checks.is_guild_moderator()
+    @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def infractions(self, ctx:utils.Context, user:discord.Member):
         """
@@ -107,7 +108,7 @@ class InfractionHandler(utils.Cog):
         await pages.start(ctx)
 
     @infractions.command()
-    @utils.checks.is_guild_moderator()
+    @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True)
     async def delete(self, ctx:utils.Context, infraction_id:str):
         """

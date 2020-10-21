@@ -28,7 +28,7 @@ class ModerationCommands(utils.Cog):
                         await db(f"UPDATE guild_settings SET {i}=null WHERE guild_id=$1", role.guild.id)
 
     @utils.command()
-    @utils.checks.is_guild_moderator()
+    @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
     async def mute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
@@ -67,7 +67,7 @@ class ModerationCommands(utils.Cog):
             return await ctx.send("To me it looks like that user doesn't exist :/")
 
         # Remove any roles that are in the setup
-        remove_on_mute_role_ids = self.bot.guild_settings[ctx.guild.id]['removed_on_mute_roles']
+        remove_on_mute_role_ids = self.bot.guild_settings[ctx.guild.id].setdefault('removed_on_mute_roles', list())
         removed_roles = []
         for id_to_remove in remove_on_mute_role_ids:
             role = ctx.guild.get_role(id_to_remove)
@@ -98,7 +98,7 @@ class ModerationCommands(utils.Cog):
         return await ctx.send(f"{user.mention} has been muted by {ctx.author.mention} with reason `{reason}`.")
 
     @utils.command()
-    @utils.checks.is_guild_moderator()
+    @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
     async def tempmute(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue, *, reason:str='<No reason provided>'):
@@ -137,7 +137,7 @@ class ModerationCommands(utils.Cog):
             return await ctx.send("To me it looks like that user doesn't exist :/")
 
         # Remove any roles that are in the setup
-        remove_on_mute_role_ids = self.bot.guild_settings[ctx.guild.id]['removed_on_mute_roles']
+        remove_on_mute_role_ids = self.bot.guild_settings[ctx.guild.id].setdefault('removed_on_mute_roles', list())
         removed_roles = []
         for id_to_remove in remove_on_mute_role_ids:
             role = ctx.guild.get_role(id_to_remove)
@@ -174,7 +174,7 @@ class ModerationCommands(utils.Cog):
         return await ctx.send(f"{user.mention} has been muted for `{duration.clean_spaced}` by {ctx.author.mention} with reason `{reason}`.")
 
     @utils.command()
-    @utils.checks.is_guild_moderator()
+    @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
     async def unmute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
@@ -229,7 +229,7 @@ class ModerationCommands(utils.Cog):
         return await ctx.send(f"{user.mention} has been unmuted by {ctx.author.mention}.")
 
     @utils.command()
-    @utils.checks.is_guild_moderator()
+    @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str):
@@ -238,7 +238,7 @@ class ModerationCommands(utils.Cog):
         """
 
         # Add moderator check to target user
-        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+        if localutils.checks.is_guild_moderator_predicate(self.bot, user):
             return await ctx.send("You can't moderate users set as moderators.")
 
         # DM the user
@@ -254,7 +254,7 @@ class ModerationCommands(utils.Cog):
         return await ctx.send(f"{user.mention} has been warned by {ctx.author.mention} with reason `{reason}`.")
 
     @utils.command()
-    @utils.checks.is_guild_moderator()
+    @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def watch(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue=None):
@@ -326,7 +326,7 @@ class ModerationCommands(utils.Cog):
         """
 
         # Add mod check to target user
-        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+        if localutils.checks.is_guild_moderator_predicate(self.bot, user):
             return await ctx.send("You can't moderate users set as moderators.")
 
         # DM the user
@@ -363,7 +363,7 @@ class ModerationCommands(utils.Cog):
         # Add mod check to target user
         member_user = ctx.guild.get_member(user)
         if member_user is not None:
-            if utils.checks.is_guild_moderator_predicate(self.bot, member_user):
+            if localutils.checks.is_guild_moderator_predicate(self.bot, member_user):
                 return await ctx.send("You can't moderate users set as moderators.")
 
         # Do some setup here for users not in the server

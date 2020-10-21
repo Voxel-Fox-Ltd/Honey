@@ -5,8 +5,7 @@ from datetime import datetime as dt
 import discord
 from discord.ext import commands
 from discord.ext import tasks
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class GiveawayHandler(utils.Cog):

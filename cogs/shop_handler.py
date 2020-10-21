@@ -44,7 +44,7 @@ class ShopHandler(utils.Cog):
             o['amount'] = guild_settings.get(o['price_key'], o['amount'])
 
         # Add the buyable roles
-        buyable_roles = guild_settings['buyable_roles']
+        buyable_roles = guild_settings.setdefault('buyable_roles', dict())
         ordered_roles = sorted(buyable_roles.keys())
         index = 0
         for role_id in ordered_roles:
@@ -62,7 +62,7 @@ class ShopHandler(utils.Cog):
             }
             index += 1
 
-        buyable_temporary_roles = guild_settings['buyable_temporary_roles']
+        buyable_temporary_roles = guild_settings.setdefault('buyable_temporary_roles', dict())
         ordered_roles = sorted(buyable_temporary_roles.keys())
         for role_id in ordered_roles:
             role = guild.get_role(role_id)

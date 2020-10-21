@@ -138,7 +138,7 @@ class FursonaCommands(utils.Cog):
 
         # See if they're at the limit
         try:
-            sona_limit = max(o for i, o in self.bot.guild_settings[ctx.guild.id]['role_sona_count'].items() if int(i) in ctx.author._roles)
+            sona_limit = max(o for i, o in self.bot.guild_settings[ctx.guild.id].setdefault('role_sona_count', dict()).items() if int(i) in ctx.author._roles)
         except ValueError:
             sona_limit = 1
         if len(current_sona_names) >= sona_limit:
@@ -269,7 +269,7 @@ class FursonaCommands(utils.Cog):
 
         # See if they're at the sona limit
         try:
-            sona_limit = max(o for i, o in self.bot.guild_settings[ctx.guild.id]['role_sona_count'].items() if int(i) in ctx.author._roles)
+            sona_limit = max(o for i, o in self.bot.guild_settings[ctx.guild.id].setdefault('role_sona_count', dict()).items() if int(i) in ctx.author._roles)
         except ValueError:
             sona_limit = 1
         if len(current_sona_names) >= sona_limit:

@@ -12,7 +12,7 @@ class RoleBasedGuildCooldown(utils.cooldown.Cooldown):
         """Update the cooldown based on the given guild member"""
 
         # Get the guild settings
-        cooldown_settings = ctx.bot.guild_settings[ctx.guild.id]['role_interaction_cooldowns']
+        cooldown_settings = ctx.bot.guild_settings[ctx.guild.id].setdefault('role_interaction_cooldowns', dict())
 
         # Find the lowest number on the guild
         try:

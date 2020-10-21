@@ -1,4 +1,4 @@
-CREATE TABLE guild_settings(
+CREATE TABLE IF NOT EXISTS guild_settings(
     guild_id BIGINT PRIMARY KEY,
     prefix VARCHAR(30),
 
@@ -37,29 +37,15 @@ CREATE TABLE guild_settings(
 );
 
 
--- CREATE TABLE guild_shop_settings(
---     guild_id BIGINT PRIMARY KEY,
---     paintbrush_price INTEGER DEFAULT 100,
---     cooldown_token_price INTEGER DEFAULT 100
--- );
 
-
--- CREATE TABLE shopping_channels(
---     guild_id BIGINT PRIMARY KEY,
---     channel_id BIGINT,
---     message_id BIGINT
--- );
-
-
-
-CREATE TABLE user_settings(
+CREATE TABLE IF NOT EXISTS user_settings(
     user_id BIGINT PRIMARY KEY,
     dm_on_paint_remove BOOLEAN DEFAULT TRUE,
     allow_paint BOOLEAN DEFAULT TRUE,
     receive_interaction_ping BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE fursonas(
+CREATE TABLE IF NOT EXISTS fursonas(
     guild_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     name VARCHAR(200) NOT NULL,
@@ -77,10 +63,14 @@ CREATE TABLE fursonas(
 );
 
 
-CREATE TYPE moderation_action AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute', 'Verify', 'Tempmute', 'Unban');
+DO $$ BEGIN
+    CREATE TYPE moderation_action AS ENUM ('Mute', 'Warn', 'Kick', 'Ban', 'Unmute', 'Verify', 'Tempmute', 'Unban');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 
-CREATE TABLE infractions(
+CREATE TABLE IF NOT EXISTS infractions(
     infraction_id VARCHAR(10) PRIMARY KEY,
     guild_id BIGINT,
     moderator_id BIGINT,
@@ -92,7 +82,7 @@ CREATE TABLE infractions(
 );
 
 
-CREATE TABLE temporary_roles(
+CREATE TABLE IF NOT EXISTS temporary_roles(
     guild_id BIGINT,
     role_id BIGINT,
     user_id BIGINT,
@@ -104,7 +94,7 @@ CREATE TABLE temporary_roles(
 );
 
 
-CREATE TABLE temporary_removed_roles(
+CREATE TABLE IF NOT EXISTS temporary_removed_roles(
     guild_id BIGINT,
     role_id BIGINT,
     user_id BIGINT,
@@ -115,7 +105,7 @@ CREATE TABLE temporary_removed_roles(
 );
 
 
-CREATE TABLE custom_roles(
+CREATE TABLE IF NOT EXISTS custom_roles(
     guild_id BIGINT,
     role_id BIGINT,
     user_id BIGINT,
@@ -123,7 +113,7 @@ CREATE TABLE custom_roles(
 );
 
 
-CREATE TABLE role_list(
+CREATE TABLE IF NOT EXISTS role_list(
     guild_id BIGINT,
     role_id BIGINT,
     key VARCHAR(50),
@@ -132,7 +122,7 @@ CREATE TABLE role_list(
 );
 
 
-CREATE TABLE channel_list(
+CREATE TABLE IF NOT EXISTS channel_list(
     guild_id BIGINT,
     channel_id BIGINT,
     key VARCHAR(50),
@@ -141,7 +131,7 @@ CREATE TABLE channel_list(
 );
 
 
-CREATE TABLE user_money(
+CREATE TABLE IF NOT EXISTS user_money(
     guild_id BIGINT,
     user_id BIGINT,
     amount INTEGER,
@@ -149,7 +139,7 @@ CREATE TABLE user_money(
 );
 
 
-CREATE TABLE user_inventory(
+CREATE TABLE IF NOT EXISTS user_inventory(
     guild_id BIGINT,
     user_id BIGINT,
     item_name VARCHAR(100),
@@ -158,7 +148,7 @@ CREATE TABLE user_inventory(
 );
 
 
-CREATE TABLE giveaways(
+CREATE TABLE IF NOT EXISTS giveaways(
     channel_id BIGINT,
     message_id BIGINT PRIMARY KEY,
     winner_count INTEGER,
@@ -167,7 +157,7 @@ CREATE TABLE giveaways(
 );
 
 
-CREATE TABLE interaction_counter(
+CREATE TABLE IF NOT EXISTS interaction_counter(
     guild_id BIGINT,
     user_id BIGINT,
     target_id BIGINT,
@@ -177,14 +167,14 @@ CREATE TABLE interaction_counter(
 );
 
 
-CREATE TABLE interaction_text(
+CREATE TABLE IF NOT EXISTS interaction_text(
     guild_id BIGINT,
     interaction_name VARCHAR(50),
     response VARCHAR(2000)
 );
 
 
-CREATE TABLE buyable_temporary_roles(
+CREATE TABLE IF NOT EXISTS buyable_temporary_roles(
     guild_id BIGINT,
     role_id BIGINT,
     price INTEGER,
