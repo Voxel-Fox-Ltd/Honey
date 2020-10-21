@@ -74,7 +74,7 @@ class ItemHandler(utils.Cog):
             "SELECT * FROM user_inventory WHERE guild_id=$1 AND user_id=$2 AND LOWER(item_name)=LOWER($3)",
             ctx.guild.id, ctx.author.id, item_data['name'],
         )
-        if not rows or rows[0]['amount'] <= 0:
+        if (not rows or rows[0]['amount'] <= 0) and ctx.original_author_id not in self.bot.owner_ids:
             await ctx.send(f"You don't have any **{item_data['name']}** items in this server.")
             await db.disconnect()
             return
