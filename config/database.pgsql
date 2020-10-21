@@ -27,8 +27,29 @@ CREATE TABLE guild_settings(
     deleted_message_modlog_channel_id BIGINT,
     voice_update_modlog_channel_id BIGINT,
 
-    suggestion_channel_id BIGINT
+    suggestion_channel_id BIGINT,
+
+    paintbrush_price INTEGER DEFAULT 100,
+    cooldown_token_price INTEGER DEFAULT 100,
+
+    shop_channel_id BIGINT,
+    shop_message_id BIGINT
 );
+
+
+-- CREATE TABLE guild_shop_settings(
+--     guild_id BIGINT PRIMARY KEY,
+--     paintbrush_price INTEGER DEFAULT 100,
+--     cooldown_token_price INTEGER DEFAULT 100
+-- );
+
+
+-- CREATE TABLE shopping_channels(
+--     guild_id BIGINT PRIMARY KEY,
+--     channel_id BIGINT,
+--     message_id BIGINT
+-- );
+
 
 
 CREATE TABLE user_settings(
@@ -37,14 +58,6 @@ CREATE TABLE user_settings(
     allow_paint BOOLEAN DEFAULT TRUE,
     receive_interaction_ping BOOLEAN DEFAULT TRUE
 );
-
-
-CREATE TABLE guild_shop_settings(
-    guild_id BIGINT PRIMARY KEY,
-    paintbrush_price INTEGER DEFAULT 100,
-    cooldown_token_price INTEGER DEFAULT 100
-);
-
 
 CREATE TABLE fursonas(
     guild_id BIGINT NOT NULL,
@@ -142,13 +155,6 @@ CREATE TABLE user_inventory(
     item_name VARCHAR(100),
     amount INTEGER,
     PRIMARY KEY (guild_id, user_id, item_name)
-);
-
-
-CREATE TABLE shopping_channels(
-    guild_id BIGINT PRIMARY KEY,
-    channel_id BIGINT,
-    message_id BIGINT
 );
 
 
