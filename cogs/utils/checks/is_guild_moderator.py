@@ -8,6 +8,9 @@ class NotGuildModerator(commands.CommandError):
     def __init__(self, guild_moderator_role:discord.Role):
         self.guild_moderator_role = guild_moderator_role
 
+    def __str__(self):
+        return f"This command can only be run by a guild moderator (role `{self.guild_moderator_role.name}`)."
+
 
 def is_guild_moderator_predicate(bot:commands.Bot, user:discord.Member) -> bool:
     """Returns True if the the user has manage_messages perm or has a guild moderator role"""

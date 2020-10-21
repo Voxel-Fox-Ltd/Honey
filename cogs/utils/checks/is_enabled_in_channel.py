@@ -1,7 +1,7 @@
 from discord.ext import commands
 
 
-class DisabledInChannel(commands.DisabledCommand):
+class DisabledInChannel(commands.CommandError):
     """The given command is disabled in the channel where it's being run"""
     pass
 
@@ -20,6 +20,6 @@ def is_enabled_in_channel(guild_settings_key:str):
         guild_settings = ctx.bot.guild_settings[ctx.guild.id]
         channel_blacklist = guild_settings[guild_settings_key]
         if ctx.channel.id in channel_blacklist:
-            raise DisabledInChannel()
+            raise DisabledInChannel("You can't run that command in this channel.")
         return True
     return commands.check(predicate)

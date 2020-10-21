@@ -2,20 +2,17 @@ import asyncio
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class SuggestionHandler(utils.Cog):
 
-    def __init__(self, bot:utils.Bot):
-        super().__init__(bot)
-        pass
-
-    @commands.command(cls=utils.Command, aliases=['suggestion', 'suggestions'])
+    @utils.command(aliases=['suggestion', 'suggestions'])
     @commands.bot_has_permissions(send_messages=True)
     async def suggest(self, ctx:utils.Context, *, suggestion:str):
-        """Send in a suggestion to the server"""
+        """
+        Send in a suggestion to the server.
+        """
 
         if not suggestion:
             raise utils.errors.MissingRequiredArgumentString("suggestion")

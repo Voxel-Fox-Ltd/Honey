@@ -2,8 +2,7 @@ import copy
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class ShopHandler(utils.Cog):
@@ -30,7 +29,9 @@ class ShopHandler(utils.Cog):
     }
 
     def get_shop_items(self, guild:discord.Guild):
-        """Get a dict of shop items"""
+        """
+        Get a dict of shop items.
+        """
 
         # See if there's a specified guild
         new_data = copy.deepcopy(self.ORIGINAL_SHOP_ITEMS)
@@ -81,12 +82,14 @@ class ShopHandler(utils.Cog):
         # Return data
         return new_data
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_guild_permissions(manage_channels=True)
     @commands.bot_has_guild_permissions(manage_channels=True, external_emojis=True)
     @commands.guild_only()
     async def createshopchannel(self, ctx:utils.Context):
-        """Creates a shop channel for your server"""
+        """
+        Creates a shop channel for your server.
+        """
 
         # Set up permissions
         bot_permissions = discord.PermissionOverwrite(
@@ -129,7 +132,9 @@ class ShopHandler(utils.Cog):
 
     @utils.Cog.listener("on_shop_message_update")
     async def update_shop_message(self, guild:discord.Guild):
-        """Edit the shop message to to be pretty good"""
+        """
+        Edit the shop message to to be pretty good.
+        """
 
         # Get the shop message
         self.logger.info(f"Shop message update dispatched (G{guild.id})")
@@ -174,7 +179,9 @@ class ShopHandler(utils.Cog):
 
     @utils.Cog.listener("on_raw_reaction_clear")
     async def shop_reaction_clear_listener(self, payload:discord.RawReactionClearEvent):
-        """Pinged when all reactions are cleared from a shop message"""
+        """
+        Pinged when all reactions are cleared from a shop message.
+        """
 
         guild_settings = self.bot.guild_settings[payload.guild_id]
         if guild_settings['shop_message_id'] != payload.message_id:
@@ -189,7 +196,9 @@ class ShopHandler(utils.Cog):
 
     @utils.Cog.listener("on_raw_reaction_add")
     async def shop_reaction_listener(self, payload:discord.RawReactionActionEvent):
-        """Pinged when a user is trying to buy something from a shop"""
+        """
+        Pinged when a user is trying to buy something from a shop.
+        """
 
         # Check the reaction is on a shop message
         guild_settings = self.bot.guild_settings[payload.guild_id]

@@ -7,19 +7,22 @@ import discord
 from discord.ext import commands
 from discord.ext import menus
 import asyncpg
+import voxelbotutils as utils
 
-from cogs import utils
+from cogs import utils as localutils
 
 
 class FursonaPageSource(menus.ListPageSource):
 
     def format_page(self, menu:menus.Menu, entry:dict) -> dict:
-        """Formats a sona into a thingmie and returns the embed"""
+        """
+        Formats a sona into a thingmie and returns the embed.
+        """
 
         # Format the data into an embed for the sona
         menu.raw_sona_data = entry.copy()
         content = f"Sona **{entry['name']}** from **{entry['guild_name']}** (sona {menu.current_page + 1}/{self.get_max_pages()})."
-        sona = utils.Fursona(**entry)
+        sona = localutils.Fursona(**entry)
         sona.verified = False
         menu.sona = sona
         embed = sona.get_embed(mention_user=False, add_image=True)
@@ -64,7 +67,9 @@ class FursonaCommands(utils.Cog):
         self.currently_setting_sonas = set()
 
     async def send_verification_message(self, user:discord.User, message:str, *, timeout:float=600, check:callable=None, max_length:int=200) -> discord.Message:
-        """Sends a verification message to a user, waits for a response, and returns that message"""
+        """
+        Sends a verification message to a user, waits for a response, and returns that message.
+        """
 
         # Send message
         try:
@@ -98,7 +103,9 @@ class FursonaCommands(utils.Cog):
 
     @classmethod
     def get_image_from_message(cls, message:discord.Message) -> typing.Optional[str]:
-        """Gets an image url from a given message"""
+        """
+        Gets an image url from a given message.
+        """
 
         if cls.is_image_url(message.content):
             return message.content
@@ -108,16 +115,20 @@ class FursonaCommands(utils.Cog):
 
     @staticmethod
     def is_image_url(content:str) -> bool:
-        """Returns whether a given string is a valid image url"""
+        """
+        Returns whether a given string is a valid image url.
+        """
 
         return re.search(r"^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg)$", content, re.IGNORECASE)
 
-    @commands.command(cls=utils.Command)
-    @commands.check(utils.checks.is_verified)
+    @utils.command()
+    @commands.check(localutils.checks.is_verified)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def setsona(self, ctx:utils.Context):
-        """Stores your fursona information in the bot"""
+        """
+        Stores your fursona information in the bot.
+        """
 
         # See if the user already has a fursona stored
         async with self.bot.database() as db:
@@ -237,14 +248,16 @@ class FursonaCommands(utils.Cog):
             return await user.send("Your fursona has been automatically declined as it is NSFW")
         await self.bot.get_command("setsonabyjson").invoke(ctx)
 
-    @commands.command(cls=utils.Command, hidden=True)
+    @utils.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def setsonabyjson(self, ctx:utils.Context, *, data:str=None):
-        """Lets you set your sona with a JSON string
+        """
+        Lets you set your sona with a JSON string.
+
         Valid keys are: name, gender, age, species, orientation, height, weight, bio, image, and nsfw.
         NSFW must be a boolean. All fields must be filled (apart from image, which must be a provided key but can contain
-        a null value)
+        a null value).
         """
 
         # Get current sona names
@@ -320,11 +333,13 @@ class FursonaCommands(utils.Cog):
             return await user.send("Your fursona has been sent to the moderators for approval! Please be patient as they review.")
         return await user.send("Your fursona has been saved!")
 
-    @commands.command(cls=utils.Command, hidden=True)
+    @utils.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def importsona(self, ctx:utils.Context):
-        """Get your sona from another server"""
+        """
+        Get your sona from another server.
+        """
 
         # See if they're setting one up already
         if ctx.author.id in self.currently_setting_sonas:
@@ -419,7 +434,9 @@ class FursonaCommands(utils.Cog):
 
     @utils.Cog.listener("on_raw_reaction_add")
     async def fursona_verification_reaction_handler(self, payload:discord.RawReactionActionEvent):
-        """Listens for reactions being added to fursona approval messages"""
+        """
+        Listens for reactions being added to fursona approval messages.
+        """
 
         # Check not a bot
         if self.bot.get_user(payload.user_id).bot:
@@ -524,12 +541,14 @@ class FursonaCommands(utils.Cog):
         except discord.Forbidden:
             pass
 
-    @commands.command(cls=utils.Command, aliases=['getsona'])
-    @utils.checks.is_enabled_in_channel('disabled_sona_channels')
+    @utils.command(aliases=['getsona'])
+    @localutils.checks.is_enabled_in_channel('disabled_sona_channels')
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def sona(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, name:str=None):
-        """Gets your sona"""
+        """
+        Gets your sona.
+        """
 
         # Get the sonas
         user = user or ctx.author
@@ -555,14 +574,16 @@ class FursonaCommands(utils.Cog):
             return await ctx.send("I can't show NSFW sonas in a SFW channel.")
 
         # Wew it's sona time let's go
-        sona = utils.Fursona(**rows[0])
+        sona = localutils.Fursona(**rows[0])
         return await ctx.send(embed=sona.get_embed(mention_user=True))
 
     @commands.command(cls=utils.Command, ignore_extra=False)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def deletesona(self, ctx:utils.Context, *, name:str=None):
-        """Deletes your sona"""
+        """
+        Deletes your sona.
+        """
 
         db = await self.bot.database.get_connection()
 

@@ -1,8 +1,7 @@
 from datetime import datetime as dt, timedelta
 
 import discord
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class MessageHandler(utils.Cog):
@@ -13,7 +12,9 @@ class MessageHandler(utils.Cog):
 
     @utils.Cog.listener()
     async def on_message_edit(self, before:discord.Message, after:discord.Message):
-        """Logs edited messages"""
+        """
+        Logs edited messages.
+        """
 
         # Filter
         if after.guild is None:
@@ -57,7 +58,9 @@ class MessageHandler(utils.Cog):
 
     @utils.Cog.listener()
     async def on_message_delete(self, message:discord.Message):
-        """Logs edited messages"""
+        """
+        Logs edited messages.
+        """
 
         # Filter
         if message.guild is None:

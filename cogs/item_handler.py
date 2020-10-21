@@ -8,8 +8,7 @@ import collections
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class ItemHandler(utils.Cog):
@@ -22,7 +21,9 @@ class ItemHandler(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def coins(self, ctx:utils.Context, user:discord.Member=None):
-        """Gives you the content of your inventory"""
+        """
+        Gives you the content of your inventory.
+        """
 
         # Make sure there's money set up
         if self.bot.guild_settings[ctx.guild.id].get('shop_message_id') is None:
@@ -58,11 +59,13 @@ class ItemHandler(utils.Cog):
             embed.description = f"**{coin_rows[0]['amount']:,} {coin_emoji}**\n" + "\n".join(inventory_string_rows)
         return await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command, aliases=['use'])
+    @utils.command(aliases=['use'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
     async def useitem(self, ctx:utils.Context, item_name:str, user:typing.Optional[discord.Member], *, args:str=None):
-        """Use an item that you purchased from the shop"""
+        """
+        Use an item that you purchased from the shop.
+        """
 
         # Get the items they own
         try:
@@ -152,20 +155,24 @@ class ItemHandler(utils.Cog):
         self.logger.info(f"Remove item ({item_data['name']}) from user (G{ctx.guild.id}/U{ctx.author.id})")
         await db.disconnect()
 
-    @commands.command(cls=utils.Command, aliases=['paintbrush'])
+    @utils.command(aliases=['paintbrush'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
     async def paint(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, args:str=None):
-        """Use the paintbrush on a user in a given server"""
+        """
+        Use the paintbrush on a user in a given server.
+        """
 
         await ctx.invoke(self.bot.get_command("use"), item_name="paintbrush", user=user or ctx.author, args=args)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
     async def multipaint(self, ctx:utils.Context, users:commands.Greedy[discord.Member], *, args:str=None):
-        """Use the paintbrush on a user in a given server"""
+        """
+        Use the paintbrush on a user in a given server.
+        """
 
         if not users:
             raise utils.errors.MissingRequiredArgumentString("users")
@@ -175,7 +182,9 @@ class ItemHandler(utils.Cog):
             await ctx.invoke(self.bot.get_command("use"), item_name="paintbrush", user=u, args=args)
 
     async def use_paintbrush(self, ctx:utils.Context, args:str, db:utils.DatabaseConnection, user:discord.Member):
-        """Use the paintbrush on a user in a given server"""
+        """
+        Use the paintbrush on a user in a given server.
+        """
 
         # See if there's a valid role position
         guild_settings = self.bot.guild_settings[ctx.guild.id]
@@ -209,12 +218,13 @@ class ItemHandler(utils.Cog):
         colour_name, colour_value = None, None
         if args:
             try:
-                colour_name, colour_value = args, utils.colour_names.COLOURS_BY_NAME[args.lower().strip()]
-            except KeyError:
+                colour = await utils.converters.ColourConverter(allow_default_colours=False).convert(ctx, args)
+                colour_name, colour_value = args.strip(), colour.value
+            except commands.BadArgument:
                 await ctx.send(f"`{args.title()}` isn't a valid colour name.", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
                 return False
         if colour_name is None:
-            colour_name, colour_value = random.choice(list(utils.colour_names.COLOURS_BY_NAME.items()))
+            colour_name, colour_value = random.choice(list(utils.converters.ColourConverter.COLOURS_BY_NAME.items()))
 
         # See if they have a paint role already
         paint_rows = await db(
@@ -246,7 +256,7 @@ class ItemHandler(utils.Cog):
                 await role.delete(reason="Messed up making paint role")
             except discord.NotFound:
                 pass
-            await ctx.send(f"I couldn't make a new colour role for you - I think we hit the role limit?")
+            await ctx.send("I couldn't make a new colour role for you - I think we hit the role limit?")
             return False
 
         # Update the role position if a new role was created
@@ -300,9 +310,11 @@ class ItemHandler(utils.Cog):
         )
         return True
 
-    @commands.command(hidden=True, aliases=['colorsearch'])
+    @utils.command(aliases=['colorsearch'])
     async def coloursearch(self, ctx:utils.Context, *, search:str):
-        """Searches for a colour by a given name"""
+        """
+        Searches for a colour by a given name.
+        """
 
         valid_colours = []
         for name, value in utils.colour_names.COLOURS_BY_NAME.items():
@@ -314,10 +326,12 @@ class ItemHandler(utils.Cog):
         valid_string = [f"{i.title()}: `#{hex(o)[2:]}`" for i, o in valid_colours[:10]]
         return await ctx.send(f"Showing {len(valid_string)} of {len(valid_colours)} matching colours:\n" + '\n'.join(valid_string))
 
-    @commands.command(hidden=True)
-    @commands.is_owner()
+    @utils.command()
+    @commands.is_owner()  # TODO update this
     async def setpainttimeout(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue):
-        """Set the paint timeout for a given user to an abritrary value"""
+        """
+        Set the paint timeout for a given user to an abritrary value.
+        """
 
         async with self.bot.database() as db:
             await db(
@@ -328,7 +342,9 @@ class ItemHandler(utils.Cog):
         return await ctx.send("Updated.")
 
     async def use_cooldown_token(self, ctx:utils.Context, db:utils.DatabaseConnection, user:discord.Member):
-        """Use the cooldown token on a user in a given server"""
+        """
+        Use the cooldown token on a user in a given server.
+        """
 
         # Get cooldown for user
         new_ctx = copy.copy(ctx)

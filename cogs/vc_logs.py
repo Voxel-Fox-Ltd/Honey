@@ -1,13 +1,14 @@
 import discord
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class VCLogs(utils.Cog):
 
     @utils.Cog.listener()
     async def on_voice_state_update(self, member:discord.Member, before:discord.VoiceState, after:discord.VoiceState):
-        """Log users joining or leaving VCs"""
+        """
+        Log users joining or leaving VCs.
+        """
 
         if before.channel == after.channel:
             return

@@ -1,11 +1,10 @@
 import sys
 
 from discord.ext import commands
+import voxelbotutils as utils
 
-from cogs.utils.checks.cooldown.cooldown import Cooldown
 
-
-class RoleBasedGuildCooldown(Cooldown):
+class RoleBasedGuildCooldown(utils.cooldown.Cooldown):
 
     # tier_cooldowns  # GuildID: {Optional[RoleID]: Seconds}
 

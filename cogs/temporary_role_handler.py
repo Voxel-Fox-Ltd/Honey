@@ -2,8 +2,7 @@ from datetime import datetime as dt
 
 import discord
 from discord.ext import tasks
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class TemporaryRoleHandler(utils.Cog):
@@ -17,12 +16,17 @@ class TemporaryRoleHandler(utils.Cog):
 
     @tasks.loop(seconds=10)
     async def role_handler(self):
-        """Loops once a minute to remove the roles of a user should they need to be taken"""
+        """
+        Loops once a minute to remove the roles of a user should they need to be taken.
+        """
 
         self.bot.dispatch("temporary_role_handle")
 
     @utils.Cog.listener()
     async def on_temporary_role_handle(self):
+        """
+        Update the temporary roles for the users of a guild.
+        """
 
         # Get data
         async with self.bot.database() as db:
@@ -40,8 +44,16 @@ class TemporaryRoleHandler(utils.Cog):
             # Get the relevant information
             removed_roles.append((row['guild_id'], row['role_id'], row['user_id']))
             guild = self.bot.get_guild(row['guild_id'])
-            member = guild.get_member(row['user_id'])
-            role = guild.get_role(row['role_id'])
+            if guild is None:
+                continue
+            try:
+                member = guild.get_member(row['user_id']) or await guild.fetch_member(row['user_id'])
+            except discord.HTTPException:
+                member = None
+            try:
+                role = guild.get_role(row['role_id']) or await guild.fetch_role(row['role_id'])
+            except discord.HTTPException:
+                role = None
 
             # Remove the role
             if role is not None and row['delete_role']:
@@ -76,9 +88,16 @@ class TemporaryRoleHandler(utils.Cog):
 
             # Get the relevant information
             readded_roles.append((row['guild_id'], row['role_id'], row['user_id']))
-            guild = self.bot.get_guild(row['guild_id'])
-            member = guild.get_member(row['user_id'])
-            role = guild.get_role(row['role_id'])
+            if guild is None:
+                continue
+            try:
+                member = guild.get_member(row['user_id']) or await guild.fetch_member(row['user_id'])
+            except discord.HTTPException:
+                member = None
+            try:
+                role = guild.get_role(row['role_id']) or await guild.fetch_role(row['role_id'])
+            except discord.HTTPException:
+                role = None
 
             # Readd the role
             if role is not None and member is not None:

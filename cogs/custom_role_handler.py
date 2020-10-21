@@ -3,17 +3,18 @@ import asyncio
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class CustomRoleHandler(utils.Cog):
 
-    @commands.group(cls=utils.Group)
+    @utils.group()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def customrole(self, ctx:utils.Context):
-        """The parent command to manage your custom role"""
+        """
+        The parent command to manage your custom role.
+        """
 
         # See if we invoke a real command
         if ctx.invoked_subcommand is not None:
@@ -23,8 +24,10 @@ class CustomRoleHandler(utils.Cog):
         return await ctx.send(f"This command is used so you can manage your custom role on this server, should you have one. See `{ctx.prefix}help {ctx.invoked_with}` to learn more.")
 
     async def check_for_custom_role(self, member:discord.Member) -> typing.Optional[discord.Role]:
-        """Returns the user's custom role object for the server, or None if they
-        don't have one. This does NOT check for whether they can/cannot have one"""
+        """
+        Returns the user's custom role object for the server, or None if they
+        don't have one. This does NOT check for whether they can/cannot have one.
+        """
 
         async with self.bot.database() as db:
             rows = await db("SELECT * FROM custom_roles WHERE guild_id=$1 AND user_id=$2", member.guild.id, member.id)
@@ -34,7 +37,9 @@ class CustomRoleHandler(utils.Cog):
 
     @utils.Cog.listener()
     async def on_member_remove(self, member:discord.Member):
-        """Delete a custom role when the user leaves the guild"""
+        """
+        Delete a custom role when the user leaves the guild.
+        """
 
         role = await self.check_for_custom_role(member)
         if role is None:
@@ -46,7 +51,9 @@ class CustomRoleHandler(utils.Cog):
 
     @utils.Cog.listener()
     async def on_member_update(self, before:discord.Member, member:discord.Member):
-        """Listens for members losing the required custom role master, and thus deletes the custom role"""
+        """
+        Listens for members losing the required custom role master, and thus deletes the custom role.
+        """
 
         # Check the custom role
         master_role_id = self.bot.guild_settings[member.guild.id].get('custom_role_id')
@@ -78,7 +85,9 @@ class CustomRoleHandler(utils.Cog):
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def name(self, ctx:utils.Context, *, name:commands.clean_content):
-        """Change the name of your custom role"""
+        """
+        Change the name of your custom role.
+        """
 
         # Get their role
         role = await self.check_for_custom_role(ctx.author)
@@ -107,7 +116,9 @@ class CustomRoleHandler(utils.Cog):
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def colour(self, ctx:utils.Context, *, colour:typing.Union[discord.Colour, str]):
-        """Change the colour of your custom role"""
+        """
+        Change the colour of your custom role.
+        """
 
         # Validate the colour
         if isinstance(colour, str):

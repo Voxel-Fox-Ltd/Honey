@@ -1,4 +1,4 @@
-from cogs.utils.context_embed import ContextEmbed as Embed
+import voxelbotutils as utils
 
 
 class Fursona(object):
@@ -22,10 +22,10 @@ class Fursona(object):
         self.nsfw = nsfw
         self.verified = verified
 
-    def get_embed(self, *, mention_user:bool=False, add_image:bool=True) -> Embed:
+    def get_embed(self, *, mention_user:bool=False, add_image:bool=True) -> utils.Embed:
         """Gets an embed for the fursona object"""
 
-        with Embed() as embed:
+        with utils.Embed() as embed:
             if mention_user:
                 embed.add_field("Discord", f"<@{self.user_id}>")
             # embed.add_field("Name", self.name)

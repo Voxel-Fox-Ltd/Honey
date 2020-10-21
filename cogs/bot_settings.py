@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class BotSettings(utils.Cog):
@@ -9,24 +8,7 @@ class BotSettings(utils.Cog):
     TICK_EMOJI = "\N{HEAVY CHECK MARK}"
     CROSS_EMOJI = "\N{HEAVY MULTIPLICATION X}"
 
-    @commands.command(cls=utils.Command)
-    @commands.has_guild_permissions(manage_guild=True)
-    @commands.bot_has_permissions(send_messages=True)
-    @commands.guild_only()
-    async def prefix(self, ctx:utils.Context, *, new_prefix:str):
-        """Changes the prefix that the bot uses"""
-
-        # Validate prefix
-        if len(new_prefix) > 30:
-            return await ctx.send("The maximum length a prefix can be is 30 characters.")
-
-        # Store setting
-        self.bot.guild_settings[ctx.guild.id]['prefix'] = new_prefix
-        async with self.bot.database() as db:
-            await db("INSERT INTO guild_settings (guild_id, prefix) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET prefix=excluded.prefix", ctx.guild.id, new_prefix)
-        await ctx.send(f"My prefix has been updated to `{new_prefix}`.")
-
-    @commands.group(cls=utils.Group)
+    @utils.command()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
@@ -74,7 +56,7 @@ class BotSettings(utils.Cog):
         except utils.errors.InvokedMetaCommand:
             pass
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def fursonas(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -115,7 +97,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def shop(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -146,7 +128,7 @@ class BotSettings(utils.Cog):
         await menu.start(ctx)
         self.bot.dispatch("shop_message_update", ctx.guild)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def buyableroles(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -163,7 +145,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def buyabletemproles(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -203,7 +185,7 @@ class BotSettings(utils.Cog):
         await menu.start(ctx, clear_reactions_on_loop=True)
         self.bot.dispatch("shop_message_update", ctx.guild)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def customroles(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -230,7 +212,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def moderation(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -270,7 +252,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def modlogs(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -317,7 +299,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def interactions(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -334,7 +316,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def botcommands(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -353,7 +335,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def disablesona(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -369,7 +351,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def disableinteractions(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -385,7 +367,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def removerolesonmute(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -401,7 +383,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def sonacount(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -418,7 +400,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx, clear_reactions_on_loop=True)
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def misc(self, ctx:utils.Context):
         """Talks the bot through a setup"""
@@ -440,7 +422,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx)
 
-    @commands.group(cls=utils.Group)
+    @commands.group()
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()

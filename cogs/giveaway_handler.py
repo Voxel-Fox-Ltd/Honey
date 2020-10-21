@@ -22,7 +22,9 @@ class GiveawayHandler(utils.Cog):
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     async def giveaway(self, ctx:utils.Context, duration:utils.TimeValue, winner_count:int, *, giveaway_name:str):
-        """Start a giveaway"""
+        """
+        Start a giveaway.
+        """
 
         # Validate winner count
         if winner_count < 1:
@@ -51,7 +53,9 @@ class GiveawayHandler(utils.Cog):
 
     @tasks.loop(seconds=30)
     async def giveaway_expiry_handler(self):
-        """Handles giveaways expiring"""
+        """
+        Handles giveaways expiring.
+        """
 
         # Grab expired stuff from the database
         db = await self.bot.database.get_connection()

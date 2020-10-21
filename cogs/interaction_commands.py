@@ -3,8 +3,9 @@ import fractions
 
 import discord
 from discord.ext import commands
+import voxelbotutils as utils
 
-from cogs import utils
+from cogs import utils as localutils
 
 
 COMMON_COMMAND_ALIASES = (
@@ -18,7 +19,9 @@ class InteractionCommands(utils.Cog):
 
     @utils.Cog.listener()
     async def on_interaction_run(self, ctx):
-        """Saves an interaction value into the database"""
+        """
+        Saves an interaction value into the database.
+        """
 
         if ctx.guild is None:
             return
@@ -29,12 +32,14 @@ class InteractionCommands(utils.Cog):
                 amount=interaction_counter.amount+excluded.amount""", ctx.guild.id, ctx.author.id, ctx.args[-1].id, ctx.interaction_name
             )
 
-    @commands.group(cls=utils.Group, aliases=['interaction'], invoke_without_command=True)
-    @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
+    @utils.group(aliases=['interaction'], invoke_without_command=True)
+    @localutils.checks.is_enabled_in_channel('disabled_interaction_channels')
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def interactions(self, ctx:utils.Context, user:discord.Member=None):
-        """Shows you your interaction statistics"""
+        """
+        Shows you your interaction statistics.
+        """
 
         if ctx.invoked_subcommand is not None:
             return
@@ -79,7 +84,9 @@ class InteractionCommands(utils.Cog):
 
     @utils.Cog.listener()
     async def on_command_error(self, ctx:utils.Context, error:commands.CommandError):
-        """Listens for command not found errors and tries to run them as interactions"""
+        """
+        Listens for command not found errors and tries to run them as interactions.
+        """
 
         if not isinstance(error, commands.CommandNotFound):
             return
@@ -108,13 +115,15 @@ class InteractionCommands(utils.Cog):
         ctx.command = self.bot.get_command("interaction_command_meta")
         await self.bot.invoke(ctx)
 
-    @commands.command(cls=utils.Command, cooldown_after_parsing=True)
+    @utils.command(cooldown_after_parsing=True)
     @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
-    @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
+    @localutils.checks.is_enabled_in_channel('disabled_interaction_channels')
     @commands.bot_has_permissions(send_messages=True)
     @utils.checks.meta_command()
-    async def interaction_command_meta(self, ctx:utils.Context, user:utils.converters.NotAuthorMember):
-        """The interaction command invoker"""
+    async def interaction_command_meta(self, ctx:utils.Context, user:utils.converters.FilteredUser(allow_author=False, allow_bots=True)):
+        """
+        The interaction command invoker.
+        """
 
         # Set up who we're pinging
         pings = []
@@ -130,10 +139,12 @@ class InteractionCommands(utils.Cog):
         )
         self.bot.dispatch("interaction_run", ctx)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     async def cooldown(self, ctx:utils.Context):
-        """Tells you how long your remaining interaction cooldown is"""
+        """
+        Tells you how long your remaining interaction cooldown is.
+        """
 
         interaction = self.bot.get_command("interaction_command_meta")
         remaining_time = interaction.get_remaining_cooldown(ctx)
@@ -141,14 +152,37 @@ class InteractionCommands(utils.Cog):
             return await ctx.send("Your interaction cooldown has expired - you're able to run interactions again.")
         return await ctx.send(f"Your remaining cooldown is {utils.TimeValue(remaining_time).clean}.")
 
-    @interactions.command(cls=utils.Command)
+    @utils.command()
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def add(self, ctx:utils.Context, interaction_name:str, *, response:str):
-        """Adds a custom interaction
-        Use `{author}` and `{user}` as placeholders for where users should receive a ping
-        All interactions must ping one user that isn't the author
+        """
+        Adds a custom interaction.
+        Use `{author}` and `{user}` as placeholders for where users should receive a ping.
+        All interactions must ping one user that isn't the author.
+        """
+
+        if len(interaction_name) > 50:
+            return await ctx.send("That interaction name is too long.")
+        if not response:
+            raise utils.errors.MissingRequiredArgumentString("response")
+        async with self.bot.database() as db:
+            await db(
+                "INSERT INTO interaction_text (guild_id, interaction_name, response) VALUES ($1, $2, $3)",
+                ctx.guild.id, interaction_name.lower(), f"*{response.strip('* ')}*"
+            )
+        return await ctx.send("Added your custom interaction response to the pool.")
+
+    @utils.command(aliases=['nsfwadd'])
+    @commands.has_guild_permissions(manage_messages=True)
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def addnsfw(self, ctx:utils.Context, interaction_name:str, *, response:str):
+        """
+        Adds a custom NSFW interaction.
+        Use `{author}` and `{user}` as placeholders for where users should receive a ping.
+        All interactions must ping one user that isn't the author.
         """
 
         if len(interaction_name) > 50:

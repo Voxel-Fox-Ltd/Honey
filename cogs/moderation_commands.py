@@ -3,8 +3,9 @@ from datetime import datetime as dt, timedelta
 
 import discord
 from discord.ext import commands
+import voxelbotutils as utils
 
-from cogs import utils
+from cogs import utils as localutils
 
 
 class ModerationCommands(utils.Cog):
@@ -15,7 +16,9 @@ class ModerationCommands(utils.Cog):
 
     @utils.Cog.listener()
     async def on_guild_role_delete(self, role:discord.Role):
-        """Remove roles from the server's settings when they're deleted from the guild"""
+        """
+        Remove roles from the server's settings when they're deleted from the guild.
+        """
 
         if role.id in self.bot.guild_settings[role.guild].values():
             for i, o in self.bot.guild_settings[role.guild].items():
@@ -24,18 +27,20 @@ class ModerationCommands(utils.Cog):
                     async with self.bot.database() as db:
                         await db(f"UPDATE guild_settings SET {i}=null WHERE guild_id=$1", role.guild.id)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
     async def mute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
-        """Mutes a user from the server"""
+        """
+        Mutes a user from the server.
+        """
 
         # Check if role exists
         muted_role_id = self.bot.guild_settings[ctx.guild.id].get("muted_role_id", None)
         if muted_role_id is None:
             return await ctx.send("There is no mute role set for this server.")
-        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+        if localutils.checks.is_guild_moderator_predicate(self.bot, user):
             return await ctx.send("You can't moderate users set as moderators.")
 
         # Grab the mute role
@@ -92,18 +97,20 @@ class ModerationCommands(utils.Cog):
         # Output to chat
         return await ctx.send(f"{user.mention} has been muted by {ctx.author.mention} with reason `{reason}`.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
     async def tempmute(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue, *, reason:str='<No reason provided>'):
-        """Mutes a user from the server"""
+        """
+        Mutes a user from the server.
+        """
 
         # Check if role exists
         muted_role_id = self.bot.guild_settings[ctx.guild.id].get("muted_role_id", None)
         if muted_role_id is None:
             return await ctx.send("There is no mute role set for this server.")
-        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+        if localutils.checks.is_guild_moderator_predicate(self.bot, user):
             return await ctx.send("You can't moderate users set as moderators.")
 
         # Grab the mute role
@@ -166,18 +173,20 @@ class ModerationCommands(utils.Cog):
         # Output to chat
         return await ctx.send(f"{user.mention} has been muted for `{duration.clean_spaced}` by {ctx.author.mention} with reason `{reason}`.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
     async def unmute(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
-        """Unmutes a user"""
+        """
+        Unmutes a user.
+        """
 
         # Check if role exists
         muted_role_id = self.bot.guild_settings[ctx.guild.id].get("muted_role_id", None)
         if muted_role_id is None:
             return await ctx.send("There is no mute role set for this server.")
-        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+        if localutils.checks.is_guild_moderator_predicate(self.bot, user):
             return await ctx.send("You can't moderate users set as moderators.")
 
         # Grab the mute role
@@ -219,12 +228,14 @@ class ModerationCommands(utils.Cog):
         # Output to chat
         return await ctx.send(f"{user.mention} has been unmuted by {ctx.author.mention}.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def warn(self, ctx:utils.Context, user:discord.Member, *, reason:str):
-        """Adds a warning to a user"""
+        """
+        Adds a warning to a user.
+        """
 
         # Add moderator check to target user
         if utils.checks.is_guild_moderator_predicate(self.bot, user):
@@ -242,15 +253,17 @@ class ModerationCommands(utils.Cog):
         # Warn the user
         return await ctx.send(f"{user.mention} has been warned by {ctx.author.mention} with reason `{reason}`.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def watch(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue=None):
-        """Pipe all of a user's messages (in channels you can see) to your DMs for an hour"""
+        """
+        Pipe all of a user's messages (in channels you can see) to your DMs for an hour.
+        """
 
         # Add moderator check to target user
-        if utils.checks.is_guild_moderator_predicate(self.bot, user):
+        if localutils.checks.is_guild_moderator_predicate(self.bot, user):
             return await ctx.send("You can't moderate users set as moderators.")
 
         # Add stufferoo to cache
@@ -261,12 +274,14 @@ class ModerationCommands(utils.Cog):
         self.watched_users[(ctx.guild.id, user.id)].append((ctx.author.id, dt.utcnow() + delta))
         return await ctx.send("Now watching user.")
 
-    @commands.command(cls=utils.Command)
-    @utils.checks.is_guild_moderator()
+    @utils.command()
+    @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def unwatch(self, ctx:utils.Context, user:discord.Member):
-        """Stop watching a user"""
+        """
+        Stop watching a user.
+        """
 
         value = self.watched_users[(ctx.guild.id, user.id)]
         if value:
@@ -276,7 +291,9 @@ class ModerationCommands(utils.Cog):
 
     @utils.Cog.listener("on_message")
     async def user_watch_handler(self, message:discord.Message):
-        """Handle pinging users"""
+        """
+        Handle pinging users.
+        """
 
         # Get their watching mods
         if message.guild is None:
@@ -299,12 +316,14 @@ class ModerationCommands(utils.Cog):
             except (discord.Forbidden, discord.NotFound):
                 pass
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_guild_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     @commands.guild_only()
     async def kick(self, ctx:utils.Context, user:discord.Member, *, reason:str='<No reason provided>'):
-        """Kicks a user from the server"""
+        """
+        Kicks a user from the server.
+        """
 
         # Add mod check to target user
         if utils.checks.is_guild_moderator_predicate(self.bot, user):
@@ -332,12 +351,14 @@ class ModerationCommands(utils.Cog):
         # Output to chat
         return await ctx.send(f"{user.mention} has been kicked by {ctx.author.mention} with reason `{reason}`.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.guild_only()
     async def ban(self, ctx:utils.Context, user:utils.converters.UserID, *, reason:str='<No reason provided>'):
-        """Bans a user from the server"""
+        """
+        Bans a user from the server/
+        """
 
         # Add mod check to target user
         member_user = ctx.guild.get_member(user)
@@ -375,12 +396,14 @@ class ModerationCommands(utils.Cog):
         # Output to chat
         await ctx.send(f"<@{user.id}> has been banned by {ctx.author.mention} with reason `{reason}`.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.guild_only()
     async def unban(self, ctx:utils.Context, user:utils.converters.UserID, *, reason:str='<No reason provided>'):
-        """Unbans a user from the server"""
+        """
+        Unbans a user from the server.
+        """
 
         # Unban the user
         user = discord.Object(user)

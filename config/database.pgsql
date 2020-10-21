@@ -10,9 +10,9 @@ CREATE TABLE guild_settings(
     verified_role_id BIGINT,  -- The role verified members get
     muted_role_id BIGINT, -- The role muted members get
     guild_moderator_role_id BIGINT, -- The guild moderator role
-    nsfw_is_allowed BOOLEAN DEFAULT TRUE, -- If NSFW guilds are allowed
+    nsfw_is_allowed BOOLEAN DEFAULT TRUE, -- If NSFW sonas are allowed
 
-    custom_role_xfix VARCHAR(33),  -- The emoji used when users run the coins command
+    custom_role_xfix VARCHAR(33) DEFAULT ':(Custom)',  -- The emoji used when users run the coins command
     custom_role_id BIGINT,  -- The role required for users to be able to manage their own roles
     custom_role_position_id BIGINT,  -- The role that newly created custom roles are set below
 

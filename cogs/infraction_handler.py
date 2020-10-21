@@ -12,7 +12,9 @@ from cogs import utils
 class InfractionSource(menus.ListPageSource):
 
     def format_page(self, menu:menus.Menu, entries:list) -> utils.Embed:
-        """Format the infraction entries into an embed"""
+        """
+        Format the infraction entries into an embed.
+        """
 
         with utils.Embed(use_random_colour=True) as embed:
             for row in entries:
@@ -26,10 +28,15 @@ class InfractionHandler(utils.Cog):
 
     @staticmethod
     async def get_unused_infraction_id(db, n:int=5) -> str:
-        """This method creates a randomisied string to use as the infraction identifier.
+        """
+        This method creates a randomisied string to use as the infraction identifier.
 
-        Input Argument: n - Must be int
-        Returns: A string n long
+        Args:
+            db (voxelbotutils.DatabaseConnection): An open connection to the database
+            n (int, optional): The number of characters that the ID should be
+
+        Returns:
+            str: An unused infraction ID
         """
 
         def create_code(n):
@@ -43,7 +50,9 @@ class InfractionHandler(utils.Cog):
 
     @utils.Cog.listener()
     async def on_moderation_action(self, moderator:discord.Member, user:discord.User, reason:str, action:str):
-        """Looks for moderator actions being done and logs them into the relevant channel"""
+        """
+        Looks for moderator actions being done and logs them into the relevant channel.
+        """
 
         # Save to database
         db_reason = None if reason == '<No reason provided>' else reason
@@ -75,11 +84,13 @@ class InfractionHandler(utils.Cog):
         except discord.Forbidden:
             pass
 
-    @commands.group(cls=utils.Group, invoke_without_command=True)
+    @utils.group(invoke_without_command=True)
     @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def infractions(self, ctx:utils.Context, user:discord.Member):
-        """The parent to be able to see user infractions"""
+        """
+        The parent to be able to see user infractions.
+        """
 
         # Make sure there was no subcommand invoked
         if ctx.invoked_subcommand is not None:
@@ -95,18 +106,20 @@ class InfractionHandler(utils.Cog):
         pages = menus.MenuPages(source=InfractionSource(rows, per_page=5), clear_reactions_after=True, delete_message_after=True)
         await pages.start(ctx)
 
-    @infractions.command(cls=utils.Command)
+    @infractions.command()
     @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True)
     async def delete(self, ctx:utils.Context, infraction_id:str):
-        """Delete an infraction given its ID"""
+        """
+        Delete an infraction given its ID.
+        """
 
         # Grab their infractions from the database
         async with self.bot.database() as db:
             rows = await db("SELECT * FROM infractions WHERE LOWER(infraction_id)=LOWER($1) AND deleted_by IS NULL", infraction_id)
             await db("UPDATE infractions SET deleted_by=$2 WHERE LOWER(infraction_id)=LOWER($1)", infraction_id, ctx.author.id)
         if not rows:
-            return await ctx.send(f"The ID you gave doesn't refer to an undeleted infraction.")
+            return await ctx.send("The ID you gave doesn't refer to an undeleted infraction.")
         return await ctx.send(f"Deleted infraction from <@{rows[0]['user_id']}>'s account.")
 
 

@@ -5,8 +5,7 @@ from datetime import datetime as dt, timedelta
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class EconomyHandler(utils.Cog):
@@ -19,8 +18,10 @@ class EconomyHandler(utils.Cog):
 
     @utils.Cog.listener("on_ready")
     async def free_money_handler(self):
-        """Listens for ready being pinged and then makes sure every member in every guild has
-        10k given to the bot's account in their name"""
+        """
+        Listens for ready being pinged and then makes sure every member in every guild has.
+        10k given to the bot's account in their name.
+        """
 
         async with self.bot.database() as db:
 
@@ -40,7 +41,9 @@ class EconomyHandler(utils.Cog):
 
     @utils.Cog.listener("on_member_join")
     async def member_join_free_money_handler(self, member:discord.Member):
-        """Pinged when a member joins the guild - add 10k to the bot in this case"""
+        """
+        Pinged when a member joins the guild - add 10k to the bot in this case.
+        """
 
         async with self.bot.database() as db:
 
@@ -56,7 +59,9 @@ class EconomyHandler(utils.Cog):
 
     @utils.Cog.listener("on_guild_join")
     async def guild_join_free_money_handler(self, guild:discord.Guild):
-        """Pinged when a member joins the guild - add 10k to the bot in this case"""
+        """
+        Pinged when a member joins the guild - add 10k to the bot in this case.
+        """
 
         async with self.bot.database() as db:
             for member in guild.members:
@@ -71,12 +76,14 @@ class EconomyHandler(utils.Cog):
                     guild.id, member.id
                 )
 
-    @commands.command(cls=utils.Command, enabled=False)
+    @utils.command(enabled=False)
     @utils.cooldown.cooldown(1, 60 * 60, commands.BucketType.member)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def work(self, ctx:utils.Context):
-        """Do some work to get you goin with some money wew"""
+        """
+        Do some work to get you goin with some money wew.
+        """
 
         # Make sure there's money set up
         if self.bot.guild_settings[ctx.guild.id].get('shop_message_id') is None:
@@ -104,7 +111,9 @@ class EconomyHandler(utils.Cog):
 
     @utils.Cog.listener("on_message")
     async def user_message_money_handler(self, message:discord.Message):
-        """Add some money to the user's account when they send a message"""
+        """
+        Add some money to the user's account when they send a message
+        """
 
         # Make sure it's in a server
         if message.guild is None:
@@ -144,10 +153,12 @@ class EconomyHandler(utils.Cog):
             )
             await db.commit_transaction()
 
-    @commands.command(cls=utils.Command, aliases=['givemoney'])
+    @utils.command(aliases=['givemoney'])
     @commands.guild_only()
     async def givecoins(self, ctx:utils.Context, user:discord.Member, transfer_amount:int):
-        """Give a certain amount of money to a user"""
+        """
+        Give a certain amount of money to a user.
+        """
 
         # Filter users
         coin_emoji = self.bot.guild_settings[ctx.guild.id].get("coin_emoji", None) or "coins"
