@@ -267,12 +267,38 @@ class BotSettings(utils.Cog):
                 'display': "Set moderator action archive channels",
                 'callback': self.bot.get_command("setup modlogs"),
             },
+            {
+                'display': "Setup modmail",
+                'callback': self.bot.get_command("setup modmail"),
+            },
         )
         await menu.start(ctx)
 
     @setup.command(cls=utils.Command)
     @utils.checks.meta_command()
-    async def modlogs(self, ctx:utils.Context):
+    async def modmail(self, ctx: utils.Context):
+        """Talks the bot through a setup"""
+
+        menu = utils.SettingsMenu()
+        settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
+        menu.bulk_add_options(
+            ctx,
+            {
+                'display': lambda c: "Enable modmail on this server? (currently {0})".format(settings_mention(c, 'enable_modmail')),
+                'converter_args': [("Do you want enabled on this server?", "modmail enable", utils.converters.BooleanConverter, [self.TICK_EMOJI, self.CROSS_EMOJI])],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'enable_modmail'),
+            },
+            {
+                'display': lambda c: "Set modmail category channel (currently {0})".format(settings_mention(c, 'modmail_category_channel_id')),
+                'converter_args': [("What category do you want modmail requests to be created under?", "modmail category channel", commands.CategoryChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'modmail_category_channel_id'),
+            },
+        )
+        await menu.start(ctx)
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def modlogs(self, ctx: utils.Context):
         """Talks the bot through a setup"""
 
         menu = utils.SettingsMenu()
