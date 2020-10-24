@@ -55,6 +55,18 @@ class ModMail(utils.Cog):
         else:
             return
 
+        # Make sure that a guild was set
+        if guild:
+
+            modmail_category_channel_id = self.bot.guild_settings[guild.id]["modmail_category_channel_id"]
+            modmail_category_channel = guild.get_channel(modmail_category_channel_id)
+            modmail_channel = await guild.create_text_channel(name=ctx.author.name, category=modmail_category_channel)
+
+            session_details = {
+                "channel": modmail_channel,
+                "client": message.author
+            }
+
 
 def setup(bot: utils.Bot):
     x = ModMail(bot)
