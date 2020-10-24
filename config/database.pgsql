@@ -23,6 +23,9 @@ CREATE TABLE guild_settings(
     mute_modlog_channel_id BIGINT,
     warn_modlog_channel_id BIGINT,
 
+    enable_modmail BOOLEAN DEFAULT FALSE,
+    modmail_category_channel_id BIGINT,
+
     edited_message_modlog_channel_id BIGINT,
     deleted_message_modlog_channel_id BIGINT,
     voice_update_modlog_channel_id BIGINT,

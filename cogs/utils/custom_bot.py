@@ -73,6 +73,9 @@ class CustomBot(commands.AutoShardedBot):
             'mute_modlog_channel_id': None,
             'warn_modlog_channel_id': None,
 
+            'enable_modlogs': False,
+            'modlog_category_channel_id': None,
+
             'edited_message_modlog_channel_id': None,
             'deleted_message_modlog_channel_id': None,
             'voice_update_modlog_channel_id': None,
