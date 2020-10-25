@@ -109,12 +109,12 @@ class BotSettings(utils.Cog):
             {
                 'display': lambda c: "Set paintbrush price (currently {0})".format(settings_mention(c, 'paintbrush_price')),
                 'converter_args': [("How much do you want a paintbrush to cost? Set to 0 to disable paint being sold on the shop.", "paint price", int)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_shop_settings', 'paintbrush_price'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'paintbrush_price'),
             },
             {
                 'display': lambda c: "Set cooldown token price (currently {0})".format(settings_mention(c, 'cooldown_token_price')),
                 'converter_args': [("How much do you want 100 cooldown tokens to cost? Set to 0 to disable cooldown tokens being sold on the shop.", "paint price", int)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_shop_settings', 'cooldown_token_price'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'cooldown_token_price'),
             },
             {
                 'display': lambda c: "Set up buyable roles (currently {0} set up)".format(len(c.bot.guild_settings[c.guild.id].get('buyable_roles', list()))),
