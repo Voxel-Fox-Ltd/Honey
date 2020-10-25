@@ -64,7 +64,9 @@ class InfractionHandler(utils.Cog):
                 infraction_reason, timestamp) VALUES ($1, $2, $3, $4, $5, $6, $7)""",
                 code, moderator.guild.id, user.id, moderator.id, action, db_reason, dt.utcnow(),
             )
-
+        
+        action = "Mute" if action == "Tempmute" else action
+                                
         # Get log channel
         log_channel_id = self.bot.guild_settings[moderator.guild.id].get(f"{action.lower()}_modlog_channel_id", None)
         log_channel = self.bot.get_channel(log_channel_id)
