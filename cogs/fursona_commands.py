@@ -439,7 +439,11 @@ class FursonaCommands(utils.Cog):
         """
 
         # Check not a bot
-        if self.bot.get_user(payload.user_id).bot:
+        if payload.user_id == self.bot.user.id:
+            return
+        guild = self.bot.get_guild(payload.guild_id) or await self.bot.fetch_guild(payload.guild_id)
+        moderation_member = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
+        if moderation_member.bot:
             return
 
         # Check if we're in a modmail channel
@@ -467,7 +471,7 @@ class FursonaCommands(utils.Cog):
         except (AttributeError, ValueError):
             return  # TODO check the message was made by the bot
         fursona_name = fursona_embed.title
-        fursona_member = self.bot.get_guild(payload.guild_id).get_member(fursona_user_id)
+        fursona_member = guild.get_member(fursona_user_id) or await guild.fetch_member(fursona_user_id)
         if fursona_member is None:
             self.logger.info(f"No member could be found - message {payload.message_id}")
             return
