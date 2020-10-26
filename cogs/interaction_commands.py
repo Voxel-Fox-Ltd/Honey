@@ -139,7 +139,7 @@ class InteractionCommands(utils.Cog):
         )
         self.bot.dispatch("interaction_run", ctx)
 
-    @utils.command()
+    @utils.command(aliases=['cd'])
     @commands.bot_has_permissions(send_messages=True)
     async def cooldown(self, ctx:utils.Context):
         """
