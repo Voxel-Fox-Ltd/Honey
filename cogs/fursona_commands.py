@@ -285,7 +285,7 @@ class FursonaCommands(utils.Cog):
         # See if they already have a sona with that name
         if information['name'].lower() in current_sona_names:
             return await ctx.author.send(f"You already have a sona with the name `{information['name']}`. Please start your setup again and provide a different name.")
-        sona_object = utils.Fursona(**information)
+        sona_object = localutils.Fursona(**information)
 
         # Send it back to the user so we can make sure it sends
         user = ctx.author
