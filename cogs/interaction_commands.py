@@ -152,7 +152,7 @@ class InteractionCommands(utils.Cog):
             return await ctx.send("Your interaction cooldown has expired - you're able to run interactions again.")
         return await ctx.send(f"Your remaining cooldown is {utils.TimeValue(remaining_time).clean}.")
 
-    @utils.command()
+    @interactions.command()
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
@@ -174,7 +174,7 @@ class InteractionCommands(utils.Cog):
             )
         return await ctx.send("Added your custom interaction response to the pool.")
 
-    @utils.command(aliases=['nsfwadd'])
+    @interactions.command(aliases=['nsfwadd'])
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
