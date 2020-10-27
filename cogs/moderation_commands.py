@@ -27,7 +27,7 @@ class ModerationCommands(utils.Cog):
                     async with self.bot.database() as db:
                         await db(f"UPDATE guild_settings SET {i}=null WHERE guild_id=$1", role.guild.id)
 
-    @utils.command()
+    @utils.command(aliases=["m"])
     @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
@@ -97,7 +97,7 @@ class ModerationCommands(utils.Cog):
         # Output to chat
         return await ctx.send(f"{user.mention} has been muted by {ctx.author.mention} with reason `{reason}`.")
 
-    @utils.command()
+    @utils.command(aliases=["tm"])
     @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
