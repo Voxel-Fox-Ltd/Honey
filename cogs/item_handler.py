@@ -355,7 +355,7 @@ class ItemHandler(utils.Cog):
         """
 
         valid_colours = []
-        for name, value in utils.colour_names.COLOURS_BY_NAME.items():
+        for name, value in utils.converters.ColourConverter.COLOURS_BY_NAME.items():
             if search.lower() in name.lower():
                 valid_colours.append((name, value))
         valid_colours = sorted(valid_colours)
