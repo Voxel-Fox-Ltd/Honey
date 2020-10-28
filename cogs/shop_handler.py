@@ -218,7 +218,7 @@ class ShopHandler(utils.Cog):
         try:
             message = await channel.fetch_message(payload.message_id)
             if item_data:
-                await message.remove_reaction(payload.emoji, guild.get_member(payload.user_id))
+                await message.remove_reaction(payload.emoji, user)
             else:
                 await message.clear_reactions()
         except (discord.Forbidden, discord.NotFound, discord.HTTPException):
