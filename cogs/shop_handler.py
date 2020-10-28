@@ -204,8 +204,8 @@ class ShopHandler(utils.Cog):
         guild_settings = self.bot.guild_settings[payload.guild_id]
         if guild_settings['shop_message_id'] != payload.message_id:
             return
-        guild = self.bot.get_guild(payload.guild_id)
-        user = guild.get_member(payload.user_id)
+        guild = self.bot.get_guild(payload.guild_id) or await self.bot.fetch_guild(payload.guild_id)
+        user = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
         if user.bot:
             return
         channel = self.bot.get_channel(payload.channel_id)
