@@ -120,7 +120,7 @@ class ShopHandler(utils.Cog):
         async with self.bot.database() as db:
             await db(
                 """INSERT INTO guild_settings (guild_id, shop_channel_id, shop_message_id) VALUES ($1, $2, $3)
-                ON CONFLICT (guild_id) DO UPDATE SET shop_channel_id=excluded.channel_id, shop_message_id=excluded.message_id""",
+                ON CONFLICT (guild_id) DO UPDATE SET shop_channel_id=excluded.shop_channel_id, shop_message_id=excluded.shop_message_id""",
                 ctx.guild.id, shop_channel.id, shop_message.id
             )
         self.bot.guild_settings[ctx.guild.id]['shop_message_id'] = shop_message.id
