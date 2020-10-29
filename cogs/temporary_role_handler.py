@@ -51,7 +51,7 @@ class TemporaryRoleHandler(utils.Cog):
             except discord.HTTPException:
                 member = None
             try:
-                role = guild.get_role(row['role_id']) or await guild.fetch_role(row['role_id'])
+                role = guild.get_role(row['role_id'])
             except discord.HTTPException:
                 role = None
 
@@ -95,7 +95,7 @@ class TemporaryRoleHandler(utils.Cog):
             except discord.HTTPException:
                 member = None
             try:
-                role = guild.get_role(row['role_id']) or await guild.fetch_role(row['role_id'])
+                role = guild.get_role(row['role_id'])
             except discord.HTTPException:
                 role = None
 
