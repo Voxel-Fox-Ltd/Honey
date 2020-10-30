@@ -117,7 +117,7 @@ class CustomRoleHandler(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
-    async def colour(self, ctx:utils.Context, *, colour:utils.ColourConverter):
+    async def colour(self, ctx:utils.Context, *, colour:utils.converters.ColourConverter):
         """
         Change the colour of your custom role.
         """
