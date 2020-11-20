@@ -226,7 +226,7 @@ class CustomRoleHandler(utils.Cog):
         if position_role:
             try:
                 self.logger.info(f"Moving role {new_role.id} to position {position_role.position - 1} (my highest is {new_role.guild.me.top_role.position})")
-                await new_role.edit(position_below=position_role, reason="Update positioning")
+                await localutils.move_role_position_below(new_role, position_role, reason="Update positioning")
                 self.logger.info(f"Edited custom role position in guild (G{ctx.guild.id}/R{new_role.id})")
             except discord.Forbidden:
                 self.logger.error(f"Couldn't move custom role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
