@@ -2,14 +2,8 @@ import discord
 from discord.ext import commands
 
 
-class NotGuildModerator(commands.CommandError):
+class NotGuildModerator(commands.MissingRole):
     """Thrown when the user doesn't have the guild moderator role."""
-
-    def __init__(self, guild_moderator_role:discord.Role):
-        self.guild_moderator_role = guild_moderator_role
-
-    def __str__(self):
-        return f"This command can only be run by a guild moderator (role `{self.guild_moderator_role.name}`)."
 
 
 def is_guild_moderator_predicate(bot:commands.Bot, user:discord.Member) -> bool:
