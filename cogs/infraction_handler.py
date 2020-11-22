@@ -85,10 +85,10 @@ class InfractionHandler(utils.Cog):
         except discord.Forbidden:
             pass
 
-    @utils.group(invoke_without_command=True)
+    @utils.group(aliases=['infraction'], invoke_without_command=True)
     @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def infractions(self, ctx:utils.Context, user:discord.Member):
+    async def infractions(self, ctx:utils.Context, user_id:utils.converters.UserID):
         """
         The parent to be able to see user infractions.
         """
@@ -99,9 +99,9 @@ class InfractionHandler(utils.Cog):
 
         # Grab their infractions from the database
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM infractions WHERE guild_id=$1 AND user_id=$2 AND deleted_by IS NULL ORDER BY timestamp DESC", ctx.guild.id, user.id)
+            rows = await db("SELECT * FROM infractions WHERE guild_id=$1 AND user_id=$2 AND deleted_by IS NULL ORDER BY timestamp DESC", ctx.guild.id, user_id)
         if not rows:
-            return await ctx.send(f"{user.mention} has no recorded infractions.")
+            return await ctx.send(f"<@{user_id}> has no recorded infractions.", allowed_mentions=discord.AllowedMentions.none())
 
         # And pagination time babey
         pages = menus.MenuPages(source=InfractionSource(rows, per_page=5), clear_reactions_after=True, delete_message_after=True)
@@ -121,7 +121,7 @@ class InfractionHandler(utils.Cog):
             await db("UPDATE infractions SET deleted_by=$2 WHERE LOWER(infraction_id)=LOWER($1)", infraction_id, ctx.author.id)
         if not rows:
             return await ctx.send("The ID you gave doesn't refer to an undeleted infraction.")
-        return await ctx.send(f"Deleted infraction from <@{rows[0]['user_id']}>'s account.")
+        return await ctx.send(f"Deleted infraction from <@{rows[0]['user_id']}>'s account.", allowed_mentions=discord.AllowedMentions.none())
 
 
 def setup(bot:utils.Bot):
