@@ -36,6 +36,16 @@ async def move_role_position_below(role:discord.Role, below:discord.Role, reason
         if encounters == 2:
             break
 
+    # For up positions for the roles
+    # I do it like this so there's less of a chance of me having to move the top role of the listing
+    # or any roles above it, so that there's less of a chance of me having to move roles that
+    # I don't have permission to deal with
+    position = 1
+    new_roles = [{"id": roles[0].id, "position": 1}]
+    for r in roles[1:]:
+        if r.id < new_roles[-1]["id"]:
+            position += 1
+        new_roles.append({"id": r.id, "position": position})
+
     # Make and send the payload
-    payload = [{"id": z.id, "position": index} for index, z in enumerate(roles, start=1)]
-    await http.move_role_position(role.guild.id, payload, reason=reason)
+    await http.move_role_position(role.guild.id, new_roles, reason=reason)
