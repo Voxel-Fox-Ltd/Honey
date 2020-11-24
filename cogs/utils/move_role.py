@@ -43,7 +43,7 @@ async def move_role_position_below(role:discord.Role, below:discord.Role, reason
     position = 1
     new_roles = [{"id": roles[0].id, "position": 1}]
     for r in roles[1:]:
-        if r.id < new_roles[-1]["id"]:
+        if r.id > new_roles[-1]["id"]:
             position += 1
         new_roles.append({"id": r.id, "position": position})
 
