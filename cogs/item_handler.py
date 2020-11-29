@@ -285,7 +285,7 @@ class ItemHandler(utils.Cog):
                 return False
 
         # Add it to the user
-        if role_created:
+        if role not in user.roles:
             try:
                 await user.add_roles(role, reason="Paintbrush used")
                 self.logger.info(f"Add paint role to user (G{ctx.guild.id}/R{role.id}/U{user.id})")
