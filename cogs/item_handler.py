@@ -210,7 +210,7 @@ class ItemHandler(utils.Cog):
                 return False
 
         # See if there's any point
-        upper_roles = [i for i in user._roles if guild_roles[i] >= role_position_role and guild_roles[i].colour.value > 0]
+        upper_roles = [i for i in [o.id for o in user.roles] if guild_roles[i] >= role_position_role and guild_roles[i].colour.value > 0]
         if upper_roles:
             self.logger.info(f"Not painting user (G{user.guild.id}/U{user.id}) due to higher roles - {upper_roles}")
             await ctx.send("There's no point in painting that user - they have coloured roles above the paint role positions.")
