@@ -82,8 +82,9 @@ class CustomRoleHandler(utils.Cog):
         except discord.HTTPException:
             pass
 
-    @customrole.command(cls=utils.Command)
-    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
+    @customrole.command()
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    @commands.bot_has_permissions(send_messages=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def name(self, ctx:utils.Context, *, name:commands.clean_content):
@@ -113,8 +114,9 @@ class CustomRoleHandler(utils.Cog):
             return await ctx.send("You gave an invalid name - Discord wouldn't let me change it to your given value.")
         return await ctx.send("Successfully updated your role's name.")
 
-    @customrole.command(cls=utils.Command, aliases=['color'])
-    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
+    @customrole.command(aliases=['color'])
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    @commands.bot_has_permissions(send_messages=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def colour(self, ctx:utils.Context, *, colour:utils.converters.ColourConverter):
@@ -143,7 +145,7 @@ class CustomRoleHandler(utils.Cog):
             return await ctx.send("I'm unable to edit your custom role.")
         return await ctx.send("Successfully updated your role's colour.")
 
-    @customrole.command(cls=utils.Command)
+    @customrole.command()
     @localutils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
@@ -167,8 +169,9 @@ class CustomRoleHandler(utils.Cog):
             pass
         return await ctx.send(f"Set the custom role for {user.mention} to {role.mention}. They can manage it with the `{ctx.prefix}{ctx.command.parent.name} name` and `{ctx.prefix}{ctx.command.parent.name} colour` commands.", allowed_mentions=discord.AllowedMentions(roles=False))
 
-    @customrole.command(cls=utils.Command, aliases=['make'])
-    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
+    @customrole.command(aliases=['make'])
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    @commands.bot_has_permissions(send_messages=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def create(self, ctx:utils.Context):
