@@ -10,7 +10,7 @@ from cogs import utils as localutils
 
 COMMON_COMMAND_ALIASES = (
     ("hug", "cuddle", "snuggle", "snug",),
-    ("pat", "pet",),
+    ("pat", "pet", "headpat",),
     ("kiss", "smooch",),
 )
 
