@@ -551,7 +551,7 @@ class BotSettings(utils.Cog):
             column_name="channel_id",
             cache_key="disabled_sona_channels",
             database_key="DisabledSonaChannel",
-            key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none')
+            key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none'),
             converters=[
                 utils.SettingsMenuConverter(
                     prompt="What channel you want the sona command to be disabled in?",
@@ -574,7 +574,7 @@ class BotSettings(utils.Cog):
             column_name="channel_id",
             cache_key="disabled_interaction_channels",
             database_key="DisabledInteractionChannel",
-            key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none')
+            key_display_function = lambda k: getattr(ctx.guild.get_channel(k), 'mention', 'none'),
             converters=[
                 utils.SettingsMenuConverter(
                     prompt="What channel you want the interaction commands to be disabled in?",
@@ -597,7 +597,7 @@ class BotSettings(utils.Cog):
             column_name="role_id",
             cache_key="removed_on_mute_roles",
             database_key="RemoveOnMute",
-            key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
+            key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none'),
             converters=[
                 utils.SettingsMenuConverter(
                     prompt="What role do you want to be removed on mute?",
@@ -620,7 +620,7 @@ class BotSettings(utils.Cog):
             column_name="role_id",
             cache_key="role_sona_count",
             database_key="SonaCount",
-            key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none')
+            key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none'),
             converters=[
                 utils.SettingsMenuConverter(
                     prompt="What role do you want to set the sona count for?",
