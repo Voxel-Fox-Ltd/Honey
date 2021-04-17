@@ -29,7 +29,8 @@ class InteractionCommands(utils.Cog):
             await db(
                 """INSERT INTO interaction_counter (guild_id, user_id, target_id, interaction, amount)
                 VALUES ($1, $2, $3, $4, 1) ON CONFLICT (guild_id, user_id, target_id, interaction) DO UPDATE SET
-                amount=interaction_counter.amount+excluded.amount""", ctx.guild.id, ctx.author.id, ctx.args[-1].id, ctx.interaction_name
+                amount=interaction_counter.amount+excluded.amount""",
+                ctx.guild.id, ctx.author.id, ctx.args[-1].id, ctx.interaction_name,
             )
 
     @utils.group(aliases=['interaction'], invoke_without_command=True)
@@ -52,12 +53,14 @@ class InteractionCommands(utils.Cog):
                 [0, ctx.guild.id]
             )
             given_rows = await db(
-                "SELECT interaction, SUM(amount) AS amount FROM interaction_counter WHERE user_id=$1 AND guild_id=$2 GROUP BY guild_id, user_id, interaction",
-                user.id, ctx.guild.id
+                """SELECT interaction, SUM(amount) AS amount FROM interaction_counter WHERE
+                user_id=$1 AND guild_id=$2 GROUP BY guild_id, user_id, interaction""",
+                user.id, ctx.guild.id,
             )
             received_rows = await db(
-                "SELECT interaction, SUM(amount) AS amount FROM interaction_counter WHERE target_id=$1 AND guild_id=$2 GROUP BY guild_id, target_id, interaction",
-                user.id, ctx.guild.id
+                """SELECT interaction, SUM(amount) AS amount FROM interaction_counter WHERE
+                target_id=$1 AND guild_id=$2 GROUP BY guild_id, target_id, interaction""",
+                user.id, ctx.guild.id,
             )
         valid_interactions = sorted([i['interaction_name'] for i in valid_interaction_rows])
 
@@ -109,6 +112,7 @@ class InteractionCommands(utils.Cog):
             return  # No responses found
 
         # Create a command we can invoke
+        ctx.interaction_row = rows[0]
         ctx.interaction_response = rows[0]['response']
         ctx.interaction_name = command_name
         ctx.invoke_meta = True
@@ -124,6 +128,9 @@ class InteractionCommands(utils.Cog):
         """
         The interaction command invoker.
         """
+
+        if ctx.interaction_row['nsfw'] and not ctx.channel.is_nsfw():
+            raise commands.NSFWChannelRequired()
 
         # Set up who we're pinging
         pings = []
@@ -152,11 +159,11 @@ class InteractionCommands(utils.Cog):
             return await ctx.send("Your interaction cooldown has expired - you're able to run interactions again.")
         return await ctx.send(f"Your remaining cooldown is {utils.TimeValue(remaining_time).clean}.")
 
-    @interactions.command()
+    @interactions.group(name="add")
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def add(self, ctx:utils.Context, interaction_name:str, *, response:str):
+    async def interactions_add(self, ctx:utils.Context, interaction_name:str, *, response:str):
         """
         Adds a custom interaction.
         Use `{author}` and `{user}` as placeholders for where users should receive a ping.
@@ -169,16 +176,17 @@ class InteractionCommands(utils.Cog):
             raise utils.errors.MissingRequiredArgumentString("response")
         async with self.bot.database() as db:
             await db(
-                "INSERT INTO interaction_text (guild_id, interaction_name, response) VALUES ($1, $2, $3)",
+                """INSERT INTO interaction_text (guild_id, interaction_name, response, nsfw) VALUES ($1, $2, $3, false)
+                ON CONFLICT (guild_id, interaction_name, response) DO NOTHING""",
                 ctx.guild.id, interaction_name.lower(), f"*{response.strip('* ')}*"
             )
         return await ctx.send("Added your custom interaction response to the pool.")
 
-    @interactions.command(aliases=['nsfwadd'])
+    @interactions_add.command(name=['nsfw'])
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def addnsfw(self, ctx:utils.Context, interaction_name:str, *, response:str):
+    async def interactions_add_nsfw(self, ctx:utils.Context, interaction_name:str, *, response:str):
         """
         Adds a custom NSFW interaction.
         Use `{author}` and `{user}` as placeholders for where users should receive a ping.
@@ -191,7 +199,8 @@ class InteractionCommands(utils.Cog):
             raise utils.errors.MissingRequiredArgumentString("response")
         async with self.bot.database() as db:
             await db(
-                "INSERT INTO interaction_text (guild_id, interaction_name, response) VALUES ($1, $2, $3)",
+                """INSERT INTO interaction_text (guild_id, interaction_name, response, nsfw) VALUES ($1, $2, $3, true)
+                ON CONFLICT (guild_id, interaction_name, response) DO NOTHING""",
                 ctx.guild.id, interaction_name.lower(), f"*{response.strip('* ')}*"
             )
         return await ctx.send("Added your custom interaction response to the pool.")

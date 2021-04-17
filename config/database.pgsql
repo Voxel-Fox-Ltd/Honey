@@ -170,7 +170,9 @@ CREATE TABLE IF NOT EXISTS interaction_counter(
 CREATE TABLE IF NOT EXISTS interaction_text(
     guild_id BIGINT,
     interaction_name VARCHAR(50),
-    response VARCHAR(2000)
+    response VARCHAR(2000),
+    nsfw BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (guild_id, interaction_name, response)
 );
 
 
