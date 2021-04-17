@@ -85,7 +85,6 @@ class CustomRoleHandler(utils.Cog):
     @customrole.command()
     @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
-    @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def name(self, ctx:utils.Context, *, name:commands.clean_content):
         """
@@ -117,7 +116,6 @@ class CustomRoleHandler(utils.Cog):
     @customrole.command(aliases=['color'])
     @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
-    @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def colour(self, ctx:utils.Context, *, colour:utils.converters.ColourConverter):
         """
