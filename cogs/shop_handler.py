@@ -83,6 +83,19 @@ class ShopHandler(utils.Cog):
         return new_data
 
     @utils.command()
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def shop(self, ctx:utils.Context):
+        """
+        Directs you to this guild's shop channel.
+        """
+
+        channel_id = self.bot.guild_settings[ctx.guild.id].get('shop_channel_id')
+        if not channel_id:
+            return await ctx.send("This server doesn't have a shop channel set up!")
+        return await ctx.send(f"<#{channel_id}>")
+
+    @utils.command()
     @commands.has_guild_permissions(manage_channels=True)
     @commands.bot_has_guild_permissions(manage_channels=True, external_emojis=True, embed_links=True)
     @commands.guild_only()
