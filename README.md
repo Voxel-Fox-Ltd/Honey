@@ -10,11 +10,11 @@ Honey is able to store your fursonas! Just run `h.setsona` and the bot will DM y
 
 Server mods can set up an approval flow so sonas have to be verified before they can be pulled up by other users - all relevant settings are shown in `h.setup` (screenshot below). Mods can also set up certain roles on the server to have more allowed sonas - users are allowed one sona by default, but mods can raise this limit per role.
 
-![](/marketing/sona_settings.png)
+![](https://voxelfox.co.uk/static/images/honeyg/sona_settings.png)
 
 Already made a sona through the bot and you want to import that into a new server? You can run `h.importsona` and the bot'll talk you through copying a sona from one of your servers into another. Currently supported are all servers where you use Honey, as well as The Furry Kingdom and Winterhaven.
 
-![](/marketing/kaiden_sona.png)
+![](/markhttps://voxelfox.co.uk/static/images/honey/kaiden_sona.png)
 
 ## Interaction Commands
 
@@ -22,7 +22,7 @@ The classic `h.hug @User` is back. Many commands including hug, pat, kiss, and n
 
 Interactions can also be shortened with the use of a cooldown token (see the relevant section).
 
-![](/marketing/interaction_cooldown_settings.png)
+![](https://voxelfox.co.uk/static/images/honeyng/interaction_cooldown_settings.png)
 
 ### Adding Interactions
 
@@ -30,19 +30,19 @@ The default interactions that come with the bot are hug, pat, lick, kiss, bap, b
 
 By using this you're able to add your own responses to existing interactions, as well as make your own entirely _new_ interactions to the bot!
 
-![](/marketing/add_interaction.png)
+![](https://voxelfox.co.uk/static/images/honeyg/add_interaction.png)
 
 ### Interaction Stats
 
 If you're the kind of person who likes numbers, then Honey can hook you up with that as well - all interactions are stored in the bot, and you can see how many times you've hugged or been kissed by someone right inside the bot itself - this is done with the `h.interactions` command.
 
-![](/marketing/interaction_stats.png)
+![](https://voxelfox.co.uk/static/images/honeyg/interaction_stats.png)
 
 ## Shop System
 
 As is the norm with a lot of furry bots, Honey tries to make use of user activity by adding a shopping system into your server. Users gain money as they talk, and they can spend that money in your server's item shop (created with `h.createshopchannel`). Included with the shop system are commands like `h.givecoins @User amount`, for if a user wants to pass their coins along to someone else.
 
-![](/marketing/coin_shop.png)
+![](https://voxelfox.co.uk/static/images/honey/coin_shop.png)
 
 ### Paint
 
@@ -50,7 +50,7 @@ Users are able to purchase and use _paint_. Paint allows users to change the col
 
 Honey uses the custom role creation position (defined in the "custom role" section of the setup) to create a new paint role for the user, pulling from a list of 140+ distinct roles (using the CSS named colours plus a couple more). If a user is painted while they're already painted, then the role assinged to them will simply be edited. Once the paint's one-hour duration is up, the role will be deleted from your server.
 
-![](/marketing/paint_used.png)
+![](https://voxelfox.co.uk/static/images/honeyng/paint_used.png)
 
 ### Cooldown Tokens
 
@@ -64,7 +64,7 @@ If you wanted your economy to keep going on through Honey, then you can also add
 
 Honey is able to handle giveaways, letting users add an interaction to a message and roll for a chance to win an item.
 
-![](/marketing/giveaway.png)
+![](https://voxelfox.co.uk/static/images/honey/giveaway.png)
 
 ## Moderation Commands
 
@@ -82,7 +82,7 @@ Custom roles can be managed by the users who have them; the commands `h.customro
 
 Only users with a designated master role (set in `h.setup`) can create/manage custom roles, though a mod can _set_ a custom role for a user with the `h.customrole set @User role` if your server doesn't want to create a master role.
 
-![](/marketing/custom_role.png)
+![](https://voxelfox.co.uk/static/images/honeyg/custom_role.png)
 
 ## Verification System
 
