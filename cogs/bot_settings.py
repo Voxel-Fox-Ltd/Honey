@@ -691,6 +691,7 @@ class BotSettings(utils.Cog):
         settings_mention = utils.SettingsMenuOption.get_user_settings_mention
         menu.add_multiple_options(
             utils.SettingsMenuOption(
+                ctx=ctx,
                 display=lambda c: "Receive DM on paint removal (currently {0})".format(settings_mention(c, 'dm_on_paint_remove')),
                 converter_args=[
                     utils.SettingsMenuConverter(
@@ -703,6 +704,7 @@ class BotSettings(utils.Cog):
                 callback=utils.SettingsMenuOption.get_set_user_settings_callback('user_settings', 'dm_on_paint_remove'),
             ),
             utils.SettingsMenuOption(
+                ctx=ctx,
                 display=lambda c: "Allow paint from other users (currently {0})".format(settings_mention(c, 'allow_paint')),
                 converter_args=[
                     utils.SettingsMenuConverter(
@@ -715,6 +717,7 @@ class BotSettings(utils.Cog):
                 callback=utils.SettingsMenuOption.get_set_user_settings_callback('user_settings', 'allow_paint'),
             ),
             utils.SettingsMenuOption(
+                ctx=ctx,
                 display=lambda c: "Allow interaction pings (currently {0})".format(settings_mention(c, 'receive_interaction_ping')),
                 converter_args=[
                     utils.SettingsMenuConverter(
