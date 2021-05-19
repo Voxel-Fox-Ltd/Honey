@@ -1,3 +1,5 @@
+import operator
+
 import discord
 from discord.ext import commands
 import voxelbotutils as utils
@@ -512,6 +514,7 @@ class BotSettings(utils.Cog):
                     prompt="How long should this role's cooldown be (eg `5m`, `15s`, etc)?",
                     asking_for="role cooldown",
                     converter=utils.TimeValue,
+                    serialize_function=operator.attrgetter("duration"),
                 ),
             ]
         )
