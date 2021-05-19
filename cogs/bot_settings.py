@@ -623,7 +623,7 @@ class BotSettings(utils.Cog):
             column_name="role_id",
             cache_key="role_sona_count",
             database_key="SonaCount",
-            key_display_function = lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none'),
+            key_display_function=lambda k: getattr(ctx.guild.get_role(k), 'mention', 'none'),
             converters=[
                 utils.SettingsMenuConverter(
                     prompt="What role do you want to set the sona count for?",
