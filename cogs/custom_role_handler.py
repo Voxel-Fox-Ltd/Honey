@@ -73,7 +73,11 @@ class CustomRoleHandler(utils.Cog):
         if master_role in member.roles:
             return
 
-        # They lost the custom role master - delete their custom role
+        # They lost the custom role master - see if they have manage roles
+        if after.guild_permissions.manage_roles:
+            return
+
+        # Nope - delete their custom role
         role = await self.check_for_custom_role(member)
         if role is None:
             return
@@ -148,7 +152,9 @@ class CustomRoleHandler(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
     async def set(self, ctx:utils.Context, user:discord.Member, *, role:discord.Role):
-        """Set a user's custom role to an existing one"""
+        """
+        Set a user's custom role to an existing one.
+        """
 
         # Add it to the database
         async with self.bot.database() as db:
@@ -173,7 +179,9 @@ class CustomRoleHandler(utils.Cog):
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def create(self, ctx:utils.Context):
-        """Create a custom role for the server"""
+        """
+        Create a custom role for the server.
+        """
 
         # See if they're allowed to make a custom role
         master_role_id = self.bot.guild_settings[ctx.guild.id].get('custom_role_id')
@@ -182,7 +190,7 @@ class CustomRoleHandler(utils.Cog):
         master_role = ctx.guild.get_role(master_role_id)
         if master_role is None:
             return await ctx.send("The master role for custom role handling on this server is set to a deleted role.")
-        if master_role not in ctx.author.roles:
+        if master_role not in ctx.author.roles and not ctx.author.guild_permissions.manage_roles:
             return await ctx.send(f"You need the `{master_role.name}` role to be able to create a custom role.")
 
         # Lets trigger some typing babey
