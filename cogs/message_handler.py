@@ -1,17 +1,17 @@
 from datetime import datetime as dt, timedelta
 
 import discord
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class MessageHandler(utils.Cog):
+class MessageHandler(vbu.Cog):
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.last_audit_delete_entry_id = {}  # guild_id: (entry_id, count)
 
-    @utils.Cog.listener()
-    async def on_message_edit(self, before:discord.Message, after:discord.Message):
+    @vbu.Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
         """
         Logs edited messages.
         """
@@ -27,7 +27,7 @@ class MessageHandler(utils.Cog):
             return
 
         # Create embed
-        with utils.Embed(colour=0x0000ff) as embed:
+        with vbu.Embed(colour=0x0000ff) as embed:
             embed.set_author_to_user(user=after.author)
             embed.description = f"[Message edited]({after.jump_url}) in {after.channel.mention}"
             before_content = before.content
@@ -56,8 +56,8 @@ class MessageHandler(utils.Cog):
         except discord.Forbidden:
             pass
 
-    @utils.Cog.listener()
-    async def on_message_delete(self, message:discord.Message):
+    @vbu.Cog.listener()
+    async def on_message_delete(self, message: discord.Message):
         """
         Logs edited messages.
         """
@@ -69,7 +69,7 @@ class MessageHandler(utils.Cog):
             return
 
         # Create embed
-        with utils.Embed(colour=0xff0000) as embed:
+        with vbu.Embed(colour=0xff0000) as embed:
             embed.set_author_to_user(user=message.author)
             embed.description = f"Message deleted in {message.channel.mention}"
             if message.content:
@@ -119,6 +119,6 @@ class MessageHandler(utils.Cog):
             pass
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = MessageHandler(bot)
     bot.add_cog(x)

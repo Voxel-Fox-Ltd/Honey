@@ -6,15 +6,16 @@ class DisabledInChannel(commands.CommandError):
     pass
 
 
-def is_enabled_in_channel(guild_settings_key:str):
-    """Checks whether a command is disabled in a given channel or not
+def is_enabled_in_channel(guild_settings_key: str):
+    """
+    Checks whether a command is disabled in a given channel or not
 
     Params:
         guild_settings_key : str
             The name of the key referring to the list of blacklisted channel IDs in the guild settings
     """
 
-    async def predicate(ctx:commands.Context):
+    async def predicate(ctx: commands.Context):
         if ctx.guild is None:
             raise commands.NoPrivateMessage()
         guild_settings = ctx.bot.guild_settings[ctx.guild.id]

@@ -2,55 +2,55 @@ import random
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class MiscCommands(utils.Cog):
+class MiscCommands(vbu.Cog):
 
-    @utils.command()
+    @vbu.command()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def fakesona(self, ctx:utils.Context):
+    async def fakesona(self, ctx: vbu.Context):
         """
         Grabs you a fake sona from ThisFursonaDoesNotExist.com.
         """
 
         seed = random.randint(1, 99999)
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_author(name="Click here to it larger", url=f"https://thisfursonadoesnotexist.com/v2/jpgs-2x/seed{seed:0>5}.jpg")
             embed.set_image(f"https://thisfursonadoesnotexist.com/v2/jpgs/seed{seed:0>5}.jpg")
             embed.set_footer(text="Provided by ThisFursonaDoesNotExist.com")
         await ctx.send(embed=embed)
 
-    @utils.command()
+    @vbu.command()
     @commands.bot_has_permissions(send_messages=True, add_reactions=True)
-    async def poll(self, ctx:utils.Context, *args):
+    async def poll(self, ctx: vbu.Context, *args):
         """
         Make a poll for a bunch of items.
         """
 
         if not args:
-            raise utils.errors.MissingRequiredArgumentString("args")
+            raise vbu.errors.MissingRequiredArgumentString("args")
         if len(args) > 10:
             return await ctx.send("You can only pick 5 choices max per poll.")
         lines = [f"{index}\N{COMBINING ENCLOSING KEYCAP} {i}" for index, i in enumerate(args, start=1)]
-        m = await ctx.send('\n'.join(lines), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
+        m = await ctx.send('\n'.join(lines), allowed_mentions=discord.AllowedMentions.none())
         for line in lines:
             await m.add_reaction(line.split(' ')[0])
 
-    @utils.command(aliases=['choice', 'choices'])
+    @vbu.command(aliases=['choice', 'choices'])
     @commands.bot_has_permissions(send_messages=True, add_reactions=True)
-    async def choose(self, ctx:utils.Context, *args):
+    async def choose(self, ctx: vbu.Context, *args):
         """
         Have the bot pick between several items.
         """
 
         if not args:
-            raise utils.errors.MissingRequiredArgumentString("args")
-        return await ctx.send(f"I choose **{random.choice(args)}**.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
+            raise vbu.errors.MissingRequiredArgumentString("args")
+        return await ctx.send(f"I choose **{random.choice(args)}**.", allowed_mentions=discord.AllowedMentions.none())
 
-    @utils.command(aliases=["8ball"])
+    @vbu.command(aliases=["8ball"])
     @commands.bot_has_permissions(send_messages=True)
-    async def eightball(self, ctx:utils.Context, *, question:str):
+    async def eightball(self, ctx: vbu.Context, *, question: str):
         """
         Ask a question, get a slighty passive-aggressive response.
         """
@@ -78,10 +78,10 @@ class MiscCommands(utils.Cog):
             "Very doubtful.",
         ])
         if not question:
-            raise utils.errors.MissingRequiredArgumentString("question")
+            raise vbu.errors.MissingRequiredArgumentString("question")
         return await ctx.send(response)
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = MiscCommands(bot)
     bot.add_cog(x)

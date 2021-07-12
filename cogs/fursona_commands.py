@@ -7,14 +7,14 @@ import discord
 from discord.ext import commands
 from discord.ext import menus
 import asyncpg
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
-from cogs import utils as localutils
+from cogs import utils
 
 
 class FursonaPageSource(menus.ListPageSource):
 
-    def format_page(self, menu:menus.Menu, entry:dict) -> dict:
+    def format_page(self, menu: menus.Menu, entry: dict) -> dict:
         """
         Formats a sona into a thingmie and returns the embed.
         """
@@ -22,7 +22,7 @@ class FursonaPageSource(menus.ListPageSource):
         # Format the data into an embed for the sona
         menu.raw_sona_data = entry.copy()
         content = f"Sona **{entry['name']}** from **{entry['guild_name']}** (sona {menu.current_page + 1}/{self.get_max_pages()})."
-        sona = localutils.Fursona(**entry)
+        sona = utils.Fursona(**entry)
         sona.verified = False
         menu.sona = sona
         embed = sona.get_embed(mention_user=False, add_image=True)
@@ -34,7 +34,7 @@ class FursonaPageSource(menus.ListPageSource):
         }
 
 
-class FursonaCommands(utils.Cog):
+class FursonaCommands(vbu.Cog):
 
     OTHER_FURRY_GUILD_DATA = [
         {
@@ -62,11 +62,13 @@ class FursonaCommands(utils.Cog):
     CHECK_MARK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_MARK_EMOJI = "<:cross_no:596096897769275402>"
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.currently_setting_sonas = set()
 
-    async def send_verification_message(self, user:discord.User, message:str, *, timeout:float=600, check:callable=None, max_length:int=200) -> discord.Message:
+    async def send_verification_message(
+            self, user: discord.User, message: str, *, timeout: float = 600,
+            check: callable = None, max_length: int = 200) -> discord.Message:
         """
         Sends a verification message to a user, waits for a response, and returns that message.
         """
@@ -102,7 +104,7 @@ class FursonaCommands(utils.Cog):
                 return v
 
     @classmethod
-    def get_image_from_message(cls, message:discord.Message) -> typing.Optional[str]:
+    def get_image_from_message(cls, message: discord.Message) -> typing.Optional[str]:
         """
         Gets an image url from a given message.
         """
@@ -114,18 +116,18 @@ class FursonaCommands(utils.Cog):
         return None
 
     @staticmethod
-    def is_image_url(content:str) -> bool:
+    def is_image_url(content: str) -> bool:
         """
         Returns whether a given string is a valid image url.
         """
 
         return re.search(r"^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg)$", content, re.IGNORECASE)
 
-    @utils.command()
-    @commands.check(localutils.checks.is_verified)
+    @vbu.command()
+    @commands.check(utils.checks.is_verified)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def setsona(self, ctx:utils.Context):
+    async def setsona(self, ctx: vbu.Context):
         """
         Stores your fursona information in the bot.
         """
@@ -248,10 +250,10 @@ class FursonaCommands(utils.Cog):
             return await user.send("Your fursona has been automatically declined as it is NSFW")
         await self.bot.get_command("setsonabyjson").invoke(ctx)
 
-    @utils.command(hidden=True)
+    @vbu.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def setsonabyjson(self, ctx:utils.Context, *, data:str=None):
+    async def setsonabyjson(self, ctx: vbu.Context, *, data: str = None):
         """
         Lets you set your sona with a JSON string.
 
@@ -285,7 +287,7 @@ class FursonaCommands(utils.Cog):
         # See if they already have a sona with that name
         if information['name'].lower() in current_sona_names:
             return await ctx.author.send(f"You already have a sona with the name `{information['name']}`. Please start your setup again and provide a different name.")
-        sona_object = localutils.Fursona(**information)
+        sona_object = utils.Fursona(**information)
 
         # Send it back to the user so we can make sure it sends
         user = ctx.author
@@ -333,10 +335,10 @@ class FursonaCommands(utils.Cog):
             return await user.send("Your fursona has been sent to the moderators for approval! Please be patient as they review.")
         return await user.send("Your fursona has been saved!")
 
-    @utils.command(hidden=True)
+    @vbu.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def importsona(self, ctx:utils.Context):
+    async def importsona(self, ctx: vbu.Context):
         """
         Get your sona from another server.
         """
@@ -378,8 +380,8 @@ class FursonaCommands(utils.Cog):
 
             # Format data
             url = api_data['url']
-            params = {i:o.format(user=ctx.author, guild=ctx.guild, bot=self.bot) for i, o in api_data.get('params', dict()).copy().items()}
-            headers = {i:o.format(user=ctx.author, guild=ctx.guild, bot=self.bot) for i, o in api_data.get('headers', dict()).copy().items()}
+            params = {i: o.format(user=ctx.author, guild=ctx.guild, bot=self.bot) for i, o in api_data.get('params', dict()).copy().items()}
+            headers = {i: o.format(user=ctx.author, guild=ctx.guild, bot=self.bot) for i, o in api_data.get('headers', dict()).copy().items()}
 
             # Run request
             try:
@@ -432,8 +434,8 @@ class FursonaCommands(utils.Cog):
         ctx.information = sona_data
         return await command.invoke(ctx)
 
-    @utils.Cog.listener("on_raw_reaction_add")
-    async def fursona_verification_reaction_handler(self, payload:discord.RawReactionActionEvent):
+    @vbu.Cog.listener("on_raw_reaction_add")
+    async def fursona_verification_reaction_handler(self, payload: discord.RawReactionActionEvent):
         """
         Listens for reactions being added to fursona approval messages.
         """
@@ -545,11 +547,11 @@ class FursonaCommands(utils.Cog):
         except discord.Forbidden:
             pass
 
-    @utils.command(aliases=['getsona'])
-    @localutils.checks.is_enabled_in_channel('disabled_sona_channels')
+    @vbu.command(aliases=['getsona'])
+    @utils.checks.is_enabled_in_channel('disabled_sona_channels')
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
-    async def sona(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, name:str=None):
+    async def sona(self, ctx: vbu.Context, user: typing.Optional[discord.Member], *, name: str = None):
         """
         Gets your sona.
         """
@@ -578,13 +580,13 @@ class FursonaCommands(utils.Cog):
             return await ctx.send("I can't show NSFW sonas in a SFW channel.")
 
         # Wew it's sona time let's go
-        sona = localutils.Fursona(**rows[0])
+        sona = utils.Fursona(**rows[0])
         return await ctx.send(embed=sona.get_embed(mention_user=True))
 
-    @commands.command(cls=utils.Command, ignore_extra=False)
+    @vbu.command(ignore_extra=False)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def deletesona(self, ctx:utils.Context, *, name:str=None):
+    async def deletesona(self, ctx: vbu.Context, *, name: str = None):
         """
         Deletes your sona.
         """
@@ -628,6 +630,6 @@ class FursonaCommands(utils.Cog):
         return await ctx.send("Deleted your sona.")
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = FursonaCommands(bot)
     bot.add_cog(x)

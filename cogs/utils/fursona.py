@@ -1,4 +1,4 @@
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
 class Fursona(object):

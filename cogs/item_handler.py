@@ -8,21 +8,21 @@ import collections
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
-from cogs import utils as localutils
+from cogs import utils
 
 
-class ItemHandler(utils.Cog):
+class ItemHandler(vbu.Cog):
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.paintbrush_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)  # guild_id: Lock
 
-    @commands.command(cls=utils.Command, aliases=['inv', 'inventory', 'money'])
+    @vbu.command(aliases=['inv', 'inventory', 'money'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
-    async def coins(self, ctx:utils.Context, user:discord.Member=None):
+    async def coins(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Gives you the content of your inventory.
         """
@@ -47,7 +47,7 @@ class ItemHandler(utils.Cog):
 
         # Throw it into an embed
         coin_emoji = self.bot.guild_settings[ctx.guild.id].get("coin_emoji", None) or "coins"
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
             inventory_string_rows = []
             for row in inv_rows:
@@ -61,10 +61,10 @@ class ItemHandler(utils.Cog):
             embed.description = f"**{coin_rows[0]['amount']:,} {coin_emoji}**\n" + "\n".join(inventory_string_rows)
         return await ctx.send(embed=embed)
 
-    @utils.command(aliases=['use'])
+    @vbu.command(aliases=['use'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
-    async def useitem(self, ctx:utils.Context, item_name:str, user:typing.Optional[discord.Member], *, args:str=None):
+    async def useitem(self, ctx: vbu.Context, item_name: str, user: typing.Optional[discord.Member], *, args: str = None):
         """
         Use an item that you purchased from the shop.
         """
@@ -128,7 +128,7 @@ class ItemHandler(utils.Cog):
                     """INSERT INTO temporary_roles (guild_id, role_id, user_id, remove_timestamp, key, dm_user)
                     VALUES ($1, $2, $3, $4, 'Buyable Temp Role', true) ON CONFLICT (guild_id, role_id, user_id) DO UPDATE
                     SET remove_timestamp=excluded.remove_timestamp, key=excluded.key, dm_user=excluded.dm_user""",
-                    ctx.guild.id, int(role_id), ctx.author.id, dt.utcnow() + utils.TimeValue(duration_rows[0]['duration']).delta
+                    ctx.guild.id, int(role_id), ctx.author.id, dt.utcnow() + vbu.TimeValue(duration_rows[0]['duration']).delta
                 )
                 data = True
 
@@ -157,33 +157,33 @@ class ItemHandler(utils.Cog):
         self.logger.info(f"Remove item ({item_data['name']}) from user (G{ctx.guild.id}/U{ctx.author.id})")
         await db.disconnect()
 
-    @utils.command(aliases=['paintbrush'])
+    @vbu.command(aliases=['paintbrush'])
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
-    async def paint(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, args:str=None):
+    async def paint(self, ctx: vbu.Context, user: typing.Optional[discord.Member], *, args: str = None):
         """
         Use the paintbrush on a user in a given server.
         """
 
         await ctx.invoke(self.bot.get_command("use"), item_name="paintbrush", user=user or ctx.author, args=args)
 
-    @utils.command()
+    @vbu.command()
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
-    async def multipaint(self, ctx:utils.Context, users:commands.Greedy[discord.Member], *, args:str=None):
+    async def multipaint(self, ctx: vbu.Context, users: commands.Greedy[discord.Member], *, args: str = None):
         """
         Use the paintbrush on a user in a given server.
         """
 
         if not users:
-            raise utils.errors.MissingRequiredArgumentString("users")
+            raise vbu.errors.MissingRequiredArgumentString("users")
         if len(users) > 5:
             return await ctx.send("You can only multipaint 5 users at once.")
         for u in users:
             await ctx.invoke(self.bot.get_command("use"), item_name="paintbrush", user=u, args=args)
 
-    async def use_paintbrush(self, ctx:utils.Context, args:str, db:utils.DatabaseConnection, user:discord.Member):
+    async def use_paintbrush(self, ctx: vbu.Context, args: str, db: vbu.DatabaseConnection, user: discord.Member):
         """
         Use the paintbrush on a user in a given server.
         """
@@ -220,13 +220,13 @@ class ItemHandler(utils.Cog):
         colour_name, colour_value = None, None
         if args:
             try:
-                colour = await utils.converters.ColourConverter(allow_default_colours=False).convert(ctx, args)
+                colour = await vbu.converters.ColourConverter(allow_default_colours=False).convert(ctx, args)
                 colour_name, colour_value = args.strip(), colour.value
             except commands.BadArgument:
                 await ctx.send(f"`{args.title()}` isn't a valid colour name.", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
                 return False
         if colour_name is None:
-            colour_name, colour_value = random.choice(list(utils.converters.ColourConverter.COLOURS_BY_NAME.items()))
+            colour_name, colour_value = random.choice(list(vbu.converters.ColourConverter.COLOURS_BY_NAME.items()))
 
         # See if they have a paint role already
         paint_rows = await db(
@@ -272,7 +272,7 @@ class ItemHandler(utils.Cog):
             # Edit the role position
             try:
                 self.logger.info(f"Moving role {role.id} to position {role_position_role.position - 1} (my highest is {role.guild.me.top_role.position})")
-                await localutils.move_role_position_below(role, role_position_role, reason="Update positioning")
+                await utils.move_role_position_below(role, role_position_role, reason="Update positioning")
                 self.logger.info(f"Edited paint role position in guild (G{ctx.guild.id}/R{role.id})")
             except discord.Forbidden:
                 self.logger.error(f"Couldn't move paint role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
@@ -312,14 +312,14 @@ class ItemHandler(utils.Cog):
         )
         return True
 
-    @utils.command(aliases=['colorsearch'])
-    async def coloursearch(self, ctx:utils.Context, *, search:str):
+    @vbu.command(aliases=['colorsearch'])
+    async def coloursearch(self, ctx: vbu.Context, *, search: str):
         """
         Searches for a colour by a given name.
         """
 
         valid_colours = []
-        for name, value in utils.converters.ColourConverter.COLOURS_BY_NAME.items():
+        for name, value in vbu.converters.ColourConverter.COLOURS_BY_NAME.items():
             if search.lower() in name.lower():
                 valid_colours.append((name, value))
         valid_colours = sorted(valid_colours)
@@ -328,9 +328,9 @@ class ItemHandler(utils.Cog):
         valid_string = [f"{i.title()}: `#{hex(o)[2:]}`" for i, o in valid_colours[:10]]
         return await ctx.send(f"Showing {len(valid_string)} of {len(valid_colours)} matching colours:\n" + '\n'.join(valid_string))
 
-    @utils.command()
+    @vbu.command()
     @commands.is_owner()  # TODO update this
-    async def setpainttimeout(self, ctx:utils.Context, user:discord.Member, duration:utils.TimeValue):
+    async def setpainttimeout(self, ctx: vbu.Context, user: discord.Member, duration: vbu.TimeValue):
         """
         Set the paint timeout for a given user to an abritrary value.
         """
@@ -343,7 +343,7 @@ class ItemHandler(utils.Cog):
             )
         return await ctx.send("Updated.")
 
-    async def use_cooldown_token(self, ctx:utils.Context, db:utils.DatabaseConnection, user:discord.Member):
+    async def use_cooldown_token(self, ctx: vbu.Context, db: vbu.DatabaseConnection, user: discord.Member):
         """
         Use the cooldown token on a user in a given server.
         """
@@ -371,7 +371,7 @@ class ItemHandler(utils.Cog):
         used_tokens = min([token_count, remaining_time])
 
         # Use the tokens
-        bucket: utils.cooldown.Cooldown = interaction._buckets.get_bucket(new_ctx.message)
+        bucket: vbu.cooldown.Cooldown = interaction._buckets.get_bucket(new_ctx.message)
         bucket._last = bucket._last - used_tokens
         bucket._window = bucket._last - used_tokens
         interaction._buckets._cache[interaction._buckets._bucket_key(new_ctx.message)] = bucket
@@ -384,6 +384,6 @@ class ItemHandler(utils.Cog):
         return True, used_tokens
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = ItemHandler(bot)
     bot.add_cog(x)

@@ -2,12 +2,12 @@ from datetime import datetime as dt
 
 import discord
 from discord.ext import tasks
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class TemporaryRoleHandler(utils.Cog):
+class TemporaryRoleHandler(vbu.Cog):
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.role_handler.start()
 
@@ -22,7 +22,7 @@ class TemporaryRoleHandler(utils.Cog):
 
         self.bot.dispatch("temporary_role_handle")
 
-    @utils.Cog.listener()
+    @vbu.Cog.listener()
     async def on_temporary_role_handle(self):
         """
         Update the temporary roles for the users of a guild.
@@ -133,6 +133,6 @@ class TemporaryRoleHandler(utils.Cog):
         await self.bot.wait_until_ready()
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = TemporaryRoleHandler(bot)
     bot.add_cog(x)

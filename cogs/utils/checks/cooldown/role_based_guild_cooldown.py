@@ -1,14 +1,14 @@
 import sys
 
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class RoleBasedGuildCooldown(utils.cooldown.Cooldown):
+class RoleBasedGuildCooldown(vbu.cooldown.Cooldown):
 
     # tier_cooldowns  # GuildID: {Optional[RoleID]: Seconds}
 
-    def predicate(self, ctx:commands.Context):
+    def predicate(self, ctx: commands.Context):
         """Update the cooldown based on the given guild member"""
 
         # Get the guild settings

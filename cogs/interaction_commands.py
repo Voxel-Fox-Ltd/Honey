@@ -3,9 +3,9 @@ import fractions
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
-from cogs import utils as localutils
+from cogs import utils
 
 
 COMMON_COMMAND_ALIASES = (
@@ -15,9 +15,9 @@ COMMON_COMMAND_ALIASES = (
 )
 
 
-class InteractionCommands(utils.Cog):
+class InteractionCommands(vbu.Cog):
 
-    @utils.Cog.listener()
+    @vbu.Cog.listener()
     async def on_interaction_run(self, ctx):
         """
         Saves an interaction value into the database.
@@ -32,11 +32,11 @@ class InteractionCommands(utils.Cog):
                 amount=interaction_counter.amount+excluded.amount""", ctx.guild.id, ctx.author.id, ctx.args[-1].id, ctx.interaction_name
             )
 
-    @utils.group(aliases=['interaction'], invoke_without_command=True)
-    @localutils.checks.is_enabled_in_channel('disabled_interaction_channels')
+    @vbu.group(aliases=['interaction'], invoke_without_command=True)
+    @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
-    async def interactions(self, ctx:utils.Context, user:discord.Member=None):
+    async def interactions(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Shows you your interaction statistics.
         """
@@ -70,7 +70,7 @@ class InteractionCommands(utils.Cog):
             received_interactions[row['interaction']] = row['amount']
 
         # And now into an embed
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user=user)
             for i in valid_interactions:
                 given = given_interactions[i]
@@ -82,8 +82,8 @@ class InteractionCommands(utils.Cog):
                     embed.add_field(i.title(), f"Given {given}, received {received}")
         await ctx.send(embed=embed)
 
-    @utils.Cog.listener()
-    async def on_command_error(self, ctx:utils.Context, error:commands.CommandError):
+    @vbu.Cog.listener()
+    async def on_command_error(self, ctx: vbu.Context, error: commands.CommandError):
         """
         Listens for command not found errors and tries to run them as interactions.
         """
@@ -115,12 +115,12 @@ class InteractionCommands(utils.Cog):
         ctx.command = self.bot.get_command("interaction_command_meta")
         await self.bot.invoke(ctx)
 
-    @utils.command(cooldown_after_parsing=True)
-    @utils.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=localutils.cooldown.RoleBasedGuildCooldown(mapping=utils.cooldown.GroupedCooldownMapping("interactions")))
-    @localutils.checks.is_enabled_in_channel('disabled_interaction_channels')
+    @vbu.command(cooldown_after_parsing=True)
+    @vbu.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=vbu.cooldown.GroupedCooldownMapping("interactions")))
+    @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
     @commands.bot_has_permissions(send_messages=True)
-    @utils.checks.meta_command()
-    async def interaction_command_meta(self, ctx:utils.Context, user:utils.converters.FilteredUser(allow_author=False, allow_bots=True)):
+    @vbu.checks.meta_command()
+    async def interaction_command_meta(self, ctx: vbu.Context, user: vbu.converters.FilteredUser(allow_author=False, allow_bots=True)):
         """
         The interaction command invoker.
         """
@@ -139,9 +139,9 @@ class InteractionCommands(utils.Cog):
         )
         self.bot.dispatch("interaction_run", ctx)
 
-    @utils.command(aliases=['cd'])
+    @vbu.command(aliases=['cd'])
     @commands.bot_has_permissions(send_messages=True)
-    async def cooldown(self, ctx:utils.Context):
+    async def cooldown(self, ctx: vbu.Context):
         """
         Tells you how long your remaining interaction cooldown is.
         """
@@ -150,13 +150,13 @@ class InteractionCommands(utils.Cog):
         remaining_time = interaction.get_remaining_cooldown(ctx)
         if not remaining_time or remaining_time < 1:
             return await ctx.send("Your interaction cooldown has expired - you're able to run interactions again.")
-        return await ctx.send(f"Your remaining cooldown is {utils.TimeValue(remaining_time).clean}.")
+        return await ctx.send(f"Your remaining cooldown is {vbu.TimeValue(remaining_time).clean}.")
 
     @interactions.command()
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def add(self, ctx:utils.Context, interaction_name:str, *, response:str):
+    async def add(self, ctx: vbu.Context, interaction_name: str, *, response: str):
         """
         Adds a custom interaction.
         Use `{author}` and `{user}` as placeholders for where users should receive a ping.
@@ -166,7 +166,7 @@ class InteractionCommands(utils.Cog):
         if len(interaction_name) > 50:
             return await ctx.send("That interaction name is too long.")
         if not response:
-            raise utils.errors.MissingRequiredArgumentString("response")
+            raise vbu.errors.MissingRequiredArgumentString("response")
         async with self.bot.database() as db:
             await db(
                 "INSERT INTO interaction_text (guild_id, interaction_name, response) VALUES ($1, $2, $3)",
@@ -178,7 +178,7 @@ class InteractionCommands(utils.Cog):
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def addnsfw(self, ctx:utils.Context, interaction_name:str, *, response:str):
+    async def addnsfw(self, ctx: vbu.Context, interaction_name: str, *, response: str):
         """
         Adds a custom NSFW interaction.
         Use `{author}` and `{user}` as placeholders for where users should receive a ping.
@@ -188,7 +188,7 @@ class InteractionCommands(utils.Cog):
         if len(interaction_name) > 50:
             return await ctx.send("That interaction name is too long.")
         if not response:
-            raise utils.errors.MissingRequiredArgumentString("response")
+            raise vbu.errors.MissingRequiredArgumentString("response")
         async with self.bot.database() as db:
             await db(
                 "INSERT INTO interaction_text (guild_id, interaction_name, response) VALUES ($1, $2, $3)",
@@ -197,6 +197,6 @@ class InteractionCommands(utils.Cog):
         return await ctx.send("Added your custom interaction response to the pool.")
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = InteractionCommands(bot)
     bot.add_cog(x)

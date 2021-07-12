@@ -5,18 +5,18 @@ from datetime import datetime as dt, timedelta
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class EconomyHandler(utils.Cog):
+class EconomyHandler(vbu.Cog):
 
     EMOJI_REGEX = re.compile(r"<:.{1,32}:\d{16,32}>")
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.last_message = collections.defaultdict(lambda: dt(2000, 1, 1))
 
-    @utils.Cog.listener("on_ready")
+    @vbu.Cog.listener("on_ready")
     async def free_money_handler(self):
         """
         Listens for ready being pinged and then makes sure every member in every guild has.
@@ -39,8 +39,8 @@ class EconomyHandler(utils.Cog):
                         guild.id, member.id
                     )
 
-    @utils.Cog.listener("on_member_join")
-    async def member_join_free_money_handler(self, member:discord.Member):
+    @vbu.Cog.listener("on_member_join")
+    async def member_join_free_money_handler(self, member: discord.Member):
         """
         Pinged when a member joins the guild - add 10k to the bot in this case.
         """
@@ -57,8 +57,8 @@ class EconomyHandler(utils.Cog):
                 member.guild.id, member.id
             )
 
-    @utils.Cog.listener("on_guild_join")
-    async def guild_join_free_money_handler(self, guild:discord.Guild):
+    @vbu.Cog.listener("on_guild_join")
+    async def guild_join_free_money_handler(self, guild: discord.Guild):
         """
         Pinged when a member joins the guild - add 10k to the bot in this case.
         """
@@ -76,8 +76,8 @@ class EconomyHandler(utils.Cog):
                     guild.id, member.id
                 )
 
-    @utils.Cog.listener("on_message")
-    async def user_message_money_handler(self, message:discord.Message):
+    @vbu.Cog.listener("on_message")
+    async def user_message_money_handler(self, message: discord.Message):
         """
         Add some money to the user's account when they send a message
         """
@@ -120,9 +120,9 @@ class EconomyHandler(utils.Cog):
             )
             await db.commit_transaction()
 
-    @utils.command(aliases=['givemoney'])
+    @vbu.command(aliases=['givemoney'])
     @commands.guild_only()
-    async def givecoins(self, ctx:utils.Context, user:discord.Member, transfer_amount:int):
+    async def givecoins(self, ctx: vbu.Context, user: discord.Member, transfer_amount: int):
         """
         Give a certain amount of money to a user.
         """
@@ -154,6 +154,6 @@ class EconomyHandler(utils.Cog):
         return await ctx.send(f"Successfully transferred {transfer_amount:,} {coin_emoji} to {user.mention}.")
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = EconomyHandler(bot)
     bot.add_cog(x)

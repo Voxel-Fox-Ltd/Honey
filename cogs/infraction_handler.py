@@ -5,19 +5,19 @@ from datetime import datetime as dt
 import discord
 from discord.ext import commands
 from discord.ext import menus
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
-from cogs import utils as localutils
+from cogs import utils
 
 
 class InfractionSource(menus.ListPageSource):
 
-    def format_page(self, menu:menus.Menu, entries:list) -> utils.Embed:
+    def format_page(self, menu: menus.Menu, entries: list) -> vbu.Embed:
         """
         Format the infraction entries into an embed.
         """
 
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             for row in entries:
                 # TODO add timestamp
                 embed.add_field(f"{row['infraction_type']} - {row['infraction_id']}", f"<@{row['moderator_id']}> :: {row['infraction_reason']}", inline=False)
@@ -25,10 +25,10 @@ class InfractionSource(menus.ListPageSource):
         return embed
 
 
-class InfractionHandler(utils.Cog):
+class InfractionHandler(vbu.Cog):
 
     @staticmethod
-    async def get_unused_infraction_id(db, n:int=5) -> str:
+    async def get_unused_infraction_id(db, n: int = 5) -> str:
         """
         This method creates a randomisied string to use as the infraction identifier.
 
@@ -49,8 +49,8 @@ class InfractionHandler(utils.Cog):
             if not is_valid:
                 return code
 
-    @utils.Cog.listener()
-    async def on_moderation_action(self, moderator:discord.Member, user:discord.User, reason:str, action:str):
+    @vbu.Cog.listener()
+    async def on_moderation_action(self, moderator: discord.Member, user: discord.User, reason: str, action: str):
         """
         Looks for moderator actions being done and logs them into the relevant channel.
         """
@@ -72,7 +72,7 @@ class InfractionHandler(utils.Cog):
             return
 
         # Make info embed
-        with utils.Embed() as embed:
+        with vbu.Embed() as embed:
             embed.title = action
             embed.add_field("Moderator", f"{moderator.mention} (`{moderator.id}`)")
             embed.add_field("User", f"<@{user.id}> (`{user.id}`)")
@@ -85,10 +85,10 @@ class InfractionHandler(utils.Cog):
         except discord.Forbidden:
             pass
 
-    @utils.group(aliases=['infraction'], invoke_without_command=True)
-    @localutils.checks.is_guild_moderator()
+    @vbu.group(aliases=['infraction'], invoke_without_command=True)
+    @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def infractions(self, ctx:utils.Context, user_id:utils.converters.UserID):
+    async def infractions(self, ctx: vbu.Context, user_id: vbu.converters.UserID):
         """
         The parent to be able to see user infractions.
         """
@@ -108,9 +108,9 @@ class InfractionHandler(utils.Cog):
         await pages.start(ctx)
 
     @infractions.command()
-    @localutils.checks.is_guild_moderator()
+    @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True)
-    async def delete(self, ctx:utils.Context, infraction_id:str):
+    async def delete(self, ctx: vbu.Context, infraction_id: str):
         """
         Delete an infraction given its ID.
         """
@@ -124,6 +124,6 @@ class InfractionHandler(utils.Cog):
         return await ctx.send(f"Deleted infraction from <@{rows[0]['user_id']}>'s account.", allowed_mentions=discord.AllowedMentions.none())
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = InfractionHandler(bot)
     bot.add_cog(x)

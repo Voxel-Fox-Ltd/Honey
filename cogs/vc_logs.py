@@ -1,11 +1,11 @@
 import discord
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class VCLogs(utils.Cog):
+class VCLogs(vbu.Cog):
 
-    @utils.Cog.listener()
-    async def on_voice_state_update(self, member:discord.Member, before:discord.VoiceState, after:discord.VoiceState):
+    @vbu.Cog.listener()
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         """
         Log users joining or leaving VCs.
         """
@@ -26,7 +26,7 @@ class VCLogs(utils.Cog):
             else:
                 text = f"{member.mention} moved from the **{before.channel.name}** VC to the **{after.channel.name}** VC."
             if channel.permissions_for(channel.guild.me).embed_links:
-                data = {"embed": utils.Embed(use_random_colour=True, description=text)}
+                data = {"embed": vbu.Embed(use_random_colour=True, description=text)}
             else:
                 data = {"content": text, "allowed_mentions": discord.AllowedMentions(users=False)}
             await channel.send(**data)
@@ -35,6 +35,6 @@ class VCLogs(utils.Cog):
             pass
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = VCLogs(bot)
     bot.add_cog(x)

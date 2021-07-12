@@ -1,7 +1,7 @@
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class CacheSetup(utils.Cog):
+class CacheSetup(vbu.Cog):
 
     async def cache_setup(self, db):
         """
@@ -47,6 +47,6 @@ class CacheSetup(utils.Cog):
             self.bot.guild_settings[row['guild_id']].setdefault('disabled_interaction_channels', list()).append(row['channel_id'])
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = CacheSetup(bot)
     bot.add_cog(x)

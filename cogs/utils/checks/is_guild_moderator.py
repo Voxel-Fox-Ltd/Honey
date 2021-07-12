@@ -6,7 +6,7 @@ class NotGuildModerator(commands.MissingRole):
     """Thrown when the user doesn't have the guild moderator role."""
 
 
-def is_guild_moderator_predicate(bot:commands.Bot, user:discord.Member) -> bool:
+def is_guild_moderator_predicate(bot: commands.Bot, user: discord.Member) -> bool:
     """Returns True if the the user has manage_messages perm or has a guild moderator role"""
 
     guild_moderator_role_id = bot.guild_settings[user.guild.id].get("guild_moderator_role_id", None)
@@ -18,7 +18,7 @@ def is_guild_moderator_predicate(bot:commands.Bot, user:discord.Member) -> bool:
 def is_guild_moderator():
     """Checks whether the user has manage_messages perm in the guild or has a guild moderator role"""
 
-    async def predicate(ctx:commands.Context):
+    async def predicate(ctx: commands.Context):
 
         if ctx.guild is None:
             raise commands.NoPrivateMessage()

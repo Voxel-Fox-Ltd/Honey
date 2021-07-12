@@ -3,17 +3,17 @@ import asyncio
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
-from cogs import utils as localutils
+from cogs import utils
 
 
-class CustomRoleHandler(utils.Cog):
+class CustomRoleHandler(vbu.Cog):
 
-    @utils.group()
+    @vbu.group()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def customrole(self, ctx:utils.Context):
+    async def customrole(self, ctx: vbu.Context):
         """
         The parent command to manage your custom role.
         """
@@ -25,7 +25,7 @@ class CustomRoleHandler(utils.Cog):
         # Throw em some help
         return await ctx.send(f"This command is used so you can manage your custom role on this server, should you have one. See `{ctx.prefix}help {ctx.invoked_with}` to learn more.")
 
-    async def check_for_custom_role(self, member:discord.Member) -> typing.Optional[discord.Role]:
+    async def check_for_custom_role(self, member: discord.Member) -> typing.Optional[discord.Role]:
         """
         Returns the user's custom role object for the server, or None if they
         don't have one. This does NOT check for whether they can/cannot have one.
@@ -37,8 +37,8 @@ class CustomRoleHandler(utils.Cog):
             return None
         return member.guild.get_role(rows[0]['role_id'])
 
-    @utils.Cog.listener()
-    async def on_member_remove(self, member:discord.Member):
+    @vbu.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
         """
         Delete a custom role when the user leaves the guild.
         """
@@ -51,8 +51,8 @@ class CustomRoleHandler(utils.Cog):
         except discord.HTTPException:
             pass
 
-    @utils.Cog.listener()
-    async def on_member_update(self, before:discord.Member, member:discord.Member):
+    @vbu.Cog.listener()
+    async def on_member_update(self, before: discord.Member, member: discord.Member):
         """
         Listens for members losing the required custom role master, and thus deletes the custom role.
         """
@@ -74,7 +74,7 @@ class CustomRoleHandler(utils.Cog):
             return
 
         # They lost the custom role master - see if they have manage roles
-        if after.guild_permissions.manage_roles:
+        if member.guild_permissions.manage_roles:
             return
 
         # Nope - delete their custom role
@@ -90,7 +90,7 @@ class CustomRoleHandler(utils.Cog):
     @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def name(self, ctx:utils.Context, *, name:commands.clean_content):
+    async def name(self, ctx: vbu.Context, *, name: commands.clean_content):
         """
         Change the name of your custom role.
         """
@@ -121,17 +121,10 @@ class CustomRoleHandler(utils.Cog):
     @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def colour(self, ctx:utils.Context, *, colour:utils.converters.ColourConverter):
+    async def colour(self, ctx: vbu.Context, *, colour: vbu.converters.ColourConverter):
         """
         Change the colour of your custom role.
         """
-
-        # Validate the colour
-        # if isinstance(colour, str):
-        #     colour_value = utils.converters.ColourConverter.COLOURS_BY_NAME.get(colour)
-        #     if colour_value is None:
-        #         return await ctx.send("That isn't a valid colour hex code or name.")
-        #     colour = discord.Colour(colour_value)
 
         # Get their role
         role = await self.check_for_custom_role(ctx.author)
@@ -148,10 +141,10 @@ class CustomRoleHandler(utils.Cog):
         return await ctx.send("Successfully updated your role's colour.")
 
     @customrole.command()
-    @localutils.checks.is_guild_moderator()
+    @utils.checks.is_guild_moderator()
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
-    async def set(self, ctx:utils.Context, user:discord.Member, *, role:discord.Role):
+    async def set(self, ctx: vbu.Context, user: discord.Member, *, role: discord.Role):
         """
         Set a user's custom role to an existing one.
         """
@@ -176,9 +169,9 @@ class CustomRoleHandler(utils.Cog):
     @customrole.command(aliases=['make'])
     @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
-    @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
+    @vbu.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
-    async def create(self, ctx:utils.Context):
+    async def create(self, ctx: vbu.Context):
         """
         Create a custom role for the server.
         """
@@ -235,7 +228,7 @@ class CustomRoleHandler(utils.Cog):
         if position_role:
             try:
                 self.logger.info(f"Moving role {new_role.id} to position {position_role.position - 1} (my highest is {new_role.guild.me.top_role.position})")
-                await localutils.move_role_position_below(new_role, position_role, reason="Update positioning")
+                await utils.move_role_position_below(new_role, position_role, reason="Update positioning")
                 self.logger.info(f"Edited custom role position in guild (G{ctx.guild.id}/R{new_role.id})")
             except discord.Forbidden:
                 self.logger.error(f"Couldn't move custom role, forbidden (G{ctx.guild.id}/U{ctx.author.id})")
@@ -259,6 +252,6 @@ class CustomRoleHandler(utils.Cog):
         return await ctx.send(f"Created your custom role - {new_role.mention}. You can manage it with the `{ctx.prefix}{ctx.command.parent.name} name` and `{ctx.prefix}{ctx.command.parent.name} colour` commands. You may need to ask a moderator to move it for you, so your colour displays properly.")
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = CustomRoleHandler(bot)
     bot.add_cog(x)

@@ -1,14 +1,14 @@
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class VerificationSystem(utils.Cog):
+class VerificationSystem(vbu.Cog):
 
-    @utils.command()
+    @vbu.command()
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
-    async def verify(self, ctx:utils.Context, user:discord.Member):
+    async def verify(self, ctx: vbu.Context, user: discord.Member):
         """
         Adds the verified role to a user.
         """
@@ -45,6 +45,6 @@ class VerificationSystem(utils.Cog):
         return await ctx.send(f"{user.mention} has been verified.")
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = VerificationSystem(bot)
     bot.add_cog(x)

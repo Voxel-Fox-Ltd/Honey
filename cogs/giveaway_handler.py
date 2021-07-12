@@ -5,22 +5,22 @@ from datetime import datetime as dt
 import discord
 from discord.ext import commands
 from discord.ext import tasks
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class GiveawayHandler(utils.Cog):
+class GiveawayHandler(vbu.Cog):
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.giveaway_expiry_handler.start()
 
     def cog_unload(self):
         self.giveaway_expiry_handler.stop()
 
-    @commands.command(cls=utils.Command)
+    @vbu.command()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
-    async def giveaway(self, ctx:utils.Context, duration:utils.TimeValue, winner_count:int, *, giveaway_name:str):
+    async def giveaway(self, ctx: vbu.Context, duration: vbu.TimeValue, winner_count: int, *, giveaway_name: str):
         """
         Start a giveaway.
         """
@@ -32,7 +32,7 @@ class GiveawayHandler(utils.Cog):
             return await ctx.send("You can't give more than 200 winners.")
 
         # Create the embed
-        with utils.Embed(colour=0x00ff00) as embed:
+        with vbu.Embed(colour=0x00ff00) as embed:
             embed.title = giveaway_name
             embed.description = "Click the reaction below to enter!"
             embed.set_footer(text=f"{winner_count} winner{'s' if winner_count > 1 else ''} | Ends at")
@@ -129,6 +129,6 @@ class GiveawayHandler(utils.Cog):
         await self.bot.wait_until_ready()
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = GiveawayHandler(bot)
     bot.add_cog(x)

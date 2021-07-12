@@ -2,10 +2,10 @@ import copy
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class ShopHandler(utils.Cog):
+class ShopHandler(vbu.Cog):
 
     ORIGINAL_SHOP_ITEMS = {
         "\N{LOWER LEFT PAINTBRUSH}": {
@@ -28,7 +28,7 @@ class ShopHandler(utils.Cog):
         },
     }
 
-    def get_shop_items(self, guild:discord.Guild):
+    def get_shop_items(self, guild: discord.Guild):
         """
         Get a dict of shop items.
         """
@@ -40,8 +40,8 @@ class ShopHandler(utils.Cog):
         guild_settings = self.bot.guild_settings[guild.id]
 
         # Update original prices from cache
-        for i, o in new_data.items():
-            o['amount'] = guild_settings.get(o['price_key'], o['amount'])
+        for i in new_data.values():
+            i['amount'] = guild_settings.get(i['price_key'], i['amount'])
 
         # Add the buyable roles
         buyable_roles = guild_settings.setdefault('buyable_roles', dict())
@@ -72,7 +72,7 @@ class ShopHandler(utils.Cog):
                 "emoji": None,
                 "name": "Buyable Temporary Role - " + role.name,
                 "amount": buyable_temporary_roles[role_id]['price'],
-                "description": f"Purchase the {role.mention} role for {utils.TimeValue(buyable_temporary_roles[role_id]['duration']).clean}.",
+                "description": f"Purchase the {role.mention} role for {vbu.TimeValue(buyable_temporary_roles[role_id]['duration']).clean}.",
                 "aliases": [],
                 "price_key": None,
                 "quantity": 1,
@@ -82,11 +82,11 @@ class ShopHandler(utils.Cog):
         # Return data
         return new_data
 
-    @utils.command()
+    @vbu.command()
     @commands.has_guild_permissions(manage_channels=True)
     @commands.bot_has_guild_permissions(manage_channels=True, external_emojis=True, embed_links=True)
     @commands.guild_only()
-    async def createshopchannel(self, ctx:utils.Context):
+    async def createshopchannel(self, ctx: vbu.Context):
         """
         Creates a shop channel for your server.
         """
@@ -130,8 +130,8 @@ class ShopHandler(utils.Cog):
         # And tell the mod it's done
         await ctx.send(f"Created new shop channel at {shop_channel.mention} - please verify the channel works before updating permissions for the everyone role.")
 
-    @utils.Cog.listener("on_shop_message_update")
-    async def update_shop_message(self, guild:discord.Guild):
+    @vbu.Cog.listener("on_shop_message_update")
+    async def update_shop_message(self, guild: discord.Guild):
         """
         Edit the shop message to to be pretty good.
         """
@@ -151,7 +151,7 @@ class ShopHandler(utils.Cog):
         # Generate embed
         coin_emoji = self.bot.guild_settings[guild.id].get("coin_emoji", None) or "coins"
         emojis = []
-        with utils.Embed() as embed:
+        with vbu.Embed() as embed:
             for emoji, data in self.get_shop_items(guild).items():
                 item_price = self.bot.guild_settings[guild.id].get(data['price_key'], data['amount'])
                 if item_price <= 0:
@@ -177,8 +177,8 @@ class ShopHandler(utils.Cog):
         for e in emojis:
             await shop_message.add_reaction(e)
 
-    @utils.Cog.listener("on_raw_reaction_clear")
-    async def shop_reaction_clear_listener(self, payload:discord.RawReactionClearEvent):
+    @vbu.Cog.listener("on_raw_reaction_clear")
+    async def shop_reaction_clear_listener(self, payload: discord.RawReactionClearEvent):
         """
         Pinged when all reactions are cleared from a shop message.
         """
@@ -194,8 +194,8 @@ class ShopHandler(utils.Cog):
         for emoji in self.get_shop_items(self.bot.get_guild(payload.guild_id)).keys():
             await message.add_reaction(emoji)
 
-    @utils.Cog.listener("on_raw_reaction_add")
-    async def shop_reaction_listener(self, payload:discord.RawReactionActionEvent):
+    @vbu.Cog.listener("on_raw_reaction_add")
+    async def shop_reaction_listener(self, payload: discord.RawReactionActionEvent):
         """
         Pinged when a user is trying to buy something from a shop.
         """
@@ -273,6 +273,6 @@ class ShopHandler(utils.Cog):
         return
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = ShopHandler(bot)
     bot.add_cog(x)
