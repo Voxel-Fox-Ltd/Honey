@@ -113,7 +113,7 @@ settings_menu = vbu.menus.Menu(
                 component_display="Set action archive channels",
                 callback=vbu.menus.Menu(
                     vbu.menus.Option(
-                        prompt=lambda ctx: f"Kick log channel ({ctx.get_mentionable_channel(ctx).mention})",
+                        display=lambda ctx: f"Kick log channel ({ctx.get_mentionable_channel(ctx).mention})",
                         component_display="Set kick log channel",
                         converters=[
                             vbu.menus.Converter(
@@ -126,7 +126,7 @@ settings_menu = vbu.menus.Menu(
                         allow_none=True,
                     ),
                     vbu.menus.Option(
-                        prompt=lambda ctx: f"Ban log channel ({ctx.get_mentionable_channel(ctx).mention})",
+                        display=lambda ctx: f"Ban log channel ({ctx.get_mentionable_channel(ctx).mention})",
                         component_display="Set ban log channel",
                         converters=[
                             vbu.menus.Converter(
@@ -139,7 +139,7 @@ settings_menu = vbu.menus.Menu(
                         allow_none=True,
                     ),
                     vbu.menus.Option(
-                        prompt=lambda ctx: f"Mute log channel ({ctx.get_mentionable_channel(ctx).mention})",
+                        display=lambda ctx: f"Mute log channel ({ctx.get_mentionable_channel(ctx).mention})",
                         component_display="Set mute log channel",
                         converters=[
                             vbu.menus.Converter(
@@ -152,7 +152,7 @@ settings_menu = vbu.menus.Menu(
                         allow_none=True,
                     ),
                     vbu.menus.Option(
-                        prompt=lambda ctx: f"Warn log channel ({ctx.get_mentionable_channel(ctx).mention})",
+                        display=lambda ctx: f"Warn log channel ({ctx.get_mentionable_channel(ctx).mention})",
                         component_display="Set warn log channel",
                         converters=[
                             vbu.menus.Converter(
@@ -165,7 +165,7 @@ settings_menu = vbu.menus.Menu(
                         allow_none=True,
                     ),
                     vbu.menus.Option(
-                        prompt=lambda ctx: f"Edited message log channel ({ctx.get_mentionable_channel(ctx).mention})",
+                        display=lambda ctx: f"Edited message log channel ({ctx.get_mentionable_channel(ctx).mention})",
                         component_display="Set edited message log channel",
                         converters=[
                             vbu.menus.Converter(
@@ -178,7 +178,7 @@ settings_menu = vbu.menus.Menu(
                         allow_none=True,
                     ),
                     vbu.menus.Option(
-                        prompt=lambda ctx: f"Deleted message log channel ({ctx.get_mentionable_channel(ctx).mention})",
+                        display=lambda ctx: f"Deleted message log channel ({ctx.get_mentionable_channel(ctx).mention})",
                         component_display="Set deleted message log channel",
                         converters=[
                             vbu.menus.Converter(
@@ -191,7 +191,7 @@ settings_menu = vbu.menus.Menu(
                         allow_none=True,
                     ),
                     vbu.menus.Option(
-                        prompt=lambda ctx: f"VC update log channel ({ctx.get_mentionable_channel(ctx).mention})",
+                        display=lambda ctx: f"VC update log channel ({ctx.get_mentionable_channel(ctx).mention})",
                         component_display="Set VC update log channel",
                         converters=[
                             vbu.menus.Converter(
