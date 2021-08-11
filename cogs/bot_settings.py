@@ -8,7 +8,7 @@ settings_menu = vbu.menus.Menu(
         display="Custom role settings",
         callback=vbu.menus.Menu(
             vbu.menus.Option(
-                display=lambda ctx: f"Custom role master (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['custom_role_id'])})",
+                display=lambda ctx: f"Custom role master (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['custom_role_id']).mention})",
                 component_display="Set custom role master",
                 converters=[
                     vbu.menus.Converter(
@@ -20,7 +20,7 @@ settings_menu = vbu.menus.Menu(
                 cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "custom_role_id"),
             ),
             vbu.menus.Option(
-                display=lambda ctx: f"Custom role position master (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['custom_role_position_id'])})",
+                display=lambda ctx: f"Custom role position master (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['custom_role_position_id']).mention})",
                 component_display="Set custom role position",
                 converters=[
                     vbu.menus.Converter(
