@@ -57,8 +57,8 @@ settings_menu = vbu.menus.Menu(
                         converter=discord.Role,
                     ),
                 ],
-                callback=vbu.menus.Menu.callbacks.set_table_column(vbu.DataLocation.GUILD, "guild_settings", "verified_role_id"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.DataLocation.GUILD, "verified_role_id"),
+                callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "verified_role_id"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "verified_role_id"),
             ),
             vbu.menus.Option(
                 display=lambda ctx: f"Mute role (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['mute_role_id'])})",
@@ -69,8 +69,8 @@ settings_menu = vbu.menus.Menu(
                         converter=discord.Role,
                     ),
                 ],
-                callback=vbu.menus.Menu.callbacks.set_table_column(vbu.DataLocation.GUILD, "guild_settings", "mute_role_id"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.DataLocation.GUILD, "mute_role_id"),
+                callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "mute_role_id"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "mute_role_id"),
             ),
             vbu.menus.Option(
                 display=lambda ctx: f"Moderator role (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['moderator_role_id'])})",
@@ -81,8 +81,8 @@ settings_menu = vbu.menus.Menu(
                         converter=discord.Role,
                     ),
                 ],
-                callback=vbu.menus.Menu.callbacks.set_table_column(vbu.DataLocation.GUILD, "guild_settings", "moderator_role_id"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.DataLocation.GUILD, "moderator_role_id"),
+                callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "moderator_role_id"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "moderator_role_id"),
             ),
             vbu.menus.Option(
                 display="Roles removed on mute",
