@@ -323,7 +323,7 @@ settings_menu = vbu.menus.Menu(
             select_sql="""SELECT * FROM role_list WHERE guild_id=$1 AND key='Interactions'""",
             select_sql_args=lambda ctx: (ctx.guild.id,),
             insert_sql="""INSERT INTO role_list (guild_id, role_id, value, key) VALUES ($1, $2, $3, 'Interactions')""",
-            insert_sql_args=lambda ctx, data: (ctx.guild.id, data[0].id, str(data[1].total_seconds())),
+            insert_sql_args=lambda ctx, data: (ctx.guild.id, data[0].id, str(data[1].delta.total_seconds())),
             delete_sql="""DELETE FROM role_list WHERE guild_id=$1 AND role_id=$2 AND key='Interactions'""",
             delete_sql_args=lambda ctx, row: (ctx.guild.id, row['role_id'],),
             converters=[
