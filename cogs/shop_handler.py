@@ -131,7 +131,7 @@ class ShopHandler(vbu.Cog):
         await ctx.send(f"Created new shop channel at {shop_channel.mention} - please verify the channel works before updating permissions for the everyone role.")
 
     @vbu.Cog.listener("on_shop_message_update")
-    async def update_shop_message(self, guild: discord.Guild):
+    async def update_shop_message(self, guild: discord.Guild, force: bool = False):
         """
         Edit the shop message to to be pretty good.
         """
@@ -142,7 +142,6 @@ class ShopHandler(vbu.Cog):
             shop_channel = self.bot.get_channel(self.bot.guild_settings[guild.id]['shop_channel_id'])
             shop_message = await shop_channel.fetch_message(self.bot.guild_settings[guild.id]['shop_message_id'])
             if shop_message is None:
-                self.logger.info(f"Can't update shop message - no message found (G{guild.id})")
                 raise AttributeError()
         except (discord.NotFound, AttributeError):
             self.logger.info(f"Can't update shop message - no message/channel found (G{guild.id})")
@@ -164,7 +163,7 @@ class ShopHandler(vbu.Cog):
             current_embed = shop_message.embeds[0]
         except IndexError:
             current_embed = None
-        if embed == current_embed:
+        if embed == current_embed and force is False:
             self.logger.info(f"Not updating shop message - no changes presented (G{guild.id})")
             return
 
@@ -175,6 +174,7 @@ class ShopHandler(vbu.Cog):
             embed=embed,
             components=vbu.MessageComponents.add_buttons_with_rows(*buttons),
         )
+        await shop_message.clear_reactions()
 
     # @vbu.Cog.listener("on_raw_reaction_clear")
     # async def shop_reaction_clear_listener(self, payload: discord.RawReactionClearEvent):
