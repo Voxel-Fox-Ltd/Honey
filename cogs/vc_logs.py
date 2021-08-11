@@ -1,6 +1,7 @@
 import typing
 import asyncio
 import collections
+from datetime import datetime as dt
 
 import discord
 from discord.ext import tasks
@@ -37,12 +38,13 @@ class VCLogs(vbu.Cog):
             return
 
         # Work out the text to send
+        now = dt.utcnow()
         if before.channel is None:
-            text = f"{member.mention} joined the **{after.channel.name}** VC."
+            text = f"{member.mention} joined the **{after.channel.name}** VC at {vbu.TimeFormatter(now).long_time}."
         elif after.channel is None:
-            text = f"{member.mention} left the **{before.channel.name}** VC."
+            text = f"{member.mention} left the **{before.channel.name}** VC at {vbu.TimeFormatter(now).long_time}."
         else:
-            text = f"{member.mention} moved from the **{before.channel.name}** VC to the **{after.channel.name}** VC."
+            text = f"{member.mention} moved from the **{before.channel.name}** VC to the **{after.channel.name}** VC at {vbu.TimeFormatter(now).long_time}."
 
         # Queue the text
         async with self.queue_locks[member.guild]:
