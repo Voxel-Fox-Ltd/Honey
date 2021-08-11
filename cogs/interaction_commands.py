@@ -115,7 +115,7 @@ class InteractionCommands(vbu.Cog):
         ctx.command = self.bot.get_command("interaction_command_meta")
         await self.bot.invoke(ctx)
 
-    @vbu.command(cooldown_after_parsing=True)
+    @vbu.command(add_slash_command=False, cooldown_after_parsing=True)
     @vbu.cooldown.cooldown(1, 60 * 30, commands.BucketType.member, cls=utils.cooldown.RoleBasedGuildCooldown(mapping=vbu.cooldown.GroupedCooldownMapping("interactions")))
     @utils.checks.is_enabled_in_channel('disabled_interaction_channels')
     @commands.bot_has_permissions(send_messages=True)
