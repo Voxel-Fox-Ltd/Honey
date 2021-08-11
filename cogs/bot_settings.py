@@ -121,7 +121,7 @@ settings_menu = vbu.menus.Menu(
                             ),
                         ],
                         callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "kick_modlog_channel_id"),
-                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "kick_modlog_channel_id"),
+                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "kick_modlog_channel_id"),
                         allow_none=True,
                     ),
                     vbu.menus.Option(
@@ -134,7 +134,7 @@ settings_menu = vbu.menus.Menu(
                             ),
                         ],
                         callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "ban_modlog_channel_id"),
-                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "ban_modlog_channel_id"),
+                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "ban_modlog_channel_id"),
                         allow_none=True,
                     ),
                     vbu.menus.Option(
@@ -147,7 +147,7 @@ settings_menu = vbu.menus.Menu(
                             ),
                         ],
                         callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "mute_modlog_channel_id"),
-                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "mute_modlog_channel_id"),
+                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "mute_modlog_channel_id"),
                         allow_none=True,
                     ),
                     vbu.menus.Option(
@@ -160,7 +160,7 @@ settings_menu = vbu.menus.Menu(
                             ),
                         ],
                         callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "warn_modlog_channel_id"),
-                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "warn_modlog_channel_id"),
+                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "warn_modlog_channel_id"),
                         allow_none=True,
                     ),
                     vbu.menus.Option(
@@ -173,7 +173,7 @@ settings_menu = vbu.menus.Menu(
                             ),
                         ],
                         callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "edited_message_modlog_channel_id"),
-                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "edited_message_modlog_channel_id"),
+                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "edited_message_modlog_channel_id"),
                         allow_none=True,
                     ),
                     vbu.menus.Option(
@@ -186,7 +186,7 @@ settings_menu = vbu.menus.Menu(
                             ),
                         ],
                         callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "deleted_message_modlog_channel_id"),
-                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "deleted_message_modlog_channel_id"),
+                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "deleted_message_modlog_channel_id"),
                         allow_none=True,
                     ),
                     vbu.menus.Option(
@@ -199,7 +199,7 @@ settings_menu = vbu.menus.Menu(
                             ),
                         ],
                         callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "voice_update_modlog_channel_id"),
-                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "voice_update_modlog_channel_id"),
+                        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "voice_update_modlog_channel_id"),
                         allow_none=True,
                     ),
                 ),
@@ -220,7 +220,7 @@ settings_menu = vbu.menus.Menu(
                     ),
                 ],
                 callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "nsfw_is_allowed"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "nsfw_is_allowed"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "nsfw_is_allowed"),
             ),
             vbu.menus.Option(
                 display=lambda ctx: f"Fursona modmail channel (currently {ctx.get_mentionable_channel(ctx.bot.guild_settings[ctx.guild.id]['fursona_modmail_channel_id'])})",
@@ -232,7 +232,7 @@ settings_menu = vbu.menus.Menu(
                     ),
                 ],
                 callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_modmail_channel_id"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_modmail_channel_id"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "fursona_modmail_channel_id"),
                 allow_none=True,
             ),
             vbu.menus.Option(
@@ -245,7 +245,7 @@ settings_menu = vbu.menus.Menu(
                     ),
                 ],
                 callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_decline_archive_channel_id"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_decline_archive_channel_id"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "fursona_decline_archive_channel_id"),
                 allow_none=True,
             ),
             vbu.menus.Option(
@@ -258,7 +258,7 @@ settings_menu = vbu.menus.Menu(
                     ),
                 ],
                 callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_accept_archive_channel_id"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_accept_archive_channel_id"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "fursona_accept_archive_channel_id"),
                 allow_none=True,
             ),
             vbu.menus.Option(
@@ -271,7 +271,7 @@ settings_menu = vbu.menus.Menu(
                     ),
                 ],
                 callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_accept_archive_channel_id"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_accept_archive_channel_id"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "fursona_accept_archive_channel_id"),
                 allow_none=True,
             ),
             vbu.menus.Option(
@@ -284,7 +284,7 @@ settings_menu = vbu.menus.Menu(
                     ),
                 ],
                 callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_accept_nsfw_archive_channel_id"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "fursona_accept_nsfw_archive_channel_id"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "fursona_accept_nsfw_archive_channel_id"),
                 allow_none=True,
             ),
             vbu.menus.Option(
@@ -361,7 +361,7 @@ settings_menu = vbu.menus.Menu(
                     ),
                 ],
                 callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "paintbrush_price"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "paintbrush_price"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "paintbrush_price"),
                 allow_none=True,
             ),
             vbu.menus.Option(
@@ -379,7 +379,7 @@ settings_menu = vbu.menus.Menu(
                     ),
                 ],
                 callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "cooldown_token_price"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_settings", "cooldown_token_price"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "cooldown_token_price"),
                 allow_none=True,
             ),
             # vbu.menus.Option()  # Buyable roles
