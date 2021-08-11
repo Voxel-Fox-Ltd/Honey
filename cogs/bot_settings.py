@@ -348,7 +348,7 @@ settings_menu = vbu.menus.Menu(
         display="Shop settings",
         callback=vbu.menus.Menu(
             vbu.menus.Option(
-                display=lambda ctx: f"Paintbrush price (currently `{ctx.guild_settings[ctx.guild.id]['paintbrush_price']}`)",
+                display=lambda ctx: f"Paintbrush price (currently `{ctx.bot.guild_settings[ctx.guild.id]['paintbrush_price']}`)",
                 component_display="Set paintbrush price",
                 converters=[
                     vbu.menus.Converter(
@@ -366,7 +366,7 @@ settings_menu = vbu.menus.Menu(
                 allow_none=True,
             ),
             vbu.menus.Option(
-                display=lambda ctx: f"Cooldown token price (currently `{ctx.guild_settings[ctx.guild.id]['cooldown_token_price']}`)",
+                display=lambda ctx: f"Cooldown token price (currently `{ctx.bot.guild_settings[ctx.guild.id]['cooldown_token_price']}`)",
                 component_display="Set cooldown token price",
                 converters=[
                     vbu.menus.Converter(
