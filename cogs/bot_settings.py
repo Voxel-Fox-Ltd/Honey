@@ -217,7 +217,7 @@ settings_menu = vbu.menus.Menu(
                     vbu.menus.Converter(
                         prompt="Should NSFW fursonas be allowed on your server?",
                         components=vbu.MessageComponents.boolean_buttons(),
-                        converter=lambda custom_id: custom_id == "YES",
+                        converter=lambda payload: payload.component.custom_id == "YES",
                     ),
                 ],
                 callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "nsfw_is_allowed"),
