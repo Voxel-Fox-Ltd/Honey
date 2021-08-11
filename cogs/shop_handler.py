@@ -295,27 +295,27 @@ class ShopHandler(vbu.Cog):
         # Not a valid reaction
         if item_data is None or self.bot.guild_settings[guild.id].get(item_data['price_key'], item_data['amount']) <= 0:
             try:
-                await payload.send(f"The emoji you added to the shop channel in **{guild.name}** doesn't refer to a valid shop item.", ephemeral=True)
+                await payload.send(f"The emoji you added to the shop channel in **{guild.name}** doesn't refer to a valid shop item.", ephemeral=True, wait=False)
             except (discord.Forbidden, AttributeError):
                 pass
-            self.logger.info(f"Invalid reaction on shop message (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")
+            self.logger.info(f"Invalid reaction on shop message (G{payload.guild.id}/C{payload.channel.id}/U{payload.user.id}/E{payload.component.emoji!s})")
             return
 
         # Get the item price
-        item_price = self.bot.guild_settings[payload.guild_id].get(item_data['price_key'], item_data['amount'])
+        item_price = self.bot.guild_settings[payload.guild.id].get(item_data['price_key'], item_data['amount'])
         if item_price <= 0:
             return
 
         # Check their money
         db = await self.bot.database.get_connection()
-        rows = await db("SELECT * FROM user_money WHERE guild_id=$1 AND user_id=$2", payload.guild_id, payload.user_id)
+        rows = await db("SELECT * FROM user_money WHERE guild_id=$1 AND user_id=$2", payload.guild.id, payload.user.id)
         if not rows or rows[0]['amount'] < item_price:
             await db.disconnect()  # TODO get amount from guild settings
             try:
-                await payload.send(f"You don't have enough to purchase a **{item_data['name']}** item!", ephemeral=True)
+                await payload.send(f"You don't have enough to purchase a **{item_data['name']}** item!", ephemeral=True, wait=False)
             except (discord.Forbidden, AttributeError):
                 pass
-            self.logger.info(f"User unable to purchase item (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")
+            self.logger.info(f"User unable to purchase item (G{payload.guild.id}/C{payload.channel.id}/U{payload.user.id}/E{payload.component.emoji!s})")
             return
 
         # Alter their inventory
@@ -326,24 +326,25 @@ class ShopHandler(vbu.Cog):
             """INSERT INTO user_inventory (guild_id, user_id, item_name, amount)
             VALUES ($1, $2, $3, $4) ON CONFLICT (guild_id, user_id, item_name) DO UPDATE SET
             amount=user_inventory.amount+excluded.amount""",
-            payload.guild_id, payload.user_id, item_data['name'], item_data['quantity']
+            payload.guild.id, payload.user.id, item_data['name'], item_data['quantity']
         )
         await db.commit_transaction()
         await db.disconnect()
 
         # Send them a DM
         try:
-            guild_prefix = self.bot.guild_settings[payload.guild_id].get("prefix")
+            guild_prefix = self.bot.guild_settings[payload.guild.id].get("prefix")
             await payload.send(
                 (
                     f"You just bought {item_data['quantity']}x **{item_data['emoji'] or item_data['name']}**! "
                     f"You can use it with the `{guild_prefix}use {item_data['name'].lower().replace(' ', '')}` command."
                 ),
                 ephemeral=True,
+                wait=False,
             )
         except (discord.Forbidden, AttributeError):
             pass
-        self.logger.info(f"User successfully purchased item (G{payload.guild_id}/C{payload.channel_id}/U{payload.user_id}/E{payload.emoji!s})")
+        self.logger.info(f"User successfully purchased item (G{payload.guild.id}/C{payload.channel.id}/U{payload.user.id}/E{payload.component.emoji!s})")
         return
 
 
