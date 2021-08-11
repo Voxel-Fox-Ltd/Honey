@@ -73,7 +73,7 @@ settings_menu = vbu.menus.Menu(
                 cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "muted_role_id"),
             ),
             vbu.menus.Option(
-                display=lambda ctx: f"Moderator role (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['moderator_role_id'])})",
+                display=lambda ctx: f"Moderator role (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['guild_moderator_role_id'])})",
                 component_display="Set moderator role",
                 converters=[
                     vbu.menus.Converter(
@@ -81,8 +81,8 @@ settings_menu = vbu.menus.Menu(
                         converter=discord.Role,
                     ),
                 ],
-                callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "moderator_role_id"),
-                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "moderator_role_id"),
+                callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "guild_moderator_role_id"),
+                cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "guild_moderator_role_id"),
             ),
             vbu.menus.Option(
                 display="Roles removed on mute",
