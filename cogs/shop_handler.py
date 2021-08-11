@@ -277,6 +277,9 @@ class ShopHandler(vbu.Cog):
         Pinged when a user is trying to buy something from a shop.
         """
 
+        if payload.component.custom_id != "SHOP_PURCHASE":
+            return
+
         # Check the reaction is on a shop message
         guild_settings = self.bot.guild_settings[payload.guild.id]
         if guild_settings['shop_message_id'] != payload.message.id:
