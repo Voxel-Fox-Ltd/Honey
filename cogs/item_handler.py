@@ -167,7 +167,7 @@ class ItemHandler(vbu.Cog):
 
         await ctx.invoke(self.bot.get_command("use"), item_name="paintbrush", user=user or ctx.author, args=args)
 
-    @vbu.command()
+    @vbu.command(hidden=True, add_slash_command=False)
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.guild_only()
