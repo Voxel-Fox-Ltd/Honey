@@ -54,7 +54,7 @@ class VCLogs(vbu.Cog):
             data = {"embed": vbu.Embed(use_random_colour=True, description=text)}
         else:
             data = {"content": text, "allowed_mentions": discord.AllowedMentions.none()}
-        self.bot.create_task(channel.send(**data))
+        self.bot.loop.create_task(channel.send(**data))
 
     @tasks.loop(seconds=10)
     async def send_queued_messages(self):
