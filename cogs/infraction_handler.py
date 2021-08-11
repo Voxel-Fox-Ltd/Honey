@@ -4,25 +4,25 @@ from datetime import datetime as dt
 
 import discord
 from discord.ext import commands
-from discord.ext import menus
+# from discord.ext import menus
 import voxelbotutils as vbu
 
 from cogs import utils
 
 
-class InfractionSource(menus.ListPageSource):
+# class InfractionSource(menus.ListPageSource):
 
-    def format_page(self, menu: menus.Menu, entries: list) -> vbu.Embed:
-        """
-        Format the infraction entries into an embed.
-        """
+#     def format_page(self, menu: menus.Menu, entries: list) -> vbu.Embed:
+#         """
+#         Format the infraction entries into an embed.
+#         """
 
-        with vbu.Embed(use_random_colour=True) as embed:
-            for row in entries:
-                # TODO add timestamp
-                embed.add_field(f"{row['infraction_type']} - {row['infraction_id']}", f"<@{row['moderator_id']}> :: {row['infraction_reason']}", inline=False)
-            embed.set_footer(f"Page {menu.current_page + 1}/{self.get_max_pages()}")
-        return embed
+#         with vbu.Embed(use_random_colour=True) as embed:
+#             for row in entries:
+#                 # TODO add timestamp
+#                 embed.add_field(f"{row['infraction_type']} - {row['infraction_id']}", f"<@{row['moderator_id']}> :: {row['infraction_reason']}", inline=False)
+#             embed.set_footer(f"Page {menu.current_page + 1}/{self.get_max_pages()}")
+#         return embed
 
 
 class InfractionHandler(vbu.Cog):
@@ -97,15 +97,15 @@ class InfractionHandler(vbu.Cog):
         if ctx.invoked_subcommand is not None:
             return
 
-        # Grab their infractions from the database
-        async with self.bot.database() as db:
-            rows = await db("SELECT * FROM infractions WHERE guild_id=$1 AND user_id=$2 AND deleted_by IS NULL ORDER BY timestamp DESC", ctx.guild.id, user_id)
-        if not rows:
-            return await ctx.send(f"<@{user_id}> has no recorded infractions.", allowed_mentions=discord.AllowedMentions.none())
+        # # Grab their infractions from the database
+        # async with self.bot.database() as db:
+        #     rows = await db("SELECT * FROM infractions WHERE guild_id=$1 AND user_id=$2 AND deleted_by IS NULL ORDER BY timestamp DESC", ctx.guild.id, user_id)
+        # if not rows:
+        #     return await ctx.send(f"<@{user_id}> has no recorded infractions.", allowed_mentions=discord.AllowedMentions.none())
 
-        # And pagination time babey
-        pages = menus.MenuPages(source=InfractionSource(rows, per_page=5), clear_reactions_after=True, delete_message_after=True)
-        await pages.start(ctx)
+        # # And pagination time babey
+        # pages = menus.MenuPages(source=InfractionSource(rows, per_page=5), clear_reactions_after=True, delete_message_after=True)
+        # await pages.start(ctx)
 
     @infractions.command()
     @utils.checks.is_guild_moderator()
