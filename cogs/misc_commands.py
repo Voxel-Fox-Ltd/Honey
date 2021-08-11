@@ -16,7 +16,7 @@ class MiscCommands(vbu.Cog):
 
         seed = random.randint(1, 99999)
         with vbu.Embed(use_random_colour=True) as embed:
-            embed.set_author(name="Click here to it larger", url=f"https://thisfursonadoesnotexist.com/v2/jpgs-2x/seed{seed:0>5}.jpg")
+            embed.set_author(name="Click here to make it larger", url=f"https://thisfursonadoesnotexist.com/v2/jpgs-2x/seed{seed:0>5}.jpg")
             embed.set_image(f"https://thisfursonadoesnotexist.com/v2/jpgs/seed{seed:0>5}.jpg")
             embed.set_footer(text="Provided by ThisFursonaDoesNotExist.com")
         await ctx.send(embed=embed)
