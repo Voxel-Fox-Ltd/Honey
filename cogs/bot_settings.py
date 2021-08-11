@@ -618,7 +618,7 @@ settings_menu = vbu.menus.Menu(
 
 
 def post_invoke(ctx):
-    self.bot.dispatch("shop_message_update", ctx.guild)
+    ctx.bot.dispatch("shop_message_update", ctx.guild)
 
 
 def setup(bot: vbu.Bot):
