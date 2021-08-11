@@ -5,7 +5,7 @@ import json
 
 import discord
 from discord.ext import commands
-from discord.ext import menus
+# from discord.ext import menus
 import asyncpg
 import voxelbotutils as vbu
 
