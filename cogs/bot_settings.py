@@ -49,7 +49,7 @@ settings_menu = vbu.menus.Menu(
         display="Moderation settings",
         callback=vbu.menus.Menu(
             vbu.menus.Option(
-                display=lambda ctx: f"Verified role (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['verified_role_id'])})",
+                display=lambda ctx: f"Verified role (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['verified_role_id']).mention})",
                 component_display="Set verified role",
                 converters=[
                     vbu.menus.Converter(
@@ -61,7 +61,7 @@ settings_menu = vbu.menus.Menu(
                 cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "verified_role_id"),
             ),
             vbu.menus.Option(
-                display=lambda ctx: f"Mute role (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['muted_role_id'])})",
+                display=lambda ctx: f"Mute role (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['muted_role_id']).mention})",
                 component_display="Set mute role",
                 converters=[
                     vbu.menus.Converter(
