@@ -372,7 +372,7 @@ class FursonaCommands(vbu.Cog):
             return await user.send("Your fursona has been sent to the moderators for approval! Please be patient as they review.")
         return await user.send("Your fursona has been saved!")
 
-    @vbu.command(ignore_extra=False)
+    @vbu.command(ignore_extra=False, add_slash_command=False)
     @vbu.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def deletesona(self, ctx: vbu.Context, *, name: str = None):
