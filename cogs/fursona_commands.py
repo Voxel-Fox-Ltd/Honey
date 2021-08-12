@@ -382,7 +382,7 @@ class FursonaCommands(vbu.Cog):
 
         await ctx.invoke(self.bot.get_command("fursona delete"), name=name)
 
-    @fursona.command(ignore_extra=False)
+    @fursona.command(ignore_extra=False, name="delete")
     @vbu.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def fursona_delete(self, ctx: vbu.Context, *, name: str = None):
