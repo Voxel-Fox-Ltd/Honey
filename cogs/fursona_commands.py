@@ -5,33 +5,10 @@ import json
 
 import discord
 from discord.ext import commands
-# from discord.ext import menus
 import asyncpg
 import voxelbotutils as vbu
 
 from cogs import utils
-
-
-# class FursonaPageSource(menus.ListPageSource):
-
-#     def format_page(self, menu: menus.Menu, entry: dict) -> dict:
-#         """
-#         Formats a sona into a thingmie and returns the embed.
-#         """
-
-#         # Format the data into an embed for the sona
-#         menu.raw_sona_data = entry.copy()
-#         content = f"Sona **{entry['name']}** from **{entry['guild_name']}** (sona {menu.current_page + 1}/{self.get_max_pages()})."
-#         sona = utils.Fursona(**entry)
-#         sona.verified = False
-#         menu.sona = sona
-#         embed = sona.get_embed(mention_user=False, add_image=True)
-
-#         # And return it to the user
-#         return {
-#             "content": content,
-#             "embed": embed,
-#         }
 
 
 class FursonaCommands(vbu.Cog):
@@ -123,11 +100,71 @@ class FursonaCommands(vbu.Cog):
 
         return re.search(r"^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg)$", content, re.IGNORECASE)
 
-    @vbu.command()
+    @vbu.group(invoke_without_subcommand=True)
+    @utils.checks.is_enabled_in_channel('disabled_sona_channels')
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.guild_only()
+    async def fursona(self, ctx: vbu.Context, user: typing.Optional[discord.Member], *, name: str = None):
+        """
+        Shows you someone's fursona.
+        """
+
+        if ctx.invoked_subcommand is not None:
+            return
+        await ctx.invoke(self.bot.get_command("fursona get"), user, name=name)
+
+    @fursona.command(name="get")
+    @utils.checks.is_enabled_in_channel('disabled_sona_channels')
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.guild_only()
+    async def fursona_get(self, ctx: vbu.Context, user: typing.Optional[discord.Member], *, name: str = None):
+        """
+        Shows you someone's fursona.
+        """
+
+        # Get the sonas
+        user = user or ctx.author
+        guild_id = ctx.guild.id
+        if user.id == self.bot.user.id:
+            guild_id = 0
+        async with self.bot.database() as db:
+            if name is None:
+                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", guild_id, user.id)
+            else:
+                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", guild_id, user.id, name)
+
+        # Check if they have a valid sona
+        if not rows:
+            return await ctx.send(f"{user.mention} has no sona set up on this server.")
+        elif len(rows) > 1:
+            available_sonas = [i['name'].replace('`', '\\`').replace('*', '\\*').replace('_', '\\_') for i in rows]
+            available_string = ', '.join(f"`{name}`" for name in available_sonas)
+            return await ctx.send(f"{user.mention} has more than one sona set - please get their sona using its name. Available sonas: {available_string}")
+        if rows[0]['verified'] is False:
+            return await ctx.send(f"{user.mention}'s sona has not yet been verified.")
+        if rows[0]['nsfw'] is True and ctx.channel.nsfw is False:
+            return await ctx.send("I can't show NSFW sonas in a SFW channel.")
+
+        # Wew it's sona time let's go
+        sona = utils.Fursona(**rows[0])
+        return await ctx.send(embed=sona.get_embed(mention_user=True))
+
+    @vbu.command(hidden=True, add_slash_command=False)
     @commands.check(utils.checks.is_verified)
-    @commands.bot_has_permissions(send_messages=True)
+    @vbu.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def setsona(self, ctx: vbu.Context):
+        """
+        Stores your fursona information in the bot.
+        """
+
+        await ctx.invoke(self.bot.get_command("fursona set"))
+
+    @fursona.command(name="set")
+    @commands.check(utils.checks.is_verified)
+    @vbu.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def fursona_set(self, ctx: vbu.Context):
         """
         Stores your fursona information in the bot.
         """
@@ -250,8 +287,8 @@ class FursonaCommands(vbu.Cog):
             return await user.send("Your fursona has been automatically declined as it is NSFW")
         await self.bot.get_command("setsonabyjson").invoke(ctx)
 
-    @vbu.command(hidden=True)
-    @commands.bot_has_permissions(send_messages=True)
+    @vbu.command(hidden=True, add_slash_command=False)
+    @vbu.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def setsonabyjson(self, ctx: vbu.Context, *, data: str = None):
         """
@@ -335,104 +372,61 @@ class FursonaCommands(vbu.Cog):
             return await user.send("Your fursona has been sent to the moderators for approval! Please be patient as they review.")
         return await user.send("Your fursona has been saved!")
 
-    # @vbu.command(hidden=True)
-    # @commands.bot_has_permissions(send_messages=True)
-    # @commands.guild_only()
-    # async def importsona(self, ctx: vbu.Context):
-    #     """
-    #     Get your sona from another server.
-    #     """
+    @vbu.command(ignore_extra=False)
+    @vbu.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def deletesona(self, ctx: vbu.Context, *, name: str = None):
+        """
+        Deletes your sona.
+        """
 
-    #     # See if they're setting one up already
-    #     if ctx.author.id in self.currently_setting_sonas:
-    #         return await ctx.send("You're already setting up a sona! Please finish that one off first!")
+        await ctx.invoke(self.bot.get_command("fursona delete"), name=name)
 
-    #     # Try and send them an initial DM
-    #     try:
-    #         await ctx.author.send(f"Now taking you through importing your sona to **{ctx.guild.name}**!")
-    #     except discord.Forbidden:
-    #         return await ctx.send("I couldn't send you a DM! Please open your DMs for this server and try again.")
-    #     self.currently_setting_sonas.add(ctx.author.id)
-    #     await ctx.send("Sent you a DM!")
+    @fursona.command(ignore_extra=False)
+    @vbu.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def fursona_delete(self, ctx: vbu.Context, *, name: str = None):
+        """
+        Deletes your sona.
+        """
 
-    #     # Get sona data
-    #     async with self.bot.database() as db:
-    #         database_rows = await db("SELECT * FROM fursonas WHERE user_id=$1", ctx.author.id)
+        db = await self.bot.database.get_connection()
 
-    #     # Format that into a list
-    #     all_user_sonas = []
-    #     for row in database_rows:
-    #         try:
-    #             guild = self.bot.get_guild(row['guild_id']) or await self.bot.fetch_guild(row['guild_id'])
-    #         except discord.Forbidden:
-    #             guild = None
+        # See if they have a sona already
+        if name is None:
+            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
+        else:
+            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", ctx.guild.id, ctx.author.id, name)
+        if not rows:
+            await db.disconnect()
+            return await ctx.send("You have no sona set for you to delete.")
+        elif len(rows) > 1:
+            await db.disconnect()
+            available_sonas = [i['name'].replace('`', '\\`').replace('*', '\\*').replace('_', '\\_') for i in rows]
+            available_string = ', '.join(f"`{name}`" for name in available_sonas)
+            return await ctx.send(f"You have multiple sonas - please specify which you want to delete. Available sonas: {available_string}")
+        name = rows[0]['name']
 
-    #         # Add to the all sona list
-    #         menu_data = dict(row)
-    #         if guild:
-    #             menu_data.update({"guild_name": guild.name})
-    #         else:
-    #             menu_data.update({"guild_name": "Unknown Guild Name"})
-    #         all_user_sonas.append(menu_data)
+        # Delete it from pending
+        if rows[0]['verified'] is False:
+            modmail_channel_id = self.bot.guild_settings[ctx.guild.id].get('fursona_modmail_channel_id')
+            if modmail_channel_id is not None:
+                modmail_channel = self.bot.get_channel(modmail_channel_id)
+                if modmail_channel is not None:
+                    found_message = None
+                    async for message in modmail_channel.history():
+                        if message.author.id == self.bot.user.id and message.embeds and message.embeds[0].footer.text.split(' ') == str(ctx.author.id):
+                            found_message = message
+                            break
+                    try:
+                        await found_message.delete()
+                    except (discord.Forbidden, AttributeError):
+                        pass
 
-    #     # Let's add our other servers via their APIs
-    #     for api_data in self.OTHER_FURRY_GUILD_DATA[::-1]:
-
-    #         # Format data
-    #         url = api_data['url']
-    #         params = {i: o.format(user=ctx.author, guild=ctx.guild, bot=self.bot) for i, o in api_data.get('params', dict()).copy().items()}
-    #         headers = {i: o.format(user=ctx.author, guild=ctx.guild, bot=self.bot) for i, o in api_data.get('headers', dict()).copy().items()}
-
-    #         # Run request
-    #         try:
-    #             async with self.bot.session.get(url, params=params, headers=headers) as r:
-    #                 grabbed_sona_data = await r.json()
-    #         except Exception:
-    #             grabbed_sona_data = {'data': []}
-
-    #         # Add to lists
-    #         if grabbed_sona_data['data']:
-    #             guild_id = api_data['guild_id']
-    #             guild_name = api_data['name']
-
-    #             # Add to the all sona list
-    #             for sona in grabbed_sona_data['data']:
-    #                 menu_data = sona.copy()
-    #                 menu_data.update({"guild_name": guild_name, "guild_id": guild_id})
-    #                 all_user_sonas.append(menu_data)
-
-    #     # Filter the list
-    #     all_user_sonas = [i for i in all_user_sonas if i['guild_id'] != ctx.guild.id]
-    #     if not self.bot.guild_settings[ctx.guild.id]["nsfw_is_allowed"]:
-    #         all_user_sonas = [i for i in all_user_sonas if i['nsfw'] is False]
-    #     if not all_user_sonas:
-    #         self.currently_setting_sonas.remove(ctx.author.id)
-    #         return await ctx.send("You have no sonas available to import from other servers.")
-
-    #     # Send it off to the user
-    #     pages = menus.MenuPages(source=FursonaPageSource(all_user_sonas, per_page=1))
-    #     await pages.start(ctx, channel=ctx.author, wait=True)
-
-    #     # Ask if the user wants to import the sona they stopped on
-    #     sona_data = pages.raw_sona_data
-    #     ask_import_message = await ctx.author.send(f"Do you want to import your sona from **{sona_data['guild_name']}**?")
-    #     await ask_import_message.add_reaction(self.CHECK_MARK_EMOJI)
-    #     await ask_import_message.add_reaction(self.CROSS_MARK_EMOJI)
-    #     try:
-    #         check = lambda r, u: r.message.id == ask_import_message.id and u.id == ctx.author.id
-    #         reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
-    #     except asyncio.TimeoutError:
-    #         self.currently_setting_sonas.remove(ctx.author.id)
-    #         return await ctx.author.send("Timed out asking about sona import.")
-
-    #     # Import data
-    #     self.currently_setting_sonas.remove(ctx.author.id)
-    #     emoji = str(reaction.emoji)
-    #     if emoji == self.CROSS_MARK_EMOJI:
-    #         return await ctx.author.send("Alright, cancelled importing your sona.")
-    #     command = self.bot.get_command("setsonabyjson")
-    #     ctx.information = sona_data
-    #     return await command.invoke(ctx)
+        # Delete it from db
+        await db("DELETE FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", ctx.guild.id, ctx.author.id, name)
+        await db.disconnect()
+        return await ctx.send("Deleted your sona.")
 
     @vbu.Cog.listener("on_raw_reaction_add")
     async def fursona_verification_reaction_handler(self, payload: discord.RawReactionActionEvent):
@@ -546,88 +540,6 @@ class FursonaCommands(vbu.Cog):
                 await fursona_member.send(f"Your fursona, `{fursona_name}`, on **{fursona_member.guild.name}** has been declined, with the reason `{delete_reason}`.")
         except discord.Forbidden:
             pass
-
-    @vbu.command(aliases=['getsona'])
-    @utils.checks.is_enabled_in_channel('disabled_sona_channels')
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @commands.guild_only()
-    async def sona(self, ctx: vbu.Context, user: typing.Optional[discord.Member], *, name: str = None):
-        """
-        Gets your sona.
-        """
-
-        # Get the sonas
-        user = user or ctx.author
-        guild_id = ctx.guild.id
-        if user.id == self.bot.user.id:
-            guild_id = 0
-        async with self.bot.database() as db:
-            if name is None:
-                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", guild_id, user.id)
-            else:
-                rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", guild_id, user.id, name)
-
-        # Check if they have a valid sona
-        if not rows:
-            return await ctx.send(f"{user.mention} has no sona set up on this server.")
-        elif len(rows) > 1:
-            available_sonas = [i['name'].replace('`', '\\`').replace('*', '\\*').replace('_', '\\_') for i in rows]
-            available_string = ', '.join(f"`{name}`" for name in available_sonas)
-            return await ctx.send(f"{user.mention} has more than one sona set - please get their sona using its name. Available sonas: {available_string}")
-        if rows[0]['verified'] is False:
-            return await ctx.send(f"{user.mention}'s sona has not yet been verified.")
-        if rows[0]['nsfw'] is True and ctx.channel.nsfw is False:
-            return await ctx.send("I can't show NSFW sonas in a SFW channel.")
-
-        # Wew it's sona time let's go
-        sona = utils.Fursona(**rows[0])
-        return await ctx.send(embed=sona.get_embed(mention_user=True))
-
-    @vbu.command(ignore_extra=False)
-    @commands.bot_has_permissions(send_messages=True)
-    @commands.guild_only()
-    async def deletesona(self, ctx: vbu.Context, *, name: str = None):
-        """
-        Deletes your sona.
-        """
-
-        db = await self.bot.database.get_connection()
-
-        # See if they have a sona already
-        if name is None:
-            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, ctx.author.id)
-        else:
-            rows = await db("SELECT * FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", ctx.guild.id, ctx.author.id, name)
-        if not rows:
-            await db.disconnect()
-            return await ctx.send("You have no sona set for you to delete.")
-        elif len(rows) > 1:
-            await db.disconnect()
-            available_sonas = [i['name'].replace('`', '\\`').replace('*', '\\*').replace('_', '\\_') for i in rows]
-            available_string = ', '.join(f"`{name}`" for name in available_sonas)
-            return await ctx.send(f"You have multiple sonas - please specify which you want to delete. Available sonas: {available_string}")
-        name = rows[0]['name']
-
-        # Delete it from pending
-        if rows[0]['verified'] is False:
-            modmail_channel_id = self.bot.guild_settings[ctx.guild.id].get('fursona_modmail_channel_id')
-            if modmail_channel_id is not None:
-                modmail_channel = self.bot.get_channel(modmail_channel_id)
-                if modmail_channel is not None:
-                    found_message = None
-                    async for message in modmail_channel.history():
-                        if message.author.id == self.bot.user.id and message.embeds and message.embeds[0].footer.text.split(' ') == str(ctx.author.id):
-                            found_message = message
-                            break
-                    try:
-                        await found_message.delete()
-                    except (discord.Forbidden, AttributeError):
-                        pass
-
-        # Delete it from db
-        await db("DELETE FROM fursonas WHERE guild_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", ctx.guild.id, ctx.author.id, name)
-        await db.disconnect()
-        return await ctx.send("Deleted your sona.")
 
 
 def setup(bot: vbu.Bot):
