@@ -11,7 +11,7 @@ class CacheSetup(vbu.Cog):
         # Get stored interaction cooldowns
         data = await self.bot._get_list_table_data(db, 'role_list', 'Interactions')
         for row in data:
-            self.bot.guild_settings[row['guild_id']].setdefault('role_interaction_cooldowns', dict())[row['role_id']] = int(row['value'])
+            self.bot.guild_settings[row['guild_id']].setdefault('role_interaction_cooldowns', dict())[row['role_id']] = int(float(row['value']))
 
         # Get max sona count
         data = await self.bot._get_list_table_data(db, 'role_list', 'SonaCount')
